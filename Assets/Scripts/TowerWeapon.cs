@@ -1,0 +1,156 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using UnityEngine;
+
+public enum WeaponState { SearchTarget = 0, AttackToTarget } //공격 대상 탐색 여부
+
+public class TowerWeapon : MonoBehaviour
+{
+    [SerializeField]
+    private TowerTemplate towerTemplate;
+    [SerializeField]
+    private GameObject projectilePrefab; // 발사체 프리팹
+    [SerializeField]
+    private Transform spawnPoint;
+    /*[SerializeField]
+    private float attackRate = 0.5f; // 공격 속도
+    [SerializeField]
+    private float attackRange = 2.0f;
+    [SerializeField]
+    private int attackDamage = 1;*/
+    private int level = 0;
+    private WeaponState weaponState = WeaponState.SearchTarget;
+    private Transform attackTarget = null;
+    private SpriteRenderer spriteRenderer;
+    private PlayerGold playerGold;
+    private EnemySpawner enemySpawner;
+
+    public Sprite TowerSprite => towerTemplate.weapon[level].sprite;
+    public float Damage => towerTemplate.weapon[level].damage;
+    public float Rate => towerTemplate.weapon[level].rate;
+    public float Range => towerTemplate.weapon[level].range;
+    public int Level => level + 1;
+    public int MaxLevel => towerTemplate.weapon.Length;
+
+    public void Setup(EnemySpawner enemySpawner, PlayerGold playerGold)
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        Debug.Log("TowerWeapon Setup called!");
+        this.enemySpawner = enemySpawner;
+        this.playerGold = playerGold;
+        ChangeState(WeaponState.SearchTarget);
+    }
+
+
+    public void ChangeState(WeaponState newstate)
+    {
+        Debug.Log($"Changing state to {newstate}");
+        StopCoroutine(weaponState.ToString());
+        weaponState = newstate;
+        StartCoroutine(weaponState.ToString());
+    }
+    // Update is called once per frame
+    private void Update()
+    {
+        if (attackTarget != null)
+        {
+            RotateToTarget();
+        }
+
+    }
+
+    private void RotateToTarget()
+    {
+        float dx = attackTarget.position.x - transform.position.x;
+        float dy = attackTarget.position.y - transform.position.y;
+        float degree = Mathf.Atan2(dy, dx) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0, 0, degree);
+    }
+
+    private IEnumerator SearchTarget()
+    {
+        while (true)
+        {
+            float closetDistSqr = Mathf.Infinity;
+            for (int i = 0; i < enemySpawner.EnemyList.Count; i++) //모든 적 검사
+            {
+                float distance = Vector3.Distance(enemySpawner.EnemyList[i].transform.position, transform.position);
+                if (distance <= towerTemplate.weapon[level].range && distance <= closetDistSqr)
+                {
+                    closetDistSqr = distance;
+                    attackTarget = enemySpawner.EnemyList[i].transform;
+                }
+            }
+            if (attackTarget != null)
+            {
+                Debug.Log($"Target found: {attackTarget.name}");
+                ChangeState(WeaponState.AttackToTarget); // 해당 타겟 공격
+            }
+
+            yield return null;
+        }
+    }
+
+    private IEnumerator AttackToTarget()
+    {
+        while (true)
+        {
+            if (attackTarget == null) // target 있는지 확인
+            {
+                ChangeState(WeaponState.SearchTarget);
+                break;
+            }
+
+            float distance = Vector3.Distance(attackTarget.position, transform.position);
+            if (distance > towerTemplate.weapon[level].range) //target이 공격 범위보다 멀 경우 새로운 적 탐색
+            {
+                attackTarget = null;
+                ChangeState(WeaponState.SearchTarget);
+                break;
+            }
+
+            yield return new WaitForSeconds(towerTemplate.weapon[level].rate);
+
+            SpawnProjectile(); // 발사체 생성
+        }
+    }
+
+    private void SpawnProjectile()
+    {
+        Debug.Log($"Spawning projectile at {spawnPoint.position}");
+        GameObject projectileObj = Instantiate(projectilePrefab, spawnPoint.position, Quaternion.identity);
+
+        // Get the Projectile component from the spawned object
+        Projectile projectileScript = projectileObj.GetComponent<Projectile>();
+
+        // Make sure the projectileScript is not null
+        if (projectileScript != null)
+        {
+            // Call Setup and pass the target and attack damage to the projectile
+            projectileScript.Setup(attackTarget, towerTemplate.weapon[level].damage);
+            Debug.Log("Projectile setup complete.");
+        }
+        else
+        {
+            Debug.LogError("Projectile component not found on the spawned object!");
+        }
+
+
+    }
+
+    public bool Upgrade()
+    {
+        if (playerGold.CurrentGold < towerTemplate.weapon[level + 1].cost)
+        { 
+            return false; 
+
+        }
+        level++;
+        spriteRenderer.sprite = towerTemplate.weapon[level].sprite;
+        playerGold.CurrentGold = towerTemplate.weapon[level].cost;
+
+        return true;
+    }
+}
+
