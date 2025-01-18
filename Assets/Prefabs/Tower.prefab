@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 1868021092688681769}
   - component: {fileID: 994000507248595842}
   - component: {fileID: -6281782124998012200}
-  - component: {fileID: 4544405139429884366}
+  - component: {fileID: -6842561234153425761}
   m_Layer: 0
   m_Name: Tower
   m_TagString: Tower
@@ -133,7 +133,7 @@ MonoBehaviour:
   towerTemplate: {fileID: 11400000, guid: ba188ac3d4bece146bc102e7763e57e5, type: 2}
   projectilePrefab: {fileID: 2777279350721899029, guid: 44489083cff375d4aa63a379f35125dd, type: 3}
   spawnPoint: {fileID: 440144251034166792}
---- !u!61 &4544405139429884366
+--- !u!61 &-6842561234153425761
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
