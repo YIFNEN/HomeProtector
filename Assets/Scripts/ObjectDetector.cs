@@ -1,6 +1,6 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-
+using UnityEngine.EventSystems;
 public class ObjectDetector : MonoBehaviour
 {
     [SerializeField]
@@ -9,6 +9,7 @@ public class ObjectDetector : MonoBehaviour
     private TowerDataViewer towerDataViewer;
 
     private Camera mainCamera;
+    private Transform hitTransform = null;
 
     private void Awake()
     {
@@ -17,36 +18,46 @@ public class ObjectDetector : MonoBehaviour
 
     void Update()
     {
+        if (EventSystem.current.IsPointerOverGameObject() == true)
+        {
+            return;
+        }
         if (Input.GetMouseButtonDown(0))
         {
             // 마우스 위치를 월드 좌표로 변환
-            Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-
+            Vector3 worldPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            worldPosition.z = 0f; // 2D 환경에서 Z 문제 방지
             // Raycast 발사
-            RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+            RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
+
+
+            if (hit.collider != null)
+            {
+                if (hit.collider.CompareTag("Tower")) // 타워를 클릭한 경우
+                {
+                    Debug.Log("Tower clicked! Opening panel...");
+                    towerDataViewer.OnPanel(hit.transform);
+                    return; // 타워 클릭 시 타일맵 관련 로직 실행 X
+                }
+            }
 
             // Raycast 결과 처리
-            if (hit.collider != null) // Raycast가 무언가를 맞췄다면
+            Vector3Int cellPosition = towerSpawner.GetTilemap().WorldToCell(worldPosition);
+
+            if (towerSpawner.IsTileOccupied(cellPosition))
             {
-                if (hit.collider.CompareTag("Tile")) // 맞춘 것이 "Tile" 태그라면
-                {
-                    Debug.Log($"Hit Tilemap at: {mousePosition}");
-                    towerSpawner.SpawnTower(mousePosition); // 클릭한 좌표 전달
-                }
-                else if (hit.collider.CompareTag("Tower")) // 맞춘 것이 "Tower" 태그라면
-                {
-                    towerDataViewer.OnPanel(hit.transform);
-                }
-                else // 맞췄지만 조건에 부합하지 않는 경우
-                {
-                    Debug.Log("Hit something else.");
-                }
+                // 타워가 이미 존재하는 경우 -> 제거
+                Debug.Log($"Removing tower at {cellPosition}");
+
             }
-            else // Raycast가 아무것도 맞추지 못한 경우
+            else
             {
-                Debug.Log("No hit detected");
+                // 타워가 없는 경우 -> 생성
+                Debug.Log($"Spawning tower at {cellPosition}");
+                towerSpawner.SpawnTower(cellPosition);
             }
         }
+       
     }
 
 }

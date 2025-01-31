@@ -18,6 +18,8 @@ public class TowerDataViewer : MonoBehaviour
     private TextMeshProUGUI textRange;
     [SerializeField]
     private Button buttonUpgrade;
+    [SerializeField]
+    private SystemTextViewer systemTextViewer;
 
     private TowerWeapon currentTower;
 
@@ -67,7 +69,21 @@ public class TowerDataViewer : MonoBehaviour
             UpdateTowerData();
 
         }
-        else { }
+        else 
+        {
+            systemTextViewer.PrintText(SystemType.Money);
+        }
     }
 
-}
+    public void OnClickEventTowerSell()
+    {
+        if (currentTower == null)
+        {
+            Debug.LogWarning("current Tower is null");
+            return;
+        }
+
+        currentTower.Sell();
+        OffPanel();
+    }
+ }

@@ -25,6 +25,7 @@ public class TowerWeapon : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private PlayerGold playerGold;
     private EnemySpawner enemySpawner;
+    private Tile ownerTile;
 
     public Sprite TowerSprite => towerTemplate.weapon[level].sprite;
     public float Damage => towerTemplate.weapon[level].damage;
@@ -33,12 +34,13 @@ public class TowerWeapon : MonoBehaviour
     public int Level => level + 1;
     public int MaxLevel => towerTemplate.weapon.Length;
 
-    public void Setup(EnemySpawner enemySpawner, PlayerGold playerGold)
+    public void Setup(EnemySpawner enemySpawner, PlayerGold playerGold, Vector3 worldPosition)
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         Debug.Log("TowerWeapon Setup called!");
         this.enemySpawner = enemySpawner;
         this.playerGold = playerGold;
+        this.transform.position = worldPosition;
         ChangeState(WeaponState.SearchTarget);
     }
 
@@ -148,9 +150,19 @@ public class TowerWeapon : MonoBehaviour
         }
         level++;
         spriteRenderer.sprite = towerTemplate.weapon[level].sprite;
-        playerGold.CurrentGold = towerTemplate.weapon[level].cost;
+        playerGold.CurrentGold -= towerTemplate.weapon[level].cost;
 
         return true;
+    }
+
+    public void Sell()
+    {
+        playerGold.CurrentGold += towerTemplate.weapon[level].sell;
+        
+        Vector3Int cellposition = FindObjectOfType<Grid>().WorldToCell(transform.position);
+        FindObjectOfType<TowerSpawner>().RemoveTower(cellposition);
+
+        Destroy(gameObject);
     }
 }
 

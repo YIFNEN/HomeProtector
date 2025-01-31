@@ -17,10 +17,31 @@ MonoBehaviour:
   - sprite: {fileID: 21300000, guid: bf093bf7afa81b542a10689df8d22170, type: 3}
     damage: 1
     rate: 0.3
-    range: 10
+    range: 20
     cost: 10
-  - sprite: {fileID: 21300000, guid: a3c3bf9564fb9d642bfe8b04b3945fae, type: 3}
+    sell: 5
+  - sprite: {fileID: 21300000, guid: bf093bf7afa81b542a10689df8d22170, type: 3}
+    damage: 1
+    rate: 0.4
+    range: 30
+    cost: 20
+    sell: 15
+  - sprite: {fileID: 21300000, guid: bf093bf7afa81b542a10689df8d22170, type: 3}
+    damage: 1.5
+    rate: 0.5
+    range: 40
+    cost: 20
+    sell: 15
+  - sprite: {fileID: 21300000, guid: bf093bf7afa81b542a10689df8d22170, type: 3}
     damage: 2
-    rate: 0.9
-    range: 5
+    rate: 0.5
+    range: 50
     cost: 30
+    sell: 25
+  - sprite: {fileID: 21300000, guid: bf093bf7afa81b542a10689df8d22170, type: 3}
+    damage: 2
+    rate: 0.6
+    range: 60
+    cost: 30
+    sell: 25
+  followTowerPrefab: {fileID: 5283101220022144376, guid: 18fe1ba71f76b2345b6ae10a249456c1, type: 3}
