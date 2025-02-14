@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 1856268412655041909}
   - component: {fileID: -5120642889398270928}
   m_Layer: 0
-  m_Name: Projectile
+  m_Name: ProjectileArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3866747457431c04f8a86561f03ccf31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
+  moveSpeed: 15
   moveDirection: {x: 0, y: 0, z: 0}
 --- !u!58 &6226941901820838719
 CircleCollider2D:
@@ -153,7 +153,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_Sprite: {fileID: 21300000, guid: 48271d0e00649834ab302cd0b7e9103c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e08dba1a7ba88eb49ab0ed8f743ab455, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

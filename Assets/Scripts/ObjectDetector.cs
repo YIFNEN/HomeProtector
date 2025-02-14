@@ -9,7 +9,7 @@ public class ObjectDetector : MonoBehaviour
     private TowerDataViewer towerDataViewer;
 
     private Camera mainCamera;
-    private Transform hitTransform = null;
+   // private Transform hitTransform = null;
 
     private void Awake()
     {

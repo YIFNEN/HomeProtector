@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: -1513795506214885510}
   - component: {fileID: 1352645324521225916}
   m_Layer: 0
-  m_Name: CommonSoldier 1
+  m_Name: EnemyCockroach
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class MicrophoneManager : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class MicrophoneManager : MonoBehaviour
     private AudioClip micClip;
     private string micName;
     public GameObject targetObject; // 활성화할 오브젝트
+    public float deactivationTime = 20f; // 비활성화까지의 시간
 
     void Start()
     {
@@ -31,7 +33,7 @@ public class MicrophoneManager : MonoBehaviour
         {
             float volume = GetMaxVolume();
             scaledVolume = ScaleVolume(volume);
-            Debug.Log("현재 볼륨: " + volume + " (스케일: " + scaledVolume + ")");
+    
 
             if (scaledVolume >= activationThreshold && !targetObject.activeSelf)
             {
@@ -49,6 +51,14 @@ public class MicrophoneManager : MonoBehaviour
         targetObject.transform.position = worldPosition;
         targetObject.SetActive(true);
         Debug.Log("오브젝트 활성화됨! 위치: " + worldPosition);
+        StartCoroutine(DeactivateAfterTime());
+    }
+
+    IEnumerator DeactivateAfterTime()
+    {
+        yield return new WaitForSeconds(deactivationTime);
+        targetObject.SetActive(false);
+        Debug.Log("오브젝트 비활성화됨 (20초 경과)");
     }
 
     float GetMaxVolume()

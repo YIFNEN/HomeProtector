@@ -40,7 +40,12 @@ public class TowerDataViewer : MonoBehaviour
     }
 
     public void OnPanel(Transform towerWeapon)
-    { 
+    {
+        if (towerWeapon == null)
+        {
+            Debug.LogWarning("선택한 타워가 없습니다.");
+            return;
+        }
         currentTower = towerWeapon.GetComponent<TowerWeapon>();
         gameObject.SetActive(true);
         UpdateTowerData();
@@ -51,6 +56,13 @@ public class TowerDataViewer : MonoBehaviour
     }
     private void UpdateTowerData()
     {
+        if (currentTower == null)
+        {
+            Debug.LogWarning("업데이트할 타워 정보가 없습니다.");
+            OffPanel();
+            return;
+        }
+
         imageTower.sprite = currentTower.TowerSprite;
         textDamge.text = "Damage" + currentTower.Damage;
         textRate.text = "Rate" + currentTower.Rate;
@@ -63,6 +75,12 @@ public class TowerDataViewer : MonoBehaviour
 
     public void OnClickEventTowerUpgrade()
     {
+        if (currentTower == null)
+        {
+            Debug.LogWarning("업그레이드할 타워가 없습니다.");
+            return;
+        }
+
         bool isSuccess = currentTower.Upgrade();
         if (isSuccess)
         {

@@ -7,18 +7,14 @@ public enum WeaponState { SearchTarget = 0, AttackToTarget } //공격 대상 탐색 여
 
 public class TowerWeapon : MonoBehaviour
 {
-    [SerializeField]
-    private TowerTemplate towerTemplate;
+  
     [SerializeField]
     private GameObject projectilePrefab; // 발사체 프리팹
     [SerializeField]
     private Transform spawnPoint;
-    /*[SerializeField]
-    private float attackRate = 0.5f; // 공격 속도
-    [SerializeField]
-    private float attackRange = 2.0f;
-    [SerializeField]
-    private int attackDamage = 1;*/
+
+    
+    private TowerTemplate towerTemplate;
     private int level = 0;
     private WeaponState weaponState = WeaponState.SearchTarget;
     private Transform attackTarget = null;
@@ -27,20 +23,22 @@ public class TowerWeapon : MonoBehaviour
     private EnemySpawner enemySpawner;
     private Tile ownerTile;
 
-    public Sprite TowerSprite => towerTemplate.weapon[level].sprite;
-    public float Damage => towerTemplate.weapon[level].damage;
-    public float Rate => towerTemplate.weapon[level].rate;
-    public float Range => towerTemplate.weapon[level].range;
+    public Sprite TowerSprite => towerTemplate.weapons[level].sprite;
+    public float Damage => towerTemplate.weapons[level].damage;
+    public float Rate => towerTemplate.weapons[level].rate;
+    public float Range => towerTemplate.weapons[level].range;
     public int Level => level + 1;
-    public int MaxLevel => towerTemplate.weapon.Length;
+    public int MaxLevel => towerTemplate.weapons.Count;
 
-    public void Setup(EnemySpawner enemySpawner, PlayerGold playerGold, Vector3 worldPosition)
+    public void Setup(TowerTemplate template, EnemySpawner enemySpawner, PlayerGold playerGold, Vector3 worldPosition)
     {
+        towerTemplate = template;
         spriteRenderer = GetComponent<SpriteRenderer>();
         Debug.Log("TowerWeapon Setup called!");
         this.enemySpawner = enemySpawner;
         this.playerGold = playerGold;
         this.transform.position = worldPosition;
+        spriteRenderer.sprite = towerTemplate.weapons[level].sprite;
         ChangeState(WeaponState.SearchTarget);
     }
 
@@ -78,7 +76,7 @@ public class TowerWeapon : MonoBehaviour
             for (int i = 0; i < enemySpawner.EnemyList.Count; i++) //모든 적 검사
             {
                 float distance = Vector3.Distance(enemySpawner.EnemyList[i].transform.position, transform.position);
-                if (distance <= towerTemplate.weapon[level].range && distance <= closetDistSqr)
+                if (distance <= towerTemplate.weapons[level].range && distance <= closetDistSqr)
                 {
                     closetDistSqr = distance;
                     attackTarget = enemySpawner.EnemyList[i].transform;
@@ -105,14 +103,14 @@ public class TowerWeapon : MonoBehaviour
             }
 
             float distance = Vector3.Distance(attackTarget.position, transform.position);
-            if (distance > towerTemplate.weapon[level].range) //target이 공격 범위보다 멀 경우 새로운 적 탐색
+            if (distance > towerTemplate.weapons[level].range) //target이 공격 범위보다 멀 경우 새로운 적 탐색
             {
                 attackTarget = null;
                 ChangeState(WeaponState.SearchTarget);
                 break;
             }
 
-            yield return new WaitForSeconds(towerTemplate.weapon[level].rate);
+            yield return new WaitForSeconds(towerTemplate.weapons[level].rate);
 
             SpawnProjectile(); // 발사체 생성
         }
@@ -130,7 +128,7 @@ public class TowerWeapon : MonoBehaviour
         if (projectileScript != null)
         {
             // Call Setup and pass the target and attack damage to the projectile
-            projectileScript.Setup(attackTarget, towerTemplate.weapon[level].damage);
+            projectileScript.Setup(attackTarget, towerTemplate.weapons[level].damage);
             Debug.Log("Projectile setup complete.");
         }
         else
@@ -143,21 +141,21 @@ public class TowerWeapon : MonoBehaviour
 
     public bool Upgrade()
     {
-        if (playerGold.CurrentGold < towerTemplate.weapon[level + 1].cost)
+        if (level + 1 >= towerTemplate.weapons.Count || playerGold.CurrentGold < towerTemplate.weapons[level + 1].cost)
         { 
             return false; 
 
         }
         level++;
-        spriteRenderer.sprite = towerTemplate.weapon[level].sprite;
-        playerGold.CurrentGold -= towerTemplate.weapon[level].cost;
+        spriteRenderer.sprite = towerTemplate.weapons[level].sprite;
+        playerGold.CurrentGold -= towerTemplate.weapons[level].cost;
 
         return true;
     }
 
     public void Sell()
     {
-        playerGold.CurrentGold += towerTemplate.weapon[level].sell;
+        playerGold.CurrentGold += towerTemplate.weapons[level].sell;
         
         Vector3Int cellposition = FindObjectOfType<Grid>().WorldToCell(transform.position);
         FindObjectOfType<TowerSpawner>().RemoveTower(cellposition);
