@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GoodsBoxHP : MonoBehaviour
+public class GoodsBoxHP : MonoBehaviour //재화 오브젝트 관련 지표 관리
 {
     [SerializeField]
     private float maxHP = 20;

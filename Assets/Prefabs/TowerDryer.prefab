@@ -43,6 +43,7 @@ GameObject:
   - component: {fileID: 994000507248595842}
   - component: {fileID: -6281782124998012200}
   - component: {fileID: -6842561234153425761}
+  - component: {fileID: 8675374209508277363}
   m_Layer: 0
   m_Name: TowerDryer
   m_TagString: Tower
@@ -130,7 +131,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39ee8bc23ad864841a60797d1f81588b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  towerTemplate: {fileID: 11400000, guid: ba188ac3d4bece146bc102e7763e57e5, type: 2}
   projectilePrefab: {fileID: 2777279350721899029, guid: 44489083cff375d4aa63a379f35125dd, type: 3}
   spawnPoint: {fileID: 440144251034166792}
 --- !u!61 &-6842561234153425761
@@ -178,3 +178,19 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.64, y: 0.64}
   m_EdgeRadius: 0
+--- !u!208 &8675374209508277363
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7937509987669185425}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.32000002, y: 0.32000002, z: 0.1}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5

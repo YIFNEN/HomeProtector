@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 [System.Serializable]
 public class Node
 {
@@ -16,10 +15,13 @@ public class Node
     public int F { get { return G + H; } }
 }
 
-
 public class GameManager : MonoBehaviour
 {
-    public Vector2Int bottomLeft, topRight, startPos, targetPos;
+    public Vector2Int startPos;
+    public Vector2Int targetPos;
+    public Vector2Int bottomLeft, topRight;
+    public GameObject enemyPrefab;
+    public string targetTag = "PriorityGoal"; // 우선순위 태그 설정
     public List<Node> FinalNodeList;
     public bool allowDiagonal, dontCrossCorner;
 
@@ -28,6 +30,32 @@ public class GameManager : MonoBehaviour
     Node StartNode, TargetNode, CurNode;
     List<Node> OpenList, ClosedList;
 
+    private void Start()
+    {
+        // `enemyPrefab`과 우선순위 목표 오브젝트의 위치를 가져와서 시작점과 목표점을 설정
+        SetStartAndTargetPositions();
+
+        // 경로 탐색을 시작하기 전에 필수 데이터를 설정
+        PathFinding();
+    }
+
+    // `enemyPrefab`의 현재 위치와 우선순위 목표 태그를 가진 오브젝트의 위치를 설정
+    public void SetStartAndTargetPositions()
+    {
+        // `enemyPrefab`의 위치
+        startPos = new Vector2Int((int)enemyPrefab.transform.position.x, (int)enemyPrefab.transform.position.y);
+
+        // 우선순위 태그를 가진 목표 오브젝트 찾기
+        GameObject targetObject = GameObject.FindGameObjectWithTag(targetTag);
+        if (targetObject != null)
+        {
+            targetPos = new Vector2Int((int)targetObject.transform.position.x, (int)targetObject.transform.position.y);
+        }
+        else
+        {
+            Debug.LogError("우선순위 태그를 가진 목표 오브젝트를 찾을 수 없습니다.");
+        }
+    }
 
     public void PathFinding()
     {
@@ -48,7 +76,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-
         // 시작과 끝 노드, 열린리스트와 닫힌리스트, 마지막리스트 초기화
         StartNode = NodeArray[startPos.x - bottomLeft.x, startPos.y - bottomLeft.y];
         TargetNode = NodeArray[targetPos.x - bottomLeft.x, targetPos.y - bottomLeft.y];
@@ -57,7 +84,7 @@ public class GameManager : MonoBehaviour
         ClosedList = new List<Node>();
         FinalNodeList = new List<Node>();
 
-
+        // 경로 탐색 실행
         while (OpenList.Count > 0)
         {
             // 열린리스트 중 가장 F가 작고 F가 같다면 H가 작은 걸 현재노드로 하고 열린리스트에서 닫힌리스트로 옮기기
@@ -68,8 +95,7 @@ public class GameManager : MonoBehaviour
             OpenList.Remove(CurNode);
             ClosedList.Add(CurNode);
 
-
-            // 마지막
+            // 목표에 도달했을 경우
             if (CurNode == TargetNode)
             {
                 Node TargetCurNode = TargetNode;
@@ -81,12 +107,14 @@ public class GameManager : MonoBehaviour
                 FinalNodeList.Add(StartNode);
                 FinalNodeList.Reverse();
 
-                for (int i = 0; i < FinalNodeList.Count; i++) print(i + "번째는 " + FinalNodeList[i].x + ", " + FinalNodeList[i].y);
+                // 경로를 콘솔에 출력
+                for (int i = 0; i < FinalNodeList.Count; i++)
+                    Debug.Log(i + "번째는 " + FinalNodeList[i].x + ", " + FinalNodeList[i].y);
+
                 return;
             }
 
-
-            // ↗↖↙↘
+            // 대각선 경로 추가 (↗↖↙↘)
             if (allowDiagonal)
             {
                 OpenListAdd(CurNode.x + 1, CurNode.y + 1);
@@ -95,12 +123,14 @@ public class GameManager : MonoBehaviour
                 OpenListAdd(CurNode.x + 1, CurNode.y - 1);
             }
 
-            // ↑ → ↓ ←
+            // 상하좌우 경로 추가 (↑ → ↓ ←)
             OpenListAdd(CurNode.x, CurNode.y + 1);
             OpenListAdd(CurNode.x + 1, CurNode.y);
             OpenListAdd(CurNode.x, CurNode.y - 1);
             OpenListAdd(CurNode.x - 1, CurNode.y);
         }
+
+        Debug.Log("Path not found");
     }
 
     void OpenListAdd(int checkX, int checkY)
@@ -108,19 +138,17 @@ public class GameManager : MonoBehaviour
         // 상하좌우 범위를 벗어나지 않고, 벽이 아니면서, 닫힌리스트에 없다면
         if (checkX >= bottomLeft.x && checkX < topRight.x + 1 && checkY >= bottomLeft.y && checkY < topRight.y + 1 && !NodeArray[checkX - bottomLeft.x, checkY - bottomLeft.y].isWall && !ClosedList.Contains(NodeArray[checkX - bottomLeft.x, checkY - bottomLeft.y]))
         {
-            // 대각선 허용시, 벽 사이로 통과 안됨
+            // 대각선 허용 시, 벽 사이로 통과 안됨
             if (allowDiagonal) if (NodeArray[CurNode.x - bottomLeft.x, checkY - bottomLeft.y].isWall && NodeArray[checkX - bottomLeft.x, CurNode.y - bottomLeft.y].isWall) return;
 
-            // 코너를 가로질러 가지 않을시, 이동 중에 수직수평 장애물이 있으면 안됨
+            // 코너를 가로질러 가지 않을 시, 수직/수평 장애물이 있을 때
             if (dontCrossCorner) if (NodeArray[CurNode.x - bottomLeft.x, checkY - bottomLeft.y].isWall || NodeArray[checkX - bottomLeft.x, CurNode.y - bottomLeft.y].isWall) return;
 
-
-            // 이웃노드에 넣고, 직선은 10, 대각선은 14비용
+            // 이웃 노드에 넣고, 직선은 10, 대각선은 14비용
             Node NeighborNode = NodeArray[checkX - bottomLeft.x, checkY - bottomLeft.y];
             int MoveCost = CurNode.G + (CurNode.x - checkX == 0 || CurNode.y - checkY == 0 ? 10 : 14);
 
-
-            // 이동비용이 이웃노드G보다 작거나 또는 열린리스트에 이웃노드가 없다면 G, H, ParentNode를 설정 후 열린리스트에 추가
+            // 이동비용이 이웃노드 G보다 작거나 또는 열린리스트에 이웃노드가 없다면
             if (MoveCost < NeighborNode.G || !OpenList.Contains(NeighborNode))
             {
                 NeighborNode.G = MoveCost;
@@ -134,7 +162,11 @@ public class GameManager : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        if (FinalNodeList.Count != 0) for (int i = 0; i < FinalNodeList.Count - 1; i++)
+        // 경로가 있는 경우, 경로를 그리기
+        if (FinalNodeList.Count != 0)
+        {
+            for (int i = 0; i < FinalNodeList.Count - 1; i++)
                 Gizmos.DrawLine(new Vector2(FinalNodeList[i].x, FinalNodeList[i].y), new Vector2(FinalNodeList[i + 1].x, FinalNodeList[i + 1].y));
+        }
     }
 }

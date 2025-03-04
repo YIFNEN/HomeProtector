@@ -67,7 +67,7 @@ public class TowerSpawner : MonoBehaviour
         {
             return;
         }
-        TowerTemplate selectedTower = towerTemplates[selectedTowerIndex];
+       /* TowerTemplate selectedTower = towerTemplates[selectedTowerIndex];
 
         if (selectedTower.weapons[0].cost > playerGold.CurrentGold)
         {
@@ -77,7 +77,7 @@ public class TowerSpawner : MonoBehaviour
 
         isOnTowerButton = true;
         followTowerClone = Instantiate(selectedTower.followTowerPrefab);// 임시 타워 생성
-        StartCoroutine("OnTowerCancelSystem");
+        StartCoroutine("OnTowerCancelSystem");*/
     }
 
     void Update()

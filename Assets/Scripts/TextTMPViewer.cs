@@ -30,6 +30,6 @@ public class TextTMPViewer : MonoBehaviour
         textPlayerHP.text = "Hp"+playerHP.CurrentHP + "/" + playerHP.MaxHP;
         textPlayerGold.text = "Gold" + playerGold.CurrentGold.ToString();
         textWave.text = "Wave" + waveSystem.CurrentWave + "/" +waveSystem.MaxWave;
-        textEnemyCount.text = "Count" + enemySpawner.CurrentEnemyCount + "/" + enemySpawner.MaxEnemyCount;
+        textEnemyCount.text = "Count" + enemySpawner.CurrentEnemyCount + "/";// + enemyGroup.count;
     }
 }

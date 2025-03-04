@@ -7,6 +7,9 @@ TagManager:
   - Tile
   - Enemy
   - Goods
+  - Tower
+  - Food
+  - Human
   layers:
   - Default
   - TransparentFX

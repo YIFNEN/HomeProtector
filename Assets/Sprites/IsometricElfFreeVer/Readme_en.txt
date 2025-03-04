@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 //  Isometric Character Animation Tilemap Set Free Ver 1.0
 //
-//  　Data name:　　 ELF_Fighter_Female
+//  ?Data name:?? ELF_Fighter_Female
 //-----------------------------------------------------------
 
 This asset is character tilemap animation data in Isometric/RPG SLG.
@@ -11,13 +11,13 @@ After executing the DEMO scene, you can operate the sample animation with the ke
 Here is a sample DEMO animation:
 
 ・Direction keys Move/stop up/down/left/right along the isometric map chip
-・Z:　 normal attack
-・X:　 throwing attack
-・C:　 Bow and arrow attack
-・V:　 Defense
-・B: 　Items used
-・N: 　attack
-・M:　 Death due to accumulation of damage, etc.
+・Z:? normal attack
+・X:? throwing attack
+・C:? Bow and arrow attack
+・V:? Defense
+・B: ?Items used
+・N: ?attack
+・M:? Death due to accumulation of damage, etc.
 
 png data in the Image folder
 
