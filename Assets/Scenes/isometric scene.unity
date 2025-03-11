@@ -2202,7 +2202,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!82 &842924794
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2727,7 +2727,7 @@ GameObject:
   - component: {fileID: 932831477}
   m_Layer: 0
   m_Name: BedPlayer
-  m_TagString: Food
+  m_TagString: Human
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3191,6 +3191,7 @@ MonoBehaviour:
   defaultTargetTag: Goods
   playerHP: {fileID: 1151113683}
   playerGold: {fileID: 1151113684}
+  targetRefreshInterval: 5
 --- !u!114 &1147920980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6247,6 +6248,9 @@ MonoBehaviour:
   ItemPrefab: {fileID: 6958416031420289738, guid: 1fbc3bb319ccb2b4ab4afcd48eb89c12, type: 3}
   ThrowPrefab: {fileID: 6958416031420289738, guid: 1fbc3bb319ccb2b4ab4afcd48eb89c12, type: 3}
   BowPrefab: {fileID: 6958416031420289738, guid: 1fbc3bb319ccb2b4ab4afcd48eb89c12, type: 3}
+  ArrowPrefab: {fileID: 6958416031420289738, guid: 1fbc3bb319ccb2b4ab4afcd48eb89c12, type: 3}
+  arrowSpeed: 10
+  arrowCooldown: 0.5
   moveSpeed: 3
   shotPointTransform: {fileID: 1832870777}
 --- !u!212 &1924518372
@@ -6396,7 +6400,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1924518370}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 61b50e586075a1f418c233116b735fb9, type: 3}
   m_Name: 
@@ -6556,7 +6560,7 @@ GameObject:
   - component: {fileID: 1978523115}
   m_Layer: 0
   m_Name: Bed
-  m_TagString: Food
+  m_TagString: Human
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

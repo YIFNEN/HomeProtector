@@ -1,6 +1,13 @@
 using UnityEngine;
 
-public enum ProjectileType { Straight, Homing, QuadraticHoming, CubicHoming }
+public enum ProjectileType
+{
+    Straight,
+    Homing,
+    QuadraticHoming,
+    CubicHoming,
+    AreaDamage
+}
 
 public class SkillEmission : MonoBehaviour
 {

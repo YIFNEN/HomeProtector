@@ -5,6 +5,8 @@ using UnityEngine;
 
 public enum WeaponState { SearchTarget = 0, AttackToTarget } //공격 대상 탐색 여부
 
+
+
 public class TowerWeapon : MonoBehaviour
 {
   
@@ -12,8 +14,9 @@ public class TowerWeapon : MonoBehaviour
     private GameObject projectilePrefab; // 발사체 프리팹
     [SerializeField]
     private Transform spawnPoint;
+    [SerializeField] private ProjectileType projectileType = ProjectileType.Straight;
+    [SerializeField] private GameObject[] projectilePrefabs; // Multiple projectile prefab types
 
-    
     private TowerTemplate towerTemplate;
     private int level = 0;
     private WeaponState weaponState = WeaponState.SearchTarget;
@@ -29,6 +32,41 @@ public class TowerWeapon : MonoBehaviour
     public float Range => towerTemplate.weapons[level].range;
     public int Level => level + 1;
     public int MaxLevel => towerTemplate.weapons.Count;
+
+    private void SpawnProjectile()
+    {
+        GameObject projectilePrefab = GetProjectilePrefabByType(projectileType);
+
+        if (projectilePrefab == null)
+        {
+            Debug.LogError($"No prefab found for projectile type: {projectileType}");
+            return;
+        }
+
+        Debug.Log($"Spawning projectile at {spawnPoint.position}");
+        GameObject projectileObj = Instantiate(projectilePrefab, spawnPoint.position, Quaternion.identity);
+
+        // Get the ProjectileBase component
+        ProjectileBase projectileScript = projectileObj.GetComponent<ProjectileBase>();
+
+        // Multiple projectile support with index-based variation
+        int maxCount = 3; // Example: number of simultaneous projectiles
+        for (int i = 0; i < maxCount; i++)
+        {
+            projectileScript.Setup(attackTarget, towerTemplate.weapons[level].damage, maxCount, i);
+        }
+    }
+
+    private GameObject GetProjectilePrefabByType(ProjectileType type)
+    {
+        // This assumes projectilePrefabs array is ordered to match ProjectileType enum
+        int index = (int)type;
+        if (index >= 0 && index < projectilePrefabs.Length)
+        {
+            return projectilePrefabs[index];
+        }
+        return null;
+    }
 
     public void Setup(TowerTemplate template, EnemySpawner enemySpawner, PlayerGold playerGold, Vector3 worldPosition)
     {
@@ -116,28 +154,7 @@ public class TowerWeapon : MonoBehaviour
         }
     }
 
-    private void SpawnProjectile()
-    {
-        Debug.Log($"Spawning projectile at {spawnPoint.position}");
-        GameObject projectileObj = Instantiate(projectilePrefab, spawnPoint.position, Quaternion.identity);
-
-        // Get the Projectile component from the spawned object
-        Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-
-        // Make sure the projectileScript is not null
-        if (projectileScript != null)
-        {
-            // Call Setup and pass the target and attack damage to the projectile
-            projectileScript.Setup(attackTarget, towerTemplate.weapons[level].damage);
-            Debug.Log("Projectile setup complete.");
-        }
-        else
-        {
-            Debug.LogError("Projectile component not found on the spawned object!");
-        }
-
-
-    }
+    
 
     public bool Upgrade()
     {

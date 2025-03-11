@@ -3,7 +3,7 @@ using UnityEngine;
 public abstract class ProjectileBase : MonoBehaviour
 {
 	[SerializeField]
-	private		GameObject			hitEffect;
+	public		GameObject			hitEffect;
 	protected	MovementRigidbody2D	movementRigidbody2D;
 
 	public virtual void Setup(Transform target, float damage, int maxCount=1, int index=0)

@@ -7,17 +7,54 @@ public enum EnemyDestroyType { Kill = 0, Arrive }
 
 public class Enemy : MonoBehaviour
 {
+    [SerializeField]
+    private int gold = 10; // 적 사망시 획득 골드
+
     private Transform target;
     private NavMeshAgent navMeshAgent;
     private EnemySpawner enemySpawner;
+    private Vector3 spawnOffset = Vector3.zero;
+    private Transform customSpawnPoint = null;
+    private string targetTag = "Target"; // 기본 타겟 태그 저장
 
-    [SerializeField]
-    private int gold = 10;// 적 사망시 획득 골드
+    // 현재 타겟에 대한 접근자 추가
+    public Transform CurrentTarget => target;
+    public string TargetTag => targetTag;
 
-    // 적 생성 위치 관련
-    [SerializeField]
-    private Vector3 spawnOffset = Vector3.zero; // 개별 적의 스폰 위치 오프셋
-    private Transform customSpawnPoint = null;  // Added: Custom spawn point for this enemy
+    public void SetSpawnOffset(Vector3 offset)
+    {
+        spawnOffset = offset;
+    }
+
+    public void SetCustomSpawnPoint(Transform spawnPoint)
+    {
+        customSpawnPoint = spawnPoint;
+    }
+
+    public void SetTargetTag(string tag)
+    {
+        if (!string.IsNullOrEmpty(tag))
+        {
+            targetTag = tag;
+        }
+    }
+
+    // 타겟을 변경하는 메서드 추가
+    public void SetTarget(Transform newTarget)
+    {
+        if (newTarget != null && newTarget != target)
+        {
+            target = newTarget;
+
+            // NavMeshAgent 경로 재설정
+            if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
+            {
+                navMeshAgent.SetDestination(target.position);
+            }
+
+            Debug.Log($"Enemy {gameObject.name} target changed to {target.name}");
+        }
+    }
 
     public void Setup(EnemySpawner spawner, Transform target)
     {
@@ -26,24 +63,33 @@ public class Enemy : MonoBehaviour
 
         // NavMeshAgent 설정
         navMeshAgent = GetComponent<NavMeshAgent>();
-        navMeshAgent.updateRotation = false;
-        navMeshAgent.updateUpAxis = false;
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.updateRotation = false;
+            navMeshAgent.updateUpAxis = false;
+        }
+        else
+        {
+            Debug.LogError("NavMeshAgent component not found on enemy!");
+        }
 
         // 스폰 위치 설정
         SetSpawnPosition();
+
+        // 타겟 추가/제거 이벤트 구독
+        if (enemySpawner != null)
+        {
+            enemySpawner.OnTargetAdded += HandleTargetAdded;
+            enemySpawner.OnTargetRemoved += HandleTargetRemoved;
+        }
+
         StartCoroutine("OnMove");
     }
 
-    // Added method to set custom spawn point
-    public void SetCustomSpawnPoint(Transform spawnPoint)
-    {
-        customSpawnPoint = spawnPoint;
-    }
-
     // 스폰 위치를 설정
-    public void SetSpawnPosition()
+    private void SetSpawnPosition()
     {
-        // Get base spawn position using custom point or default logic
+        // 기본 스폰 위치 가져오기
         Vector3 spawnPosition;
         if (customSpawnPoint != null)
         {
@@ -54,7 +100,7 @@ public class Enemy : MonoBehaviour
             spawnPosition = enemySpawner.GetSpawnPosition();
         }
 
-        // Apply individual offset
+        // 개별 오프셋 적용
         spawnPosition += spawnOffset;
 
         // NavMesh 위치로 조정 (가장 가까운 NavMesh 지점 찾기)
@@ -70,42 +116,101 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // 스폰 오프셋 설정 함수 (외부에서 설정 가능)
-    public void SetSpawnOffset(Vector3 offset)
+    // 타겟이 추가되었을 때 호출되는 핸들러
+    private void HandleTargetAdded(string tag, Transform newTarget)
     {
-        spawnOffset = offset;
+        // 현재 사용 중인 태그와 일치하고, 현재 타겟이 없는 경우에만 처리
+        if (tag == targetTag && (target == null || !target.gameObject.activeInHierarchy))
+        {
+            // 현재 위치에서 가장 가까운 새 타겟으로 변경
+            enemySpawner.ReassignTargetForEnemy(this, tag);
+        }
+    }
+
+    // 타겟이 제거되었을 때 호출되는 핸들러
+    private void HandleTargetRemoved(string tag, Transform removedTarget)
+    {
+        // 현재 사용 중인 태그가 일치하고, 현재 타겟이 제거된 타겟인 경우
+        if (tag == targetTag && target == removedTarget)
+        {
+            // 새로운 타겟 찾기
+            Transform newTarget = enemySpawner.ReassignTargetForEnemy(this, tag);
+
+            // 유효한 타겟이 더 이상 없는 경우 처리
+            if (newTarget == null)
+            {
+                Debug.LogWarning($"Enemy {gameObject.name} has no valid target after target removal");
+                // 선택적: 적을 제거하거나 대기 상태로 변경
+            }
+        }
+    }
+
+    private void OnDisable()
+    {
+        // 이벤트 구독 해제
+        if (enemySpawner != null)
+        {
+            enemySpawner.OnTargetAdded -= HandleTargetAdded;
+            enemySpawner.OnTargetRemoved -= HandleTargetRemoved;
+        }
     }
 
     private IEnumerator OnMove()
     {
         if (target == null)
         {
-            Debug.LogError("Target is not assigned for enemy: " + gameObject.name);
-            yield break;
+            // 타겟이 없는 경우 새 타겟 찾기 시도
+            if (enemySpawner != null)
+            {
+                Transform newTarget = enemySpawner.ReassignTargetForEnemy(this, targetTag);
+                if (newTarget == null)
+                {
+                    Debug.LogError("Target is not assigned for enemy: " + gameObject.name);
+                    yield break;
+                }
+            }
+            else
+            {
+                Debug.LogError("EnemySpawner is not assigned for enemy: " + gameObject.name);
+                yield break;
+            }
         }
 
         // 적이 목표지점을 향해 이동
-        navMeshAgent.SetDestination(target.position);
+        if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
+        {
+            navMeshAgent.SetDestination(target.position);
+        }
 
         while (true)
         {
-            // In case target was destroyed during gameplay
+            // 타겟이 파괴된 경우 확인
             if (target == null)
             {
-                OnDie(EnemyDestroyType.Kill);
-                yield break;
+                // 새 타겟 할당 시도
+                Transform newTarget = enemySpawner.ReassignTargetForEnemy(this, targetTag);
+                if (newTarget == null)
+                {
+                    // 유효한 타겟이 없으면 적 제거
+                    OnDie(EnemyDestroyType.Kill);
+                    yield break;
+                }
             }
 
             // 목표에 도달했는지 확인
             if (Vector3.Distance(transform.position, target.position) < 0.5f)
             {
-                gold = 0;
+                gold = 0; // 목표 도달 시 골드는 0
                 OnDie(EnemyDestroyType.Arrive);
                 yield break;
             }
 
             // 목표가 움직일 수 있으므로 지속적으로 목표 위치 업데이트
-            navMeshAgent.SetDestination(target.position);
+            if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled && target != null)
+            {
+                navMeshAgent.SetDestination(target.position);
+            }
+
             yield return null;
         }
     }
