@@ -2,31 +2,26 @@ using UnityEngine;
 
 public abstract class ProjectileBase : MonoBehaviour
 {
-	[SerializeField]
-	public		GameObject			hitEffect;
-	protected	MovementRigidbody2D	movementRigidbody2D;
+    [SerializeField] protected GameObject hitEffect;
+    protected Transform target;
+    protected float damage;
 
-	public virtual void Setup(Transform target, float damage, int maxCount=1, int index=0)
-	{
-		movementRigidbody2D = GetComponent<MovementRigidbody2D>();
-	}
+    public virtual void Setup(Transform target, float damage, int maxCount = 1, int index = 0)
+    {
+        this.target = target;
+        this.damage = damage;
+    }
 
-	private void Update()
-	{
-		Process();
-	}
+    public abstract void Process();
 
-	public abstract void Process();
+    protected virtual void Update()
+    {
+        if (target == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-	private void OnTriggerEnter2D(Collider2D collision)
-	{
-		if ( collision.CompareTag("Enemy") )
-		{
-			Instantiate(hitEffect, transform.position, Quaternion.identity);
-			Destroy(gameObject);
-
-			// 적 캐릭터 피격 처리
-		}
-	}
+        Process();
+    }
 }
-

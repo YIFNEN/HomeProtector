@@ -2,49 +2,78 @@ using UnityEngine;
 
 public class ProjectileCubicHoming : ProjectileBase
 {
-	private	Vector2		start, end, point1, point2;
-	private	float		duration, t = 0f;
-	private	Transform	target;
+    [SerializeField] private float moveSpeed = 6f;
+    private Vector2 startPosition;
+    private Vector2 controlPoint1;
+    private Vector2 controlPoint2;
+    private float journeyTime = 0f;
 
     public override void Setup(Transform target, float damage, int maxCount = 1, int index = 0)
     {
         base.Setup(target, damage);
 
-        if (target == null)
+        startPosition = transform.position;
+
+        if (target != null)
         {
-            Debug.LogError("Target is null in ProjectileCubicHoming.Setup!");
-            Destroy(gameObject); // target이 없으면 발사체 제거
-            return;
+            // 시작점과 목표점 사이에 두 개의 제어점 설정
+            Vector2 targetPosition = target.position;
+            float distance = Vector2.Distance(startPosition, targetPosition);
+
+            // 첫 번째 제어점: 시작점에서 위쪽으로 랜덤 거리
+            controlPoint1 = startPosition + new Vector2(
+                Random.Range(-distance * 0.5f, distance * 0.5f),
+                Random.Range(distance * 0.5f, distance)
+            );
+
+            // 두 번째 제어점: 목표점에서 위쪽으로 랜덤 거리
+            controlPoint2 = targetPosition + new Vector2(
+                Random.Range(-distance * 0.5f, distance * 0.5f),
+                Random.Range(distance * 0.5f, distance)
+            );
         }
-
-        this.target = target;
-        start = transform.position;
-        end = this.target.position;
-
-        if (movementRigidbody2D == null)
-        {
-            Debug.LogError("movementRigidbody2D is null in ProjectileCubicHoming!");
-            return;
-        }
-
-        // 시작 지점에서 목표까지의 거리 계산
-        float distance = Vector3.Distance(start, end);
-        duration = distance / movementRigidbody2D.MoveSpeed;
-
-        float angle = 45;
-        angle += Utils.GetAngleFromPosition(start, end);
-
-        // 곡선 생성
-        point1 = Utils.GetNewPoint(start, angle, distance * 0.3f);
-        point2 = Utils.GetNewPoint(start, angle * -1, distance * 0.7f);
     }
 
-
     public override void Process()
-	{
-		end = target.position;
-		t += Time.deltaTime / duration;
-		transform.position = Utils.CubicCurve(start, point1, point2, end, t);
-	}
-}
+    {
+        if (target == null) return;
 
+        journeyTime += Time.deltaTime * moveSpeed / Vector2.Distance(startPosition, target.position);
+
+        if (journeyTime >= 1f)
+        {
+            // 목표점에 도달
+            transform.position = target.position;
+
+            // 타겟에 데미지 적용
+            EnemyHP enemyHP = target.GetComponent<EnemyHP>();
+            if (enemyHP != null)
+            {
+                enemyHP.TakeDamage(damage);
+            }
+
+            // 히트 이펙트 생성
+            if (hitEffect != null)
+            {
+                Instantiate(hitEffect, transform.position, Quaternion.identity);
+            }
+
+            Destroy(gameObject);
+        }
+        else
+        {
+            // 3차 베지어 곡선을 따라 이동
+            Vector2 currentPosition = Utils.CubicCurve(startPosition, controlPoint1, controlPoint2, target.position, journeyTime);
+            transform.position = currentPosition;
+
+            // 이동 방향으로 회전
+            if (journeyTime > 0)
+            {
+                Vector2 prevPosition = Utils.CubicCurve(startPosition, controlPoint1, controlPoint2, target.position, journeyTime - 0.01f);
+                Vector2 direction = (currentPosition - prevPosition).normalized;
+                float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+                transform.rotation = Quaternion.Euler(0, 0, angle);
+            }
+        }
+    }
+}

@@ -2,65 +2,73 @@ using UnityEngine;
 
 public class ProjectileQuadraticHoming : ProjectileBase
 {
-	private	Vector2		start, end, point;
-	private	float		duration, t = 0f;
-	private	Transform	target;
+    [SerializeField] private float moveSpeed = 6f;
+    private Vector2 startPosition;
+    private Vector2 controlPoint;
+    private float journeyTime = 0f;
+    private float journeyLength = 1f; // 곡선을 완료하는 시간
 
-	public override void Setup(Transform target, float damage, int maxCount = 1, int index = 0)
-	{
-		base.Setup(target, damage);
-
-		this.target	= target;
-		start		= transform.position;
-		end			= this.target.position;
-
-		// 시작 지점에서 목표까지의 거리 계산
-		float distance = Vector3.Distance(start, end);
-		// 재생 시간 설정 (거리 / 이동속도)
-		duration = distance / movementRigidbody2D.MoveSpeed;
-
-		// 모든 발사체의 point를 동일하게 45도 각도 위치로 설정
-		//float angle = 45;
-
-		// 순번에 따라 일정한 각도의 원형으로 위치 설정
-		//float angle = 360 / maxCount * index;
-
-		// 순번에 따라 위 or 아래 대각선(45 or 315도) 위치로 설정
-		float angle = 45 + 270 * (index % 2);
-
-		// 현재 플레이어의 회전 값 적용을 위해 angle 값에 더해준다
-		angle += Utils.GetAngleFromPosition(start, end);
-
-		// 시작지점에서 목표지점 사이의 angle 각도로 30% 떨어진 위치
-		point = Utils.GetNewPoint(start, angle, distance * 0.3f);
-
-		// point 위치 확인을 위한 디버깅 코드 [결과 확인 후 삭제]
-		GameObject clone = Instantiate(gameObject, point, Quaternion.identity);
-		clone.GetComponent<ProjectileQuadraticHoming>().enabled = false;
-		clone.GetComponentInChildren<SpriteRenderer>().color = Color.black;
-	}
-
-public override void Process()
-{
-    if (target == null)
+    public override void Setup(Transform target, float damage, int maxCount = 1, int index = 0)
     {
-        Debug.LogError("Target is null!");
-        Destroy(gameObject);
-        return;
+        base.Setup(target, damage);
+
+        startPosition = transform.position;
+
+        if (target != null)
+        {
+            // 시작점과 목표점 사이에 제어점 설정
+            Vector2 targetPosition = target.position;
+            float angle = Random.Range(0f, 360f); // 임의의 각도로 제어점 설정
+            float distance = Vector2.Distance(startPosition, targetPosition) * 0.5f;
+
+            // 제어점 계산
+            controlPoint = startPosition + new Vector2(
+                Mathf.Cos(angle * Mathf.Deg2Rad) * distance,
+                Mathf.Sin(angle * Mathf.Deg2Rad) * distance
+            );
+        }
     }
 
-    end = target.position;
-    t += Time.deltaTime / duration;
-    t = Mathf.Clamp01(t); // t 범위 제한
-
-    if (float.IsNaN(t) || float.IsInfinity(t))
+    public override void Process()
     {
-        Debug.LogError($"Invalid t value: {t}");
-        return;
+        if (target == null) return;
+
+        journeyTime += Time.deltaTime * moveSpeed / Vector2.Distance(startPosition, target.position);
+
+        if (journeyTime >= 1f)
+        {
+            // 목표점에 도달
+            transform.position = target.position;
+
+            // 타겟에 데미지 적용
+            EnemyHP enemyHP = target.GetComponent<EnemyHP>();
+            if (enemyHP != null)
+            {
+                enemyHP.TakeDamage(damage);
+            }
+
+            // 히트 이펙트 생성
+            if (hitEffect != null)
+            {
+                Instantiate(hitEffect, transform.position, Quaternion.identity);
+            }
+
+            Destroy(gameObject);
+        }
+        else
+        {
+            // 2차 베지어 곡선을 따라 이동
+            Vector2 currentPosition = Utils.QuadraticCurve(startPosition, controlPoint, target.position, journeyTime);
+            transform.position = currentPosition;
+
+            // 이동 방향으로 회전
+            if (journeyTime > 0)
+            {
+                Vector2 prevPosition = Utils.QuadraticCurve(startPosition, controlPoint, target.position, journeyTime - 0.01f);
+                Vector2 direction = (currentPosition - prevPosition).normalized;
+                float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+                transform.rotation = Quaternion.Euler(0, 0, angle);
+            }
+        }
     }
-
-    transform.position = Utils.QuadraticCurve(start, point, end, t);
 }
-
-}
-

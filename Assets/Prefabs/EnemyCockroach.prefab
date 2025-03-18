@@ -25,13 +25,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1049765106919035159}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: 0.27035147, w: -0.9627617}
+  m_LocalPosition: {x: -0.034, y: -0.125, z: 0}
+  m_LocalScale: {x: 1.3674, y: 0.9755, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3820741013839462605}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -31.37}
 --- !u!212 &1514821696007854864
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -235,9 +235,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 699729e3afe17fe4e9b1d6fa4a6f06d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetObject: {fileID: 0}
   gold: 2
-  spawnOffset: {x: 9, y: 1.3, z: 0}
 --- !u!58 &-1513795506214885510
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -270,9 +268,9 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.08025497, y: 0.1632644}
+  m_Offset: {x: -0.014127657, y: -0.0030673444}
   serializedVersion: 2
-  m_Radius: 0.295
+  m_Radius: 0.17813665
 --- !u!114 &1352645324521225916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,7 +293,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 8385226143460851807}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.1
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -307,4 +305,4 @@ NavMeshAgent:
   m_Height: 1.5
   m_BaseOffset: 0.32
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_ObstacleAvoidanceType: 1

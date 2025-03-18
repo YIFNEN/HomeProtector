@@ -1,21 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public enum WeaponState { SearchTarget = 0, AttackToTarget } //공격 대상 탐색 여부
 
-
-
 public class TowerWeapon : MonoBehaviour
 {
-  
     [SerializeField]
-    private GameObject projectilePrefab; // 발사체 프리팹
+    private GameObject projectilePrefab; // 단일 발사체 프리팹
     [SerializeField]
     private Transform spawnPoint;
-    [SerializeField] private ProjectileType projectileType = ProjectileType.Straight;
-    [SerializeField] private GameObject[] projectilePrefabs; // Multiple projectile prefab types
 
     private TowerTemplate towerTemplate;
     private int level = 0;
@@ -35,11 +29,9 @@ public class TowerWeapon : MonoBehaviour
 
     private void SpawnProjectile()
     {
-        GameObject projectilePrefab = GetProjectilePrefabByType(projectileType);
-
         if (projectilePrefab == null)
         {
-            Debug.LogError($"No prefab found for projectile type: {projectileType}");
+            Debug.LogError("No projectile prefab assigned to tower");
             return;
         }
 
@@ -49,23 +41,15 @@ public class TowerWeapon : MonoBehaviour
         // Get the ProjectileBase component
         ProjectileBase projectileScript = projectileObj.GetComponent<ProjectileBase>();
 
-        // Multiple projectile support with index-based variation
-        int maxCount = 3; // Example: number of simultaneous projectiles
-        for (int i = 0; i < maxCount; i++)
+        if (projectileScript == null)
         {
-            projectileScript.Setup(attackTarget, towerTemplate.weapons[level].damage, maxCount, i);
+            Debug.LogError($"No ProjectileBase component found on prefab: {projectilePrefab.name}");
+            Destroy(projectileObj);
+            return;
         }
-    }
 
-    private GameObject GetProjectilePrefabByType(ProjectileType type)
-    {
-        // This assumes projectilePrefabs array is ordered to match ProjectileType enum
-        int index = (int)type;
-        if (index >= 0 && index < projectilePrefabs.Length)
-        {
-            return projectilePrefabs[index];
-        }
-        return null;
+        // Setup the projectile
+        projectileScript.Setup(attackTarget, towerTemplate.weapons[level].damage);
     }
 
     public void Setup(TowerTemplate template, EnemySpawner enemySpawner, PlayerGold playerGold, Vector3 worldPosition)
@@ -95,7 +79,6 @@ public class TowerWeapon : MonoBehaviour
         {
             RotateToTarget();
         }
-
     }
 
     private void RotateToTarget()
@@ -154,14 +137,11 @@ public class TowerWeapon : MonoBehaviour
         }
     }
 
-    
-
     public bool Upgrade()
     {
         if (level + 1 >= towerTemplate.weapons.Count || playerGold.CurrentGold < towerTemplate.weapons[level + 1].cost)
-        { 
-            return false; 
-
+        {
+            return false;
         }
         level++;
         spriteRenderer.sprite = towerTemplate.weapons[level].sprite;
@@ -173,11 +153,10 @@ public class TowerWeapon : MonoBehaviour
     public void Sell()
     {
         playerGold.CurrentGold += towerTemplate.weapons[level].sell;
-        
+
         Vector3Int cellposition = FindObjectOfType<Grid>().WorldToCell(transform.position);
         FindObjectOfType<TowerSpawner>().RemoveTower(cellposition);
 
         Destroy(gameObject);
     }
 }
-

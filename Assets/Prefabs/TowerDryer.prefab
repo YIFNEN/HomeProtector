@@ -133,9 +133,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   projectilePrefab: {fileID: 2777279350721899029, guid: 44489083cff375d4aa63a379f35125dd, type: 3}
   spawnPoint: {fileID: 440144251034166792}
-  projectileType: 4
-  projectilePrefabs:
-  - {fileID: 2777279350721899029, guid: 44489083cff375d4aa63a379f35125dd, type: 3}
 --- !u!61 &-6842561234153425761
 BoxCollider2D:
   m_ObjectHideFlags: 0
