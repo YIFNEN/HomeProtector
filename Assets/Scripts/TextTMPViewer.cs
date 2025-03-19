@@ -8,7 +8,7 @@ public class TextTMPViewer : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI textPlayerHP;
     [SerializeField]
-    private GoodsBoxHP playerHP;
+    private ResourceManager HealthRatio;
     [SerializeField]
     private TextMeshProUGUI textPlayerGold;
     [SerializeField]
@@ -27,7 +27,7 @@ public class TextTMPViewer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        textPlayerHP.text = "Hp"+playerHP.CurrentHP + "/" + playerHP.MaxHP;
+        textPlayerHP.text = "Hp"+ HealthRatio.TotalHealthRatio;
         textPlayerGold.text = "Gold" + playerGold.CurrentGold.ToString();
         textWave.text = "Wave" + waveSystem.CurrentWave + "/" +waveSystem.MaxWave;
         textEnemyCount.text = "Count" + enemySpawner.CurrentEnemyCount + "/";// + enemyGroup.count;

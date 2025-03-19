@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: -1513795506214885510}
   - component: {fileID: 1352645324521225916}
   - component: {fileID: 5719178545988688887}
+  - component: {fileID: 6283688517200252502}
   m_Layer: 0
   m_Name: EnemyCockroach
   m_TagString: Enemy
@@ -236,6 +237,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gold: 2
+  expValue: 20
+  targetTagPriority:
+  - Food
+  - Goods
+  - Human
+  targetSearchRadius: 100
+  targetUpdateInterval: 1
+  hasAttack: 1
 --- !u!58 &-1513795506214885510
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -306,3 +315,30 @@ NavMeshAgent:
   m_BaseOffset: 0.32
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 1
+--- !u!114 &6283688517200252502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385226143460851807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b4f5468c74ed5c4596ef0af94081a11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackType: 1
+  attackRange: 10
+  attackRate: 1
+  attackDamage: 2
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 8
+  targetTags:
+  - Food
+  - Human
+  - Goods
+  projectilePrefab: {fileID: 0}
+  attackPoint: {fileID: 0}
+  attackEffect: {fileID: 0}
+  attackSound: {fileID: 0}

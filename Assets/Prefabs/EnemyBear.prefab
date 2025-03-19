@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 2237812411989218868}
   - component: {fileID: 8270768917759235434}
   - component: {fileID: 1185852398566515594}
+  - component: {fileID: 2728377720385657021}
   m_Layer: 0
   m_Name: EnemyBear
   m_TagString: Enemy
@@ -151,9 +152,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 699729e3afe17fe4e9b1d6fa4a6f06d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetObject: {fileID: 0}
   gold: 30
-  spawnOffset: {x: 0.5, y: 6, z: 0}
+  expValue: 20
+  targetTagPriority:
+  - Food
+  - Goods
+  - Human
+  targetSearchRadius: 10
+  targetUpdateInterval: 1
+  hasAttack: 1
 --- !u!58 &2237812411989218868
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -224,6 +231,33 @@ NavMeshAgent:
   m_BaseOffset: 0.16
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &2728377720385657021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3414869680251919639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b4f5468c74ed5c4596ef0af94081a11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackType: 1
+  attackRange: 0.1
+  attackRate: 1
+  attackDamage: 2
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 8
+  targetTags:
+  - Food
+  - Human
+  - Goods
+  projectilePrefab: {fileID: 0}
+  attackPoint: {fileID: 0}
+  attackEffect: {fileID: 0}
+  attackSound: {fileID: 0}
 --- !u!1 &5726034044119463948
 GameObject:
   m_ObjectHideFlags: 0

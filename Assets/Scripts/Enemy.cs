@@ -7,19 +7,45 @@ public enum EnemyDestroyType { Kill = 0, Arrive }
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField]
-    private int gold = 10; // 적 사망시 획득 골드
+    [Header("Basic Settings")]
+    [SerializeField] private int gold = 10; // 적 사망시 획득 골드
+    [SerializeField] private int expValue = 20; // 적 사망시 획득 경험치
 
-    private Transform target;
+    [Header("Target Selection")]
+    [SerializeField] public string[] targetTagPriority = { "Food", "Gooods", "Human" }; // 타겟 태그 우선순위
+    [SerializeField] private float targetSearchRadius = 10f; // 타겟 검색 범위
+    [SerializeField] private float targetUpdateInterval = 1f; // 타겟 갱신 주기 (초)
+
+    [Header("Attack Settings")]
+    [SerializeField] private bool hasAttack = true; // 공격 기능 활성화 여부
+
+    private Transform target; // 현재 타겟
     private NavMeshAgent navMeshAgent;
     private EnemySpawner enemySpawner;
+    private EnemyHP enemyHP;
+    private EnemyAttack enemyAttack;
     private Vector3 spawnOffset = Vector3.zero;
     private Transform customSpawnPoint = null;
     private string targetTag = "Target"; // 기본 타겟 태그 저장
+    private float lastTargetSearchTime; // 마지막 타겟 검색 시간
 
     // 현재 타겟에 대한 접근자 추가
     public Transform CurrentTarget => target;
     public string TargetTag => targetTag;
+    public int GoldValue => gold;
+    public int ExpValue => expValue;
+
+    private void Awake()
+    {
+        enemyHP = GetComponent<EnemyHP>();
+        enemyAttack = GetComponent<EnemyAttack>();
+
+        // 공격 컴포넌트가 없으면서 공격 기능이 활성화된 경우, 컴포넌트 추가
+        if (hasAttack && enemyAttack == null)
+        {
+            enemyAttack = gameObject.AddComponent<EnemyAttack>();
+        }
+    }
 
     public void SetSpawnOffset(Vector3 offset)
     {
@@ -83,6 +109,13 @@ public class Enemy : MonoBehaviour
             enemySpawner.OnTargetRemoved += HandleTargetRemoved;
         }
 
+        // 초기 타겟이 없으면 새 타겟 찾기
+        if (target == null)
+        {
+            target = FindTargetByPriority();
+        }
+
+        // 이동 코루틴 시작
         StartCoroutine("OnMove");
     }
 
@@ -103,6 +136,9 @@ public class Enemy : MonoBehaviour
         // 개별 오프셋 적용
         spawnPosition += spawnOffset;
 
+        // IsometricView를 위한 z 위치 조정 (y와 동일하게)
+        spawnPosition.z = spawnPosition.y;
+
         // NavMesh 위치로 조정 (가장 가까운 NavMesh 지점 찾기)
         NavMeshHit hit;
         if (NavMesh.SamplePosition(spawnPosition, out hit, 5f, NavMesh.AllAreas))
@@ -119,30 +155,116 @@ public class Enemy : MonoBehaviour
     // 타겟이 추가되었을 때 호출되는 핸들러
     private void HandleTargetAdded(string tag, Transform newTarget)
     {
-        // 현재 사용 중인 태그와 일치하고, 현재 타겟이 없는 경우에만 처리
-        if (tag == targetTag && (target == null || !target.gameObject.activeInHierarchy))
+        // 현재 타겟이 없는 경우에만 처리
+        if (target == null)
         {
-            // 현재 위치에서 가장 가까운 새 타겟으로 변경
-            enemySpawner.ReassignTargetForEnemy(this, tag);
+            SearchForNewTarget();
+        }
+        // 또는 현재 타겟과 같은 태그의 새 타겟이 추가되었고, 현재 타겟이 유효하지 않다면
+        else if (tag == targetTag && !IsTargetValid(target))
+        {
+            SearchForNewTarget();
         }
     }
 
     // 타겟이 제거되었을 때 호출되는 핸들러
     private void HandleTargetRemoved(string tag, Transform removedTarget)
     {
-        // 현재 사용 중인 태그가 일치하고, 현재 타겟이 제거된 타겟인 경우
-        if (tag == targetTag && target == removedTarget)
+        // 현재 타겟이 제거된 타겟인 경우
+        if (target == removedTarget)
         {
-            // 새로운 타겟 찾기
-            Transform newTarget = enemySpawner.ReassignTargetForEnemy(this, tag);
+            SearchForNewTarget();
+        }
+    }
 
-            // 유효한 타겟이 더 이상 없는 경우 처리
+    // 새 타겟 찾기
+    private void SearchForNewTarget()
+    {
+        // 우선순위에 따라 새 타겟 찾기
+        Transform newTarget = FindTargetByPriority();
+
+        if (newTarget != null)
+        {
+            SetTarget(newTarget);
+        }
+        else if (enemySpawner != null)
+        {
+            // EnemySpawner에 타겟 재할당 요청
+            newTarget = enemySpawner.ReassignTargetForEnemy(this, targetTag);
+
+            // 그래도 타겟이 없다면 경고
             if (newTarget == null)
             {
-                Debug.LogWarning($"Enemy {gameObject.name} has no valid target after target removal");
-                // 선택적: 적을 제거하거나 대기 상태로 변경
+                Debug.LogWarning($"Enemy {gameObject.name} couldn't find any target after search");
             }
         }
+    }
+
+    // 우선순위에 따른 타겟 찾기
+    private Transform FindTargetByPriority()
+    {
+        // 마지막 검색 시간 갱신
+        lastTargetSearchTime = Time.time;
+
+        // 우선순위 태그 배열이 비어있으면 기본 태그 사용
+        if (targetTagPriority.Length == 0)
+        {
+            return FindClosestTargetWithTag(targetTag);
+        }
+
+        // 우선순위에 따라 타겟 검색
+        foreach (string tag in targetTagPriority)
+        {
+            Transform foundTarget = FindClosestTargetWithTag(tag);
+            if (foundTarget != null)
+            {
+                // 태그 저장 및 타겟 반환
+                targetTag = tag;
+                return foundTarget;
+            }
+        }
+
+        // 아무 타겟도 못찾으면 null 반환
+        return null;
+    }
+
+    // 특정 태그를 가진 가장 가까운 타겟 찾기
+    private Transform FindClosestTargetWithTag(string tag)
+    {
+        GameObject[] taggedObjects = GameObject.FindGameObjectsWithTag(tag);
+        Transform closestTarget = null;
+        float closestDistance = targetSearchRadius;
+
+        foreach (GameObject obj in taggedObjects)
+        {
+            // 유효한지 확인
+            if (!IsTargetValid(obj.transform))
+                continue;
+
+            float distance = Vector3.Distance(transform.position, obj.transform.position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestTarget = obj.transform;
+            }
+        }
+
+        return closestTarget;
+    }
+
+    // 타겟이 유효한지 확인
+    private bool IsTargetValid(Transform checkTarget)
+    {
+        // null이거나 비활성화된 경우
+        if (checkTarget == null || !checkTarget.gameObject.activeInHierarchy)
+            return false;
+
+        // ResourceObject인 경우 체력 확인
+        ResourceObject resource = checkTarget.GetComponent<ResourceObject>();
+        if (resource != null && resource.CurrentHP <= 0)
+            return false;
+
+        return true;
     }
 
     private void OnDisable()
@@ -157,59 +279,59 @@ public class Enemy : MonoBehaviour
 
     private IEnumerator OnMove()
     {
-        if (target == null)
-        {
-            // 타겟이 없는 경우 새 타겟 찾기 시도
-            if (enemySpawner != null)
-            {
-                Transform newTarget = enemySpawner.ReassignTargetForEnemy(this, targetTag);
-                if (newTarget == null)
-                {
-                    Debug.LogError("Target is not assigned for enemy: " + gameObject.name);
-                    yield break;
-                }
-            }
-            else
-            {
-                Debug.LogError("EnemySpawner is not assigned for enemy: " + gameObject.name);
-                yield break;
-            }
-        }
-
-        // 적이 목표지점을 향해 이동
-        if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
-        {
-            navMeshAgent.SetDestination(target.position);
-        }
-
         while (true)
         {
-            // 타겟이 파괴된 경우 확인
-            if (target == null)
+            // 타겟이 없거나 유효하지 않은 경우
+            if (target == null || !IsTargetValid(target))
             {
-                // 새 타겟 할당 시도
-                Transform newTarget = enemySpawner.ReassignTargetForEnemy(this, targetTag);
-                if (newTarget == null)
+                // 일정 시간마다 새 타겟 검색
+                if (Time.time - lastTargetSearchTime >= targetUpdateInterval)
                 {
-                    // 유효한 타겟이 없으면 적 제거
-                    OnDie(EnemyDestroyType.Kill);
-                    yield break;
+                    SearchForNewTarget();
+
+                    // 그래도 타겟이 없다면
+                    if (target == null)
+                    {
+                        Debug.LogWarning($"Enemy {gameObject.name} couldn't find any target, waiting...");
+                        yield return new WaitForSeconds(1f); // 잠시 대기
+                        continue;
+                    }
                 }
             }
 
-            // 목표에 도달했는지 확인
-            if (Vector3.Distance(transform.position, target.position) < 0.5f)
-            {
-                gold = 0; // 목표 도달 시 골드는 0
-                OnDie(EnemyDestroyType.Arrive);
-                yield break;
-            }
-
-            // 목표가 움직일 수 있으므로 지속적으로 목표 위치 업데이트
-            if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled && target != null)
+            // 타겟이 있으면 NavMeshAgent로 이동
+            if (target != null && navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
             {
                 navMeshAgent.SetDestination(target.position);
+
+                // 목표에 도달했는지 확인
+                float distanceToTarget = Vector3.Distance(transform.position, target.position);
+                if (distanceToTarget < 0.5f)
+                {
+                    // ResourceObject인 경우
+                    ResourceObject resource = target.GetComponent<ResourceObject>();
+                    if (resource != null)
+                    {
+                        // 리소스 파괴 후 다음 타겟 검색
+                        yield return new WaitForSeconds(0.5f); // 잠시 대기
+                        SearchForNewTarget();
+                        continue;
+                    }
+                    else
+                    {
+                        // 기본 목적지 도달 처리
+                        gold = 0; // 목표 도달 시 골드는 0
+                        expValue = 0; // 목표 도달 시 경험치도 0
+                        OnDie(EnemyDestroyType.Arrive);
+                        yield break;
+                    }
+                }
             }
+
+            // IsometricView를 위한 z 위치 조정 (y와 동일하게)
+            Vector3 position = transform.position;
+            position.z = position.y;
+            transform.position = position;
 
             yield return null;
         }
@@ -221,6 +343,15 @@ public class Enemy : MonoBehaviour
         {
             Debug.LogError("EnemySpawner is not assigned! Check the Setup method.");
             return; // NullReferenceException 방지
+        }
+
+        // 플레이어 경험치 참조 가져오기
+        PlayerExperience playerExperience = FindObjectOfType<PlayerExperience>();
+
+        // KILL일 경우 경험치 부여
+        if (type == EnemyDestroyType.Kill && playerExperience != null)
+        {
+            playerExperience.AddExperienceForEnemy(type, expValue);
         }
 
         enemySpawner.DestroyEnemy(type, this, gold);

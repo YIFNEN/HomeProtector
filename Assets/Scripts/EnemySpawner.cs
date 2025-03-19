@@ -12,9 +12,8 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField]
     private Transform canvasTransform;
     [SerializeField]
-    private string defaultTargetTag = "Target"; // 기본 타겟 태그
-    [SerializeField]
-    private GoodsBoxHP playerHP;
+    private string defaultTargetTag = "Goods"; // 기본 타겟 태그
+
     [SerializeField]
     private PlayerGold playerGold;
     [SerializeField]
@@ -381,11 +380,7 @@ public class EnemySpawner : MonoBehaviour
 
     public void DestroyEnemy(EnemyDestroyType type, Enemy enemy, int gold)
     {
-        if (type == EnemyDestroyType.Arrive)
-        {
-            playerHP.TakeDamage(1);
-        }
-        else if (type == EnemyDestroyType.Kill)
+        if (type == EnemyDestroyType.Kill)
         {
             playerGold.CurrentGold += gold;
         }
