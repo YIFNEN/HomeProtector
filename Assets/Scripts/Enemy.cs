@@ -8,8 +8,8 @@ public enum EnemyDestroyType { Kill = 0, Arrive }
 public class Enemy : MonoBehaviour
 {
     [Header("Basic Settings")]
-    [SerializeField] private int gold = 10; // Àû »ç¸Á½Ã È¹µæ °ñµå
-    [SerializeField] private int expValue = 20; // Àû »ç¸Á½Ã È¹µæ °æÇèÄ¡
+    [SerializeField] public int gold = 10; // Àû »ç¸Á½Ã È¹µæ °ñµå
+    [SerializeField] public int expValue = 20; // Àû »ç¸Á½Ã È¹µæ °æÇèÄ¡
 
     [Header("Target Selection")]
     [SerializeField] public string[] targetTagPriority = { "Food", "Gooods", "Human" }; // Å¸°Ù ÅÂ±× ¿ì¼±¼øÀ§

@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gold: 30
-  expValue: 20
+  expValue: 50
   targetTagPriority:
   - Food
   - Goods
@@ -245,8 +245,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 1
   attackRange: 0.1
-  attackRate: 1
-  attackDamage: 2
+  attackRate: 0.3
+  attackDamage: 4
   targetLayers:
     serializedVersion: 2
     m_Bits: 8

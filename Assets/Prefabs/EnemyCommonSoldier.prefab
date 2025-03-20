@@ -329,7 +329,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 1
   attackRange: 0.1
-  attackRate: 1
+  attackRate: 0.8
   attackDamage: 2
   targetLayers:
     serializedVersion: 2
