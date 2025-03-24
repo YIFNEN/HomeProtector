@@ -8,7 +8,7 @@ using TMPro;
 public class WaveResultSystem : MonoBehaviour
 {
     [Header("Victory/Defeat Settings")]
-    [SerializeField] private float healthRatioDefeatThreshold = 0.3f; // 패배 조건: 체력 비율 임계값 (기본 30%)
+    [SerializeField] private float healthRatioDefeatThreshold = 0.4f; // 패배 조건: 체력 비율 임계값 (기본 40%)
     [SerializeField] private float victoryRewardMultiplier = 1.5f; // 승리 시 보상 배율
 
     [Header("UI Elements")]

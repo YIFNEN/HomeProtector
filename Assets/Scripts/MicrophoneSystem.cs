@@ -778,6 +778,15 @@ public class MicrophoneSystem : MonoBehaviour
         if (playerMovement != null && timeSystem != null && timeSystem.CurrentTime == TimeOfDay.Evening)
         {
             playerMovement.SetAttackEnabled(true);
+            // 저녁 모드에서 Bow 애니메이션 트리거 활성화
+            Animator animator = _playerObject.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.SetTrigger("Bow");
+
+                // 지속적인 Bow 애니메이션 실행을 위한 코루틴 시작
+                StartCoroutine(ContinuousBowAnimation(animator));
+            }
         }
 
         // 한 번만 사용 가능한 경우 사용 완료 처리
@@ -801,7 +810,19 @@ public class MicrophoneSystem : MonoBehaviour
 
         if (verbose) Debug.Log($"플레이어 활성화됨: 위치 {position}");
     }
+    // Bow 애니메이션을 지속적으로 실행하는 코루틴
+    private IEnumerator ContinuousBowAnimation(Animator animator)
+    {
+        // 플레이어가 활성화되어 있는 동안 반복
+        while (_playerObject != null && _playerObject.activeSelf)
+        {
+            // Bow 애니메이션 트리거
+            animator.SetTrigger("Bow");
 
+            // 애니메이션 길이에 맞춰 대기 (약 1초)
+            yield return new WaitForSeconds(1.0f);
+        }
+    }
     // 플레이어 즉시 비활성화 (외부에서 호출 가능)
     public void DeactivatePlayer()
     {

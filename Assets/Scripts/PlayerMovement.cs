@@ -22,7 +22,9 @@ public class PlayerMovement : MonoBehaviour
     private Animator animator; // 애니메이터 컴포넌트
     private Vector2 lastDirection = new Vector2(1, 0); // 기본적으로 오른쪽을 바라봄
     private PlayerExperience playerExperience; // 플레이어 경험치 시스템 참조
-
+    // TimeSystem 참조 추가
+    private TimeSystem timeSystem;
+    private bool isEveningBowTriggered = false; // 밤 모드에서 Bow 애니메이션 실행 여부 추적
     // Start: 컴포넌트 초기화
     void Start()
     {
@@ -34,6 +36,16 @@ public class PlayerMovement : MonoBehaviour
         if (playerExperience == null)
         {
             playerExperience = FindObjectOfType<PlayerExperience>();
+        }
+
+        // TimeSystem 찾기
+        timeSystem = FindObjectOfType<TimeSystem>();
+
+        // TimeSystem 이벤트 구독
+        if (timeSystem != null)
+        {
+            timeSystem.onEveningStart.AddListener(OnEveningStart);
+            timeSystem.onMorningStart.AddListener(OnMorningStart);
         }
     }
 
@@ -70,6 +82,12 @@ public class PlayerMovement : MonoBehaviour
         {
             // 공격이 비활성화된 경우 제한된 액션만 처리
             HandleActionsWithAttackToggle();
+        }
+        if (timeSystem != null && timeSystem.CurrentTime == TimeOfDay.Evening && !isEveningBowTriggered)
+        {
+            animator.SetTrigger("Bow");
+            isEveningBowTriggered = true;
+            Debug.Log("밤 모드 감지 - Bow 애니메이션 트리거됨");
         }
 
         // 이동 처리 (Isometric 뷰에 맞게 조정)
@@ -264,5 +282,34 @@ public class PlayerMovement : MonoBehaviour
             StopCoroutine("ThrowCoroutine");
             canShootArrow = true; // 공격 가능 상태로 리셋
         }
+    }
+
+    // OnDestroy: 이벤트 구독 해제
+    private void OnDestroy()
+    {
+        if (timeSystem != null)
+        {
+            timeSystem.onEveningStart.RemoveListener(OnEveningStart);
+            timeSystem.onMorningStart.RemoveListener(OnMorningStart);
+        }
+    }
+
+    // 저녁 모드 시작 이벤트 핸들러
+    private void OnEveningStart()
+    {
+        // 저녁(밤) 모드일 때 Bow 애니메이션 트리거
+        if (animator != null)
+        {
+            animator.SetTrigger("Bow");
+            isEveningBowTriggered = true;
+            Debug.Log("밤 모드 시작 - Bow 애니메이션 트리거됨");
+        }
+    }
+
+    // 아침 모드 시작 이벤트 핸들러
+    private void OnMorningStart()
+    {
+        // 아침 모드로 돌아올 때 플래그 리셋
+        isEveningBowTriggered = false;
     }
 }
