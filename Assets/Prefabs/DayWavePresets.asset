@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6d6d0b90ccd75b45a60e5bea26b451b, type: 3}
+  m_Name: DayWavePresets
+  m_EditorClassIdentifier: 
+  dayWavePresets:
+  - presetName: 
+    day: 0
+    dayRangeStart: 0
+    dayRangeEnd: 0
+    presetType: 0
+    templateNames: []
+    waves: []
+    difficultyMultiplier: 0.5
+  - presetName: 
+    day: 0
+    dayRangeStart: 0
+    dayRangeEnd: 0
+    presetType: 0
+    templateNames: []
+    waves: []
+    difficultyMultiplier: 0
+  - presetName: 
+    day: 0
+    dayRangeStart: 0
+    dayRangeEnd: 0
+    presetType: 0
+    templateNames: []
+    waves: []
+    difficultyMultiplier: 0
+  waveTemplates: []

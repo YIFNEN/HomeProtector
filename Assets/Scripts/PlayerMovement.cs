@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     private bool canShootArrow = true; // 화살 발사 가능 여부
 
     [SerializeField] private float moveSpeed = 5f; // 이동 속도
+    [SerializeField] private bool attackEnabled = true; // 공격 가능 여부
 
     private Rigidbody2D rb; // 리지드바디 컴포넌트
     private Animator animator; // 애니메이터 컴포넌트
@@ -60,8 +61,16 @@ public class PlayerMovement : MonoBehaviour
             animator.SetBool("Walk", false);
         }
 
-        // 액션 처리
-        HandleActions();
+        // 액션 처리 - 공격 활성화 여부에 따라 다른 메서드 호출
+        if (attackEnabled)
+        {
+            HandleActions();
+        }
+        else
+        {
+            // 공격이 비활성화된 경우 제한된 액션만 처리
+            HandleActionsWithAttackToggle();
+        }
 
         // 이동 처리 (Isometric 뷰에 맞게 조정)
         MovePlayer(horizontal, vertical);
@@ -126,6 +135,22 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.C) && canShootArrow)
         {
             StartCoroutine(ShootArrowCoroutine());
+        }
+    }
+
+    // 공격이 비활성화된 경우의 액션 처리 메소드
+    private void HandleActionsWithAttackToggle()
+    {
+        // 비공격 액션만 처리
+        // 데미지 받기 액션 (테스트용)
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            animator.SetTrigger("Damage");
+        }
+        // 사망 및 부활 액션 (테스트용)
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            StartCoroutine(DeathAndReviveCoroutine());
         }
     }
 
@@ -225,6 +250,19 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             Debug.LogWarning("Arrow prefab does not have ArrowManager component!");
+        }
+    }
+
+    // 공격 활성화/비활성화 메소드
+    public void SetAttackEnabled(bool enabled)
+    {
+        attackEnabled = enabled;
+        // 공격 비활성화시 진행 중인 공격 코루틴 중지
+        if (!enabled)
+        {
+            StopCoroutine("ShootArrowCoroutine");
+            StopCoroutine("ThrowCoroutine");
+            canShootArrow = true; // 공격 가능 상태로 리셋
         }
     }
 }

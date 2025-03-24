@@ -10,21 +10,13 @@ public class ProjectileStraight : ProjectileBase
     {
         base.Setup(target, damage);
 
-        // 타겟 방향으로 발사
-        if (target != null)
-        {
-            moveDirection = (target.position - transform.position).normalized;
-        }
-        else
-        {
-            moveDirection = transform.right; // 기본적으로 오른쪽 방향
-        }
+        // 기본 이동 방향 설정
+        moveDirection = Vector3.right; // 기본적으로 오른쪽 방향
 
-        // 좌우반전 상태에 따라 이동 방향 조정
+        // 좌우반전 상태에 따라 이동 방향 결정
         if (isFlipped)
         {
-            // X 방향만 반전
-            moveDirection.x = -moveDirection.x;
+            moveDirection = Vector3.left; // 반전된 경우 왼쪽 방향
         }
 
         // 발사체 회전
@@ -36,32 +28,11 @@ public class ProjectileStraight : ProjectileBase
     {
         isFlipped = flipped;
 
-        // 이미 설정된 이동 방향이 있다면 방향 업데이트
-        if (moveDirection != Vector3.zero)
-        {
-            if (isFlipped)
-            {
-                // 이미 반전된 상태가 아니라면 방향 반전
-                if (moveDirection.x > 0)
-                {
-                    moveDirection.x = -moveDirection.x;
-                }
-            }
-            else
-            {
-                // 반전을 해제하는 경우라면 양수로 만들기
-                if (moveDirection.x < 0)
-                {
-                    moveDirection.x = -moveDirection.x;
-                }
-            }
+        // 이동 방향 설정
+        moveDirection = isFlipped ? Vector3.left : Vector3.right;
 
-            // 정규화
-            moveDirection.Normalize();
-
-            // 회전 업데이트
-            UpdateRotation();
-        }
+        // 회전 업데이트
+        UpdateRotation();
 
         // 스프라이트 렌더러가 있다면 flipX 설정
         SpriteRenderer renderer = GetComponent<SpriteRenderer>();

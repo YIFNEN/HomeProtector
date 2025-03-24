@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6226941901820838719}
   - component: {fileID: 5394799678845828166}
   - component: {fileID: 1856268412655041909}
-  - component: {fileID: 1943898010079446888}
+  - component: {fileID: 3788863252179245175}
   m_Layer: 0
   m_Name: ProjectileArrow
   m_TagString: Untagged
@@ -164,17 +164,18 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &1943898010079446888
+--- !u!114 &3788863252179245175
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2777279350721899029}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b058a8db9ab55324cad0ea632f4dd5e5, type: 3}
+  m_Script: {fileID: 11500000, guid: 20d39fcb65bcc2048a2e2060d03fdf16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   hitEffect: {fileID: 1297803425142155509, guid: dde7a72a4de1bdc40a7138e6bd05585f, type: 3}
-  moveSpeed: 6
+  updateZPosition: 1
+  moveSpeed: 8

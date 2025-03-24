@@ -17,6 +17,8 @@ GameObject:
   - component: {fileID: 3801455408042579644}
   - component: {fileID: 2915835509813055797}
   - component: {fileID: 3909844208449459861}
+  - component: {fileID: -2366157233171358370}
+  - component: {fileID: 851438843318145731}
   m_Layer: 0
   m_Name: Player
   m_TagString: Human
@@ -113,6 +115,7 @@ MonoBehaviour:
   arrowSpeed: 10
   arrowCooldown: 0.5
   moveSpeed: 3
+  attackEnabled: 1
 --- !u!50 &8658118903113834326
 Rigidbody2D:
   serializedVersion: 4
@@ -328,7 +331,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHP: 100
-  resourceName: Resource
+  resourceName: Human
   destroyEffect: {fileID: 0}
   isInvincible: 0
   updateZPosition: 1
@@ -338,6 +341,33 @@ MonoBehaviour:
   onDestroyed:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &-2366157233171358370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584498480793155154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb5c769bd81147844b225c779bd02100, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &851438843318145731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584498480793155154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bd949ebc1b5b6a41b394ef49d3d95f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  updateContinuously: 1
+  updateOnStart: 1
+  includeChildren: 1
 --- !u!1 &3665440402749129975
 GameObject:
   m_ObjectHideFlags: 0

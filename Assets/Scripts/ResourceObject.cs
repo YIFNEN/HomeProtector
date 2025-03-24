@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class ResourceObject : MonoBehaviour
 {
     [SerializeField] private float maxHP = 100f; // 최대 체력
-    [SerializeField] private string resourceName = "Resource"; // 재화 오브젝트 이름
+    [SerializeField] private string resourceName = "Goods"; // 재화 오브젝트 이름
     [SerializeField] private GameObject destroyEffect; // 파괴 시 이펙트
     [SerializeField] private bool isInvincible = false; // 무적 여부 (선택적)
 

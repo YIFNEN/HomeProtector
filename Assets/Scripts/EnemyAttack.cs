@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +13,6 @@ public class EnemyAttack : MonoBehaviour
     [SerializeField] private float attackRate = 1.0f; // 초당 공격 횟수
     [SerializeField] private float attackDamage = 10f; // 공격 데미지
     [SerializeField] private LayerMask targetLayers; // 대상 레이어
-    [SerializeField] private string[] targetTags = { "Resource", "Tower", "Target" }; // 대상 태그
 
     [Header("Ranged Attack Settings")]
     [SerializeField] private GameObject projectilePrefab; // 발사체 프리팹 (원거리 공격용)
@@ -21,6 +21,9 @@ public class EnemyAttack : MonoBehaviour
     [Header("Effects")]
     [SerializeField] private GameObject attackEffect; // 공격 효과
     [SerializeField] private AudioClip attackSound; // 공격 소리
+
+    [Header("Isometric Settings")]
+    [SerializeField] private bool useIsometricPosition = true; // 이소메트릭 위치 사용 여부
 
     // 공격 속도 감소 효과 관련 변수
     private float originalAttackRate; // 원래 공격 속도
@@ -32,12 +35,21 @@ public class EnemyAttack : MonoBehaviour
     private Enemy enemy; // Enemy 컴포넌트 참조
     private Transform currentTarget; // 현재 공격 대상
     private AudioSource audioSource; // 오디오 소스
+    private IsometricPositionHandler isometricPosition; // 이소메트릭 위치 핸들러
+    private bool isInitialized = false; // 초기화 여부 확인용
 
     // Awake: 초기화
     private void Awake()
     {
         enemy = GetComponent<Enemy>();
+
+        // 오디오 소스 가져오기 또는 필요시 생성
         audioSource = GetComponent<AudioSource>();
+        if (audioSource == null && attackSound != null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
         originalAttackRate = attackRate; // 원래 공격 속도 저장
 
         // 공격 지점이 없으면 자신의 위치 사용
@@ -45,17 +57,31 @@ public class EnemyAttack : MonoBehaviour
         {
             attackPoint = transform;
         }
+
+        // 이소메트릭 위치 핸들러 확인
+        if (useIsometricPosition)
+        {
+            isometricPosition = GetComponent<IsometricPositionHandler>();
+        }
     }
 
-    // Start: 초기 타겟 찾기
+    // Start: 초기화 및 타겟 설정
     private void Start()
     {
-        FindTarget();
+        isInitialized = true;
+
+        // Enemy 컴포넌트에서 현재 타겟을 가져오기 시도
+        if (enemy != null && enemy.CurrentTarget != null)
+        {
+            currentTarget = enemy.CurrentTarget;
+        }
     }
 
     // Update: 공격 로직 처리
     private void Update()
     {
+        if (!isInitialized) return;
+
         // 타겟 확인 및 공격 시도
         CheckTargetAndAttack();
 
@@ -75,22 +101,16 @@ public class EnemyAttack : MonoBehaviour
     // 타겟 확인 및 공격 시도
     private void CheckTargetAndAttack()
     {
-        // 먼저 Enemy 스크립트의 현재 타겟 사용
+        // Enemy 스크립트의 현재 타겟 사용 (항상 Enemy에서 타겟을 관리)
         if (enemy != null && enemy.CurrentTarget != null)
         {
             currentTarget = enemy.CurrentTarget;
         }
 
-        // 타겟이 없는지 확인
-        if (currentTarget == null)
+        // 타겟이 없거나 유효하지 않은지 확인
+        if (currentTarget == null || (TargetManager.Instance != null && !TargetManager.Instance.IsTargetValid(currentTarget)))
         {
-            // 타겟이 없으면 새로 찾기
-            FindTarget();
-
-            if (currentTarget == null)
-            {
-                return; // 타겟이 없으면 종료
-            }
+            return; // 유효한 타겟이 없으면 종료
         }
 
         // 타겟과의 거리 계산
@@ -112,51 +132,11 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    // 가장 가까운 타겟 찾기
-    private void FindTarget()
-    {
-        // 모든 가능한 타겟 태그에 대해 가장 가까운 타겟 찾기
-        Transform nearestTarget = null;
-        float nearestDistance = float.MaxValue;
-
-        foreach (string tag in targetTags)
-        {
-            GameObject[] targets = GameObject.FindGameObjectsWithTag(tag);
-
-            foreach (GameObject potentialTarget in targets)
-            {
-                float distance = Vector3.Distance(transform.position, potentialTarget.transform.position);
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestTarget = potentialTarget.transform;
-                }
-            }
-        }
-
-        currentTarget = nearestTarget;
-
-        // 기존 방식: 설정된 범위 내의 모든 콜라이더 찾기 (대체 방식)
-        if (currentTarget == null && targetLayers != 0)
-        {
-            Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, attackRange * 1.5f, targetLayers);
-
-            foreach (Collider2D collider in hitColliders)
-            {
-                float distance = Vector2.Distance(transform.position, collider.transform.position);
-
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    currentTarget = collider.transform;
-                }
-            }
-        }
-    }
-
     // 공격 실행
     private void Attack(Transform target)
     {
+        if (target == null) return;
+
         switch (attackType)
         {
             case AttackType.Melee:
@@ -175,12 +155,33 @@ public class EnemyAttack : MonoBehaviour
     // 근접 공격
     private void MeleeAttack(Transform target)
     {
+        if (target == null) return;
+
         // 공격 효과 재생
         if (attackEffect != null)
         {
             Vector3 effectPosition = attackPoint.position;
-            effectPosition.z = effectPosition.y; // 이소메트릭 z 조정
-            Instantiate(attackEffect, effectPosition, Quaternion.identity);
+
+            // 이소메트릭 위치 조정
+            if (isometricPosition != null)
+            {
+                // 이펙트 생성 시 IsometricPositionHandler 추가
+                GameObject effect = Instantiate(attackEffect, effectPosition, Quaternion.identity);
+                if (effect.GetComponent<IsometricPositionHandler>() == null)
+                {
+                    effect.AddComponent<IsometricPositionHandler>();
+                }
+            }
+            else if (useIsometricPosition)
+            {
+                // 수동으로 z 위치 조정
+                effectPosition.z = effectPosition.y;
+                Instantiate(attackEffect, effectPosition, Quaternion.identity);
+            }
+            else
+            {
+                Instantiate(attackEffect, effectPosition, Quaternion.identity);
+            }
         }
 
         // 공격 소리 재생
@@ -189,30 +190,53 @@ public class EnemyAttack : MonoBehaviour
             audioSource.PlayOneShot(attackSound);
         }
 
-        // IDamageable 인터페이스를 구현한 경우 (기존 코드 호환성)
-        IDamageable damageable = target.GetComponent<IDamageable>();
-        if (damageable != null)
-        {
-            damageable.TakeDamage((int)attackDamage);
-            Debug.Log($"{gameObject.name}이(가) {target.name}에 {attackDamage}의 데미지를 입힘 (IDamageable)");
-            return;
-        }
+        // 데미지 적용 시도 (다양한 타겟 대응)
+        bool damageApplied = false;
 
-        // 재화 오브젝트인 경우
+        // ResourceObject 컴포넌트 확인
         ResourceObject resource = target.GetComponent<ResourceObject>();
         if (resource != null)
         {
             resource.TakeDamage(attackDamage);
             Debug.Log($"{gameObject.name}이(가) {resource.ResourceName}에 {attackDamage}의 데미지를 입힘");
-            return;
+            damageApplied = true;
         }
 
-        Debug.LogWarning($"{target.name}에는 데미지를 받을 수 있는 컴포넌트가 없습니다.");
+        // EnemyHP 컴포넌트 확인
+        if (!damageApplied)
+        {
+            EnemyHP enemyHP = target.GetComponent<EnemyHP>();
+            if (enemyHP != null)
+            {
+                enemyHP.TakeDamage(attackDamage);
+                Debug.Log($"{gameObject.name}이(가) {target.name}에 {attackDamage}의 데미지를 입힘 (EnemyHP)");
+                damageApplied = true;
+            }
+        }
+
+        // IDamageable 인터페이스 확인 (다른 타입의 대상)
+        if (!damageApplied)
+        {
+            var damageable = target.GetComponent<IDamageable>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage((int)attackDamage);
+                Debug.Log($"{gameObject.name}이(가) {target.name}에 {attackDamage}의 데미지를 입힘 (IDamageable)");
+                damageApplied = true;
+            }
+        }
+
+        if (!damageApplied)
+        {
+            Debug.LogWarning($"{target.name}에는 데미지를 받을 수 있는 컴포넌트가 없습니다.");
+        }
     }
 
     // 원거리 공격
     private void RangedAttack(Transform target)
     {
+        if (target == null) return;
+
         // 발사체 프리팹이 없으면 리턴
         if (projectilePrefab == null)
         {
@@ -226,8 +250,15 @@ public class EnemyAttack : MonoBehaviour
             audioSource.PlayOneShot(attackSound);
         }
 
+        // 발사 위치 계산
+        Vector3 spawnPosition = attackPoint.position;
+        if (useIsometricPosition && isometricPosition == null)
+        {
+            spawnPosition.z = spawnPosition.y;
+        }
+
         // 발사체 생성
-        GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, Quaternion.identity);
+        GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
 
         // 발사체가 ProjectileBase를 상속받았는지 확인
         ProjectileBase projectileBase = projectile.GetComponent<ProjectileBase>();
@@ -274,12 +305,6 @@ public class EnemyAttack : MonoBehaviour
         currentAttackSlowAmount = 0f;
 
         Debug.Log($"{gameObject.name}의 공격 속도 복구");
-    }
-
-    // 발사체 타워를 위한 인터페이스
-    public interface IDamageable
-    {
-        void TakeDamage(int damage);
     }
 
     // 에디터에서 공격 범위 시각화

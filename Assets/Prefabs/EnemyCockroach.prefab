@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6692021396497292441}
   - component: {fileID: 1514821696007854864}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: shadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -98,11 +98,12 @@ GameObject:
   - component: {fileID: 6015941759344605311}
   - component: {fileID: -1947816265116320132}
   - component: {fileID: -2238810831190767473}
-  - component: {fileID: -1513795506214885510}
   - component: {fileID: 1352645324521225916}
-  - component: {fileID: 5719178545988688887}
   - component: {fileID: 6283688517200252502}
-  m_Layer: 0
+  - component: {fileID: -8093516686868042905}
+  - component: {fileID: -3058027205951575350}
+  - component: {fileID: -3913004575434069841}
+  m_Layer: 8
   m_Name: EnemyCockroach
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -241,12 +242,88 @@ MonoBehaviour:
   targetTagPriority:
   - Food
   - Goods
-  - Human
-  targetSearchRadius: 100
+  - Goods
+  targetSearchRadius: 10
   targetUpdateInterval: 1
+  defaultTargetTag: Food
   hasAttack: 1
---- !u!58 &-1513795506214885510
-CircleCollider2D:
+  useIsometricPosition: 1
+  debugMode: 0
+--- !u!114 &1352645324521225916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385226143460851807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14e868f8837a5e5479846d867a687b91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHP: 2
+--- !u!114 &6283688517200252502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385226143460851807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b4f5468c74ed5c4596ef0af94081a11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackType: 1
+  attackRange: 4
+  attackRate: 1
+  attackDamage: 1
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 8
+  projectilePrefab: {fileID: 0}
+  attackPoint: {fileID: 0}
+  attackEffect: {fileID: 0}
+  attackSound: {fileID: 0}
+  useIsometricPosition: 1
+--- !u!114 &-8093516686868042905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385226143460851807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b7c00ec51a12047b63c04a5be785a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flipX: 1
+  flipY: 0
+--- !u!195 &-3058027205951575350
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385226143460851807}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.2
+  m_Speed: 3.5
+  m_Acceleration: 12
+  avoidancePriority: 10
+  m_AngularSpeed: 0
+  m_StoppingDistance: 0.1
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 0
+  m_AutoRepath: 1
+  m_Height: 1
+  m_BaseOffset: 0
+  m_WalkableMask: 1
+  m_ObstacleAvoidanceType: 1
+--- !u!61 &-3913004575434069841
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -277,68 +354,16 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.014127657, y: -0.0030673444}
+  m_Offset: {x: 0.015600532, y: -0.015600562}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.64, y: 0.64}
+    newSize: {x: 0.59, y: 0.53}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
   serializedVersion: 2
-  m_Radius: 0.17813665
---- !u!114 &1352645324521225916
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8385226143460851807}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14e868f8837a5e5479846d867a687b91, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHP: 2
---- !u!195 &5719178545988688887
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8385226143460851807}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.1
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 1.5
-  m_BaseOffset: 0.32
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 1
---- !u!114 &6283688517200252502
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8385226143460851807}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b4f5468c74ed5c4596ef0af94081a11, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackType: 1
-  attackRange: 0.3
-  attackRate: 1
-  attackDamage: 1
-  targetLayers:
-    serializedVersion: 2
-    m_Bits: 8
-  targetTags:
-  - Food
-  - Human
-  - Goods
-  projectilePrefab: {fileID: 0}
-  attackPoint: {fileID: 0}
-  attackEffect: {fileID: 0}
-  attackSound: {fileID: 0}
+  m_Size: {x: 0.3787989, y: 0.28879887}
+  m_EdgeRadius: 0

@@ -11,6 +11,9 @@ public class TowerWeapon : MonoBehaviour
     [SerializeField]
     private Transform spawnPoint;
 
+    [Header("Time Settings")]
+    [SerializeField] private bool attackEnabled = true; // 공격 가능 여부
+
     private TowerTemplate towerTemplate;
     private int level = 0;
     private WeaponState weaponState = WeaponState.SearchTarget;
@@ -50,6 +53,9 @@ public class TowerWeapon : MonoBehaviour
 
     private void SpawnProjectile()
     {
+        // 공격이 비활성화되어 있으면 발사체 생성 불가
+        if (!attackEnabled) return;
+
         if (projectilePrefab == null)
         {
             Debug.LogError("No projectile prefab assigned to tower");
@@ -197,7 +203,8 @@ public class TowerWeapon : MonoBehaviour
     {
         if (attackTarget != null)
         {
-            RotateToTarget();
+            // RotateToTarget(); // 기존 코드
+            FlipToTarget(); // 새 코드 - 회전 대신 좌우반전
         }
 
         // 이소메트릭 뷰에 맞게 z 위치 조정 (매 프레임)
@@ -206,25 +213,75 @@ public class TowerWeapon : MonoBehaviour
         transform.position = position;
     }
 
-    private void RotateToTarget()
+    // 기존 RotateToTarget 메서드를 FlipToTarget으로 대체
+    private void FlipToTarget()
     {
-        float dx = attackTarget.position.x - transform.position.x;
-        float dy = attackTarget.position.y - transform.position.y;
+        if (attackTarget == null) return;
 
-        // 좌우반전 상태에 따라 각도 조정
-        if (isFlipped)
+        // 적의 위치와 타워의 위치를 비교하여 방향 결정
+        float dx = attackTarget.position.x - transform.position.x;
+
+        // dx가 음수면 적이 왼쪽에 있고, 양수면 오른쪽에 있음
+        bool shouldFaceLeft = dx < 0;
+
+        // 현재 타워가 왼쪽을 보고 있는지 확인 (flipX가 true면 왼쪽)
+        bool isCurrentlyFacingLeft = false;
+
+        // 스프라이트 렌더러로 확인
+        if (spriteRenderer != null)
         {
-            dx = -dx; // X 방향 반전
+            isCurrentlyFacingLeft = spriteRenderer.flipX;
+        }
+        else
+        {
+            // 스프라이트 렌더러가 없을 경우 localScale.x로 확인
+            isCurrentlyFacingLeft = transform.localScale.x < 0;
         }
 
-        float degree = Mathf.Atan2(dy, dx) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, degree);
+        // 방향이 다르면 반전
+        if (shouldFaceLeft != isCurrentlyFacingLeft)
+        {
+            // 좌우반전 적용
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.flipX = shouldFaceLeft;
+            }
+            else
+            {
+                // 스프라이트 렌더러가 없는 경우 스케일 사용
+                Vector3 scale = transform.localScale;
+                scale.x = shouldFaceLeft ? -Mathf.Abs(scale.x) : Mathf.Abs(scale.x);
+                transform.localScale = scale;
+            }
+
+            // 자식 스프라이트 렌더러도 반전
+            foreach (SpriteRenderer renderer in childRenderers)
+            {
+                if (renderer != null && renderer != spriteRenderer)
+                {
+                    renderer.flipX = shouldFaceLeft;
+                }
+            }
+
+            // isFlipped 변수 업데이트
+            isFlipped = shouldFaceLeft;
+        }
+
+        // 회전은 수행하지 않음 - 기존 코드 제거
+        // transform.rotation = Quaternion.Euler(0, 0, degree);
     }
 
     private IEnumerator SearchTarget()
     {
         while (true)
         {
+            // 공격이 비활성화 되어 있으면 탐색만 하고 공격하지 않음
+            if (!attackEnabled)
+            {
+                yield return new WaitForSeconds(0.5f);
+                continue;
+            }
+
             float closetDistSqr = Mathf.Infinity;
             for (int i = 0; i < enemySpawner.EnemyList.Count; i++) //모든 적 검사
             {
@@ -235,7 +292,7 @@ public class TowerWeapon : MonoBehaviour
                     attackTarget = enemySpawner.EnemyList[i].transform;
                 }
             }
-            if (attackTarget != null)
+            if (attackTarget != null && attackEnabled)
             {
                 Debug.Log($"Target found: {attackTarget.name}");
                 ChangeState(WeaponState.AttackToTarget); // 해당 타겟 공격
@@ -249,6 +306,13 @@ public class TowerWeapon : MonoBehaviour
     {
         while (true)
         {
+            // 공격이 비활성화되어 있으면 탐색 상태로 돌아감
+            if (!attackEnabled)
+            {
+                ChangeState(WeaponState.SearchTarget);
+                break;
+            }
+
             if (attackTarget == null) // target 있는지 확인
             {
                 ChangeState(WeaponState.SearchTarget);
@@ -296,5 +360,22 @@ public class TowerWeapon : MonoBehaviour
         FindObjectOfType<TowerSpawner>().RemoveTower(cellposition);
 
         Destroy(gameObject);
+    }
+
+    // 공격 활성화/비활성화 메소드
+    public void SetAttackEnabled(bool enabled)
+    {
+        attackEnabled = enabled;
+
+        if (enabled)
+        {
+            // 공격 활성화시 타겟 탐색 시작
+            ChangeState(WeaponState.SearchTarget);
+        }
+        else
+        {
+            // 공격 비활성화시 모든 코루틴 중지
+            StopAllCoroutines();
+        }
     }
 }

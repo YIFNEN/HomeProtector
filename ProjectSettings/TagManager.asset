@@ -10,6 +10,7 @@ TagManager:
   - Tower
   - Food
   - Human
+  - Resource
   layers:
   - Default
   - TransparentFX
@@ -18,10 +19,10 @@ TagManager:
   - Water
   - UI
   - Wall
-  - 
-  - 
-  - 
-  - 
+  - MorningOnly
+  - EveningOnly
+  - Tower
+  - Enemy
   - 
   - 
   - 

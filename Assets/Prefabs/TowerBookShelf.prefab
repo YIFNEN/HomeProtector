@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 440144251034166792}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: SpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -44,7 +44,8 @@ GameObject:
   - component: {fileID: -6281782124998012200}
   - component: {fileID: -6842561234153425761}
   - component: {fileID: -1874269198019065278}
-  m_Layer: 0
+  - component: {fileID: -5681973048322498740}
+  m_Layer: 9
   m_Name: TowerBookShelf
   m_TagString: Tower
   m_Icon: {fileID: 0}
@@ -133,13 +134,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   projectilePrefab: {fileID: 2777279350721899029, guid: f030fa4de2061ef418fc6e40e18d6dc8, type: 3}
   spawnPoint: {fileID: 440144251034166792}
-  projectileType: 2
-  projectilePrefabs:
-  - {fileID: 2777279350721899029, guid: f030fa4de2061ef418fc6e40e18d6dc8, type: 3}
-  - {fileID: 2777279350721899029, guid: f030fa4de2061ef418fc6e40e18d6dc8, type: 3}
-  - {fileID: 2777279350721899029, guid: f030fa4de2061ef418fc6e40e18d6dc8, type: 3}
-  - {fileID: 2777279350721899029, guid: f030fa4de2061ef418fc6e40e18d6dc8, type: 3}
-  - {fileID: 2777279350721899029, guid: f030fa4de2061ef418fc6e40e18d6dc8, type: 3}
+  attackEnabled: 1
 --- !u!61 &-6842561234153425761
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -172,7 +167,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.016581118, y: 0.03647843}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -183,7 +178,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.64, y: 0.64}
+  m_Size: {x: 0.7129569, y: 0.759384}
   m_EdgeRadius: 0
 --- !u!208 &-1874269198019065278
 NavMeshObstacle:
@@ -201,3 +196,18 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5
+--- !u!114 &-5681973048322498740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7937509987669185425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bd949ebc1b5b6a41b394ef49d3d95f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  updateContinuously: 1
+  updateOnStart: 1
+  includeChildren: 1

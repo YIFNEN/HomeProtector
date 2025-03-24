@@ -2,15 +2,20 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-// EnemyGroup 구조체 수정 - 직접 Transform 대신 태그 사용
 [System.Serializable]
 public struct EnemyGroup
 {
-    public GameObject enemyPrefab;
-    public int count;
-    public float spawnTime;
-    public Transform spawnPoint;
-    public string targetTag; // Transform 대신 태그 문자열 사용
+    [Header("기본 설정")]
+    [Tooltip("생성할 적 프리팹")]
+    public GameObject enemyPrefab;  // 적 프리팹
+    [Tooltip("생성할 적의 수")]
+    public int count;               // 생성할 적의 수
+    [Tooltip("적 생성 간격 (초)")]
+    public float spawnTime;         // 적 생성 간격
+
+    [Header("위치 설정")]
+    [Tooltip("특정 스폰 위치 (없으면 기본 스포너 위치 사용)")]
+    public Transform spawnPoint;    // 스폰 위치 (null이면 기본 위치)
 }
 
 [System.Serializable]
@@ -333,5 +338,187 @@ public class WaveSystem : MonoBehaviour
         {
             enemySpawner.OnEnemyDestroyed -= OnEnemyDestroyed;
         }
+    }
+
+    // 동적으로 웨이브를 설정하는 메소드
+    public void SetWaves(Wave[] newWaves)
+    {
+        if (newWaves == null || newWaves.Length == 0)
+        {
+            Debug.LogWarning("설정하려는 웨이브가 비어있습니다.");
+            return;
+        }
+
+        // 현재 진행 중인 웨이브가 있는지 확인
+        if (isWaveActive)
+        {
+            Debug.LogWarning("웨이브가 진행 중일 때는 새 웨이브를 설정할 수 없습니다.");
+            return;
+        }
+
+        // 기존 웨이브 저장
+        Wave[] oldWaves = waves;
+
+        // 새 웨이브 설정
+        waves = newWaves;
+
+        // 웨이브 관련 상태 초기화
+        ResetWaveSystem();
+
+        Debug.Log($"웨이브 설정이 변경되었습니다. 웨이브 수: {waves.Length}개");
+
+        // 웨이브 정보 출력 (디버그용)
+        for (int i = 0; i < waves.Length; i++)
+        {
+            Debug.Log($"웨이브 {i + 1}: {waves[i].waveName}, 적 그룹 수: {waves[i].enemyGroups.Length}개");
+        }
+    }
+
+    // 웨이브 추가 메소드
+    public void AddWaves(Wave[] additionalWaves)
+    {
+        if (additionalWaves == null || additionalWaves.Length == 0)
+        {
+            Debug.LogWarning("추가하려는 웨이브가 비어있습니다.");
+            return;
+        }
+
+        // 기존 웨이브와 새 웨이브 병합
+        Wave[] combinedWaves = new Wave[waves.Length + additionalWaves.Length];
+
+        // 기존 웨이브 복사
+        for (int i = 0; i < waves.Length; i++)
+        {
+            combinedWaves[i] = waves[i];
+        }
+
+        // 새 웨이브 추가
+        for (int i = 0; i < additionalWaves.Length; i++)
+        {
+            combinedWaves[waves.Length + i] = additionalWaves[i];
+        }
+
+        // 병합된 웨이브 설정
+        waves = combinedWaves;
+
+        Debug.Log($"웨이브가 추가되었습니다. 총 웨이브 수: {waves.Length}개");
+    }
+
+    // 특정 인덱스의 웨이브 가져오기
+    public Wave GetWave(int index)
+    {
+        if (index < 0 || index >= waves.Length)
+        {
+            Debug.LogWarning($"유효하지 않은 웨이브 인덱스: {index}, 웨이브 수: {waves.Length}");
+            return default(Wave);
+        }
+
+        return waves[index];
+    }
+
+    // 현재 웨이브 정보 복제하여 가져오기
+    public Wave GetCurrentWaveInfo()
+    {
+        if (currentWaveIndex < 0 || currentWaveIndex >= waves.Length)
+        {
+            Debug.LogWarning("현재 활성화된 웨이브가 없습니다.");
+            return default(Wave);
+        }
+
+        return waves[currentWaveIndex];
+    }
+
+    // 랜덤 웨이브 생성 (선택적)
+    public Wave GenerateRandomWave(int difficulty = 1)
+    {
+        // 빈 웨이브 생성
+        Wave randomWave = new Wave();
+
+        // 웨이브 이름 설정
+        randomWave.waveName = $"Random Wave (Difficulty {difficulty})";
+
+        // 기본 지속 시간 설정
+        randomWave.baseDuration = 60f + (difficulty * 10f);
+
+        // 적 그룹 생성
+        int groupCount = Mathf.Max(1, Random.Range(1, 3 + difficulty / 2));
+        randomWave.enemyGroups = new EnemyGroup[groupCount];
+
+        // 랜덤 적 프리팹 가져오기 (Resources 폴더에서)
+        GameObject[] enemyPrefabs = Resources.LoadAll<GameObject>("Prefabs/Enemies");
+
+        // 적 프리팹이 없으면 빈 웨이브 반환
+        if (enemyPrefabs == null || enemyPrefabs.Length == 0)
+        {
+            Debug.LogWarning("랜덤 웨이브 생성을 위한 적 프리팹을 찾을 수 없습니다.");
+            return randomWave;
+        }
+
+        // 각 그룹 설정
+        for (int i = 0; i < groupCount; i++)
+        {
+            EnemyGroup group = new EnemyGroup();
+
+            // 랜덤 적 프리팹 선택
+            group.enemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+
+            // 적 수량 설정 (난이도에 따라)
+            group.count = Mathf.Max(3, 5 + difficulty * 2 + Random.Range(-2, 3));
+
+            // 스폰 간격 설정
+            group.spawnTime = Mathf.Max(0.5f, 2f - (difficulty * 0.1f) + Random.Range(-0.2f, 0.2f));
+
+            // 그룹 추가
+            randomWave.enemyGroups[i] = group;
+        }
+
+        // 다음 웨이브 딜레이 설정
+        randomWave.delayBeforeNextWave = 5f + Random.Range(0f, 5f);
+
+        return randomWave;
+    }
+
+    // 웨이브의 특정 속성 조정
+    public void AdjustWaveDifficulty(float difficultyMultiplier)
+    {
+        // 웨이브 배열의 새 버전 생성 (원본 수정 방지)
+        Wave[] adjustedWaves = new Wave[waves.Length];
+
+        for (int i = 0; i < waves.Length; i++)
+        {
+            // 웨이브 복사
+            adjustedWaves[i] = waves[i];
+
+            // 웨이브 지속 시간 조정
+            if (adjustedWaves[i].baseDuration > 0)
+            {
+                adjustedWaves[i].baseDuration *= Mathf.Max(0.5f, difficultyMultiplier);
+            }
+
+            // 적 그룹 복사 및 조정
+            EnemyGroup[] adjustedGroups = new EnemyGroup[adjustedWaves[i].enemyGroups.Length];
+
+            for (int j = 0; j < adjustedWaves[i].enemyGroups.Length; j++)
+            {
+                // 그룹 복사
+                adjustedGroups[j] = adjustedWaves[i].enemyGroups[j];
+
+                // 적 수량 조정 (구조체는 직접 수정 불가하므로 새로운 인스턴스 생성)
+                int newCount = Mathf.Max(1, Mathf.RoundToInt(adjustedGroups[j].count * difficultyMultiplier));
+                adjustedGroups[j].count = newCount;
+
+                // 스폰 시간 조정 (반비례)
+                float newSpawnTime = Mathf.Max(0.2f, adjustedGroups[j].spawnTime / Mathf.Max(0.5f, difficultyMultiplier));
+                adjustedGroups[j].spawnTime = newSpawnTime;
+            }
+
+            // 조정된 그룹 설정
+            adjustedWaves[i].enemyGroups = adjustedGroups;
+        }
+
+        // 조정된 웨이브로 업데이트
+        waves = adjustedWaves;
+
+        Debug.Log($"웨이브 난이도가 조정되었습니다. 배율: {difficultyMultiplier}");
     }
 }

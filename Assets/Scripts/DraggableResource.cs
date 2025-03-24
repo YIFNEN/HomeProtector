@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -6,36 +6,36 @@ using UnityEngine.EventSystems;
 public class DraggableResource : MonoBehaviour
 {
     [Header("Drag Settings")]
-    [SerializeField] private bool isDraggable = true; // µå·¡±× °¡´É ¿©ºÎ
-    [SerializeField] private float dragSmoothing = 5f; // µå·¡±× ½Ã ÀÌµ¿ ºÎµå·¯¿ò Á¤µµ
-    [SerializeField] private bool returnToOriginalPosition = false; // µå·¡±× ÈÄ ¿ø·¡ À§Ä¡·Î µ¹¾Æ°¥Áö ¿©ºÎ
-    [SerializeField] private LayerMask blockedLayers; // ¹èÄ¡ ºÒ°¡´ÉÇÑ ·¹ÀÌ¾î
+    [SerializeField] private bool isDraggable = true; // ë“œë˜ê·¸ ê°€ëŠ¥ ì—¬ë¶€
+    [SerializeField] private float dragSmoothing = 5f; // ë“œë˜ê·¸ ì‹œ ì´ë™ ë¶€ë“œëŸ¬ì›€ ì •ë„
+    [SerializeField] private bool returnToOriginalPosition = false; // ë“œë˜ê·¸ í›„ ì›ë˜ ìœ„ì¹˜ë¡œ ëŒì•„ê°ˆì§€ ì—¬ë¶€
+    [SerializeField] private LayerMask blockedLayers; // ë°°ì¹˜ ë¶ˆê°€ëŠ¥í•œ ë ˆì´ì–´
 
     [Header("Visual Effects")]
-    [SerializeField] private Color dragColor = new Color(1f, 1f, 1f, 0.8f); // µå·¡±× Áß »ö»ó
-    [SerializeField] private float dragScale = 1.1f; // µå·¡±× Áß Å©±â ¹èÀ²
-    [SerializeField] private bool showShadowOnDrag = true; // µå·¡±× Áß ±×¸²ÀÚ Ç¥½Ã ¿©ºÎ
+    [SerializeField] private Color dragColor = new Color(1f, 1f, 1f, 0.8f); // ë“œë˜ê·¸ ì¤‘ ìƒ‰ìƒ
+    [SerializeField] private float dragScale = 1.1f; // ë“œë˜ê·¸ ì¤‘ í¬ê¸° ë°°ìœ¨
+    [SerializeField] private bool showShadowOnDrag = true; // ë“œë˜ê·¸ ì¤‘ ê·¸ë¦¼ì í‘œì‹œ ì—¬ë¶€
 
     [Header("Flip Settings")]
-    [SerializeField] private KeyCode flipKey = KeyCode.Q; // ÁÂ¿ì¹İÀü Å°
-    [SerializeField] private float flipDuration = 0.2f; // ÁÂ¿ì¹İÀü ¾Ö´Ï¸ŞÀÌ¼Ç ½Ã°£
+    [SerializeField] private KeyCode flipKey = KeyCode.Q; // ì¢Œìš°ë°˜ì „ í‚¤
+    [SerializeField] private float flipDuration = 0.2f; // ì¢Œìš°ë°˜ì „ ì• ë‹ˆë©”ì´ì…˜ ì‹œê°„
 
     [Header("Events")]
-    public UnityEvent onDragStart; // µå·¡±× ½ÃÀÛ ÀÌº¥Æ®
-    public UnityEvent onDragEnd; // µå·¡±× Á¾·á ÀÌº¥Æ®
-    public UnityEvent onFlip; // ÁÂ¿ì¹İÀü ÀÌº¥Æ®
+    public UnityEvent onDragStart; // ë“œë˜ê·¸ ì‹œì‘ ì´ë²¤íŠ¸
+    public UnityEvent onDragEnd; // ë“œë˜ê·¸ ì¢…ë£Œ ì´ë²¤íŠ¸
+    public UnityEvent onFlip; // ì¢Œìš°ë°˜ì „ ì´ë²¤íŠ¸
 
-    private bool isDragging = false; // ÇöÀç µå·¡±× ÁßÀÎÁö ¿©ºÎ
-    private Vector3 dragOffset; // µå·¡±× ½Ã ¿ÀºêÁ§Æ®¿Í ¸¶¿ì½º °£ÀÇ ¿ÀÇÁ¼Â
-    private Vector3 targetPosition; // µå·¡±× Áß ¸ñÇ¥ À§Ä¡
-    private Vector3 originalPosition; // ¿ø·¡ À§Ä¡
-    private Vector3 originalScale; // ¿ø·¡ Å©±â
-    private Color originalColor; // ¿ø·¡ »ö»ó
-    private SpriteRenderer spriteRenderer; // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯
-    private ResourceObject resourceObject; // ÀçÈ­ ¿ÀºêÁ§Æ® ÂüÁ¶
-    private GameObject shadowObj; // ±×¸²ÀÚ ¿ÀºêÁ§Æ®
-    private bool isFlipped = false; // ÁÂ¿ì¹İÀü »óÅÂ
-    private bool isFlipping = false; // ÁÂ¿ì¹İÀü ¾Ö´Ï¸ŞÀÌ¼Ç ÁßÀÎÁö ¿©ºÎ
+    private bool isDragging = false; // í˜„ì¬ ë“œë˜ê·¸ ì¤‘ì¸ì§€ ì—¬ë¶€
+    private Vector3 dragOffset; // ë“œë˜ê·¸ ì‹œ ì˜¤ë¸Œì íŠ¸ì™€ ë§ˆìš°ìŠ¤ ê°„ì˜ ì˜¤í”„ì…‹
+    private Vector3 targetPosition; // ë“œë˜ê·¸ ì¤‘ ëª©í‘œ ìœ„ì¹˜
+    private Vector3 originalPosition; // ì›ë˜ ìœ„ì¹˜
+    private Vector3 originalScale; // ì›ë˜ í¬ê¸°
+    private Color originalColor; // ì›ë˜ ìƒ‰ìƒ
+    private SpriteRenderer spriteRenderer; // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬
+    private ResourceObject resourceObject; // ì¬í™” ì˜¤ë¸Œì íŠ¸ ì°¸ì¡°
+    private GameObject shadowObj; // ê·¸ë¦¼ì ì˜¤ë¸Œì íŠ¸
+    private bool isFlipped = false; // ì¢Œìš°ë°˜ì „ ìƒíƒœ
+    private bool isFlipping = false; // ì¢Œìš°ë°˜ì „ ì• ë‹ˆë©”ì´ì…˜ ì¤‘ì¸ì§€ ì—¬ë¶€
 
     private void Awake()
     {
@@ -48,7 +48,7 @@ public class DraggableResource : MonoBehaviour
             originalColor = spriteRenderer.color;
         }
 
-        // ±×¸²ÀÚ »ı¼º
+        // ê·¸ë¦¼ì ìƒì„±
         if (showShadowOnDrag)
         {
             CreateShadow();
@@ -59,7 +59,7 @@ public class DraggableResource : MonoBehaviour
     {
         originalPosition = transform.position;
 
-        // ±×¸²ÀÚ ÃÊ±â¿¡ ºñÈ°¼ºÈ­
+        // ê·¸ë¦¼ì ì´ˆê¸°ì— ë¹„í™œì„±í™”
         if (shadowObj != null)
         {
             shadowObj.SetActive(false);
@@ -68,18 +68,18 @@ public class DraggableResource : MonoBehaviour
 
     private void Update()
     {
-        // µå·¡±× ÁßÀÏ ¶§¸¸ Ã³¸®
+        // ë“œë˜ê·¸ ì¤‘ì¼ ë•Œë§Œ ì²˜ë¦¬
         if (isDragging)
         {
-            // ¸ñÇ¥ À§Ä¡·Î ºÎµå·´°Ô ÀÌµ¿
+            // ëª©í‘œ ìœ„ì¹˜ë¡œ ë¶€ë“œëŸ½ê²Œ ì´ë™
             transform.position = Vector3.Lerp(transform.position, targetPosition, Time.unscaledDeltaTime * dragSmoothing);
 
-            // ÀÌ¼Ò¸ŞÆ®¸¯ ºä Áö¿ø (z °ª Á¶Á¤)
+            // ì´ì†Œë©”íŠ¸ë¦­ ë·° ì§€ì› (z ê°’ ì¡°ì •)
             Vector3 position = transform.position;
             position.z = position.y;
             transform.position = position;
 
-            // µå·¡±× Áß QÅ° ÀÔ·Â °¨Áö (ÁÂ¿ì¹İÀü)
+            // ë“œë˜ê·¸ ì¤‘ Qí‚¤ ì…ë ¥ ê°ì§€ (ì¢Œìš°ë°˜ì „)
             if (Input.GetKeyDown(flipKey) && !isFlipping)
             {
                 StartCoroutine(FlipHorizontally());
@@ -89,13 +89,13 @@ public class DraggableResource : MonoBehaviour
 
     private void OnMouseDown()
     {
-        // µå·¡±× ºÒ°¡´ÉÇÏ°Å³ª ÀÌº¥Æ® ½Ã½ºÅÛUI°¡ Å¬¸¯µÈ °æ¿ì ¹«½Ã
+        // ë“œë˜ê·¸ ë¶ˆê°€ëŠ¥í•˜ê±°ë‚˜ ì´ë²¤íŠ¸ ì‹œìŠ¤í…œUIê°€ í´ë¦­ëœ ê²½ìš° ë¬´ì‹œ
         if (!isDraggable || EventSystem.current.IsPointerOverGameObject())
         {
             return;
         }
 
-        // µå·¡±× ½ÃÀÛ
+        // ë“œë˜ê·¸ ì‹œì‘
         StartDragging();
     }
 
@@ -103,11 +103,11 @@ public class DraggableResource : MonoBehaviour
     {
         if (!isDragging) return;
 
-        // ¸¶¿ì½º À§Ä¡ °è»ê
+        // ë§ˆìš°ìŠ¤ ìœ„ì¹˜ ê³„ì‚°
         Vector3 mousePosition = GetMouseWorldPosition();
         targetPosition = mousePosition + dragOffset;
 
-        // ±×¸²ÀÚ À§Ä¡ ¾÷µ¥ÀÌÆ®
+        // ê·¸ë¦¼ì ìœ„ì¹˜ ì—…ë°ì´íŠ¸
         UpdateShadowPosition();
     }
 
@@ -115,7 +115,7 @@ public class DraggableResource : MonoBehaviour
     {
         if (!isDragging) return;
 
-        // µå·¡±× Á¾·á
+        // ë“œë˜ê·¸ ì¢…ë£Œ
         EndDragging();
     }
 
@@ -123,17 +123,17 @@ public class DraggableResource : MonoBehaviour
     {
         isDragging = true;
 
-        // ¸¶¿ì½º À§Ä¡¿Í ¿ÀºêÁ§Æ® À§Ä¡ÀÇ Â÷ÀÌ ÀúÀå
+        // ë§ˆìš°ìŠ¤ ìœ„ì¹˜ì™€ ì˜¤ë¸Œì íŠ¸ ìœ„ì¹˜ì˜ ì°¨ì´ ì €ì¥
         Vector3 mousePosition = GetMouseWorldPosition();
         dragOffset = transform.position - mousePosition;
 
-        // µå·¡±× ½ÃÀÛ È¿°ú Àû¿ë
+        // ë“œë˜ê·¸ ì‹œì‘ íš¨ê³¼ ì ìš©
         ApplyDragVisualEffects(true);
 
-        // µå·¡±× ½ÃÀÛ ÀÌº¥Æ® ¹ß»ı
+        // ë“œë˜ê·¸ ì‹œì‘ ì´ë²¤íŠ¸ ë°œìƒ
         onDragStart?.Invoke();
 
-        // ±×¸²ÀÚ Ç¥½Ã
+        // ê·¸ë¦¼ì í‘œì‹œ
         if (shadowObj != null)
         {
             shadowObj.SetActive(true);
@@ -144,28 +144,28 @@ public class DraggableResource : MonoBehaviour
     {
         isDragging = false;
 
-        // ¹èÄ¡ À§Ä¡ À¯È¿¼º °Ë»ç
+        // ë°°ì¹˜ ìœ„ì¹˜ ìœ íš¨ì„± ê²€ì‚¬
         bool validPlacement = CheckValidPlacement();
 
-        // ¿ø·¡ À§Ä¡·Î µ¹¾Æ°¡±â ¼³Á¤ÀÌ°Å³ª ¹èÄ¡ À§Ä¡°¡ À¯È¿ÇÏÁö ¾ÊÀº °æ¿ì
+        // ì›ë˜ ìœ„ì¹˜ë¡œ ëŒì•„ê°€ê¸° ì„¤ì •ì´ê±°ë‚˜ ë°°ì¹˜ ìœ„ì¹˜ê°€ ìœ íš¨í•˜ì§€ ì•Šì€ ê²½ìš°
         if (returnToOriginalPosition || !validPlacement)
         {
-            // ¿ø·¡ À§Ä¡·Î º¹±Í
+            // ì›ë˜ ìœ„ì¹˜ë¡œ ë³µê·€
             StartCoroutine(MoveToPosition(originalPosition));
         }
         else
         {
-            // »õ À§Ä¡·Î È®Á¤
+            // ìƒˆ ìœ„ì¹˜ë¡œ í™•ì •
             originalPosition = transform.position;
         }
 
-        // µå·¡±× È¿°ú Á¦°Å
+        // ë“œë˜ê·¸ íš¨ê³¼ ì œê±°
         ApplyDragVisualEffects(false);
 
-        // µå·¡±× Á¾·á ÀÌº¥Æ® ¹ß»ı
+        // ë“œë˜ê·¸ ì¢…ë£Œ ì´ë²¤íŠ¸ ë°œìƒ
         onDragEnd?.Invoke();
 
-        // ±×¸²ÀÚ ¼û±â±â
+        // ê·¸ë¦¼ì ìˆ¨ê¸°ê¸°
         if (shadowObj != null)
         {
             shadowObj.SetActive(false);
@@ -174,34 +174,38 @@ public class DraggableResource : MonoBehaviour
 
     private bool CheckValidPlacement()
     {
-        // ¹èÄ¡ À§Ä¡ À¯È¿¼º °Ë»ç (Ãæµ¹ µî)
+        // ë°°ì¹˜ ìœ„ì¹˜ ìœ íš¨ì„± ê²€ì‚¬ (ì¶©ëŒ ë“±)
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 0.5f, blockedLayers);
 
-        // ºí·Ï ·¹ÀÌ¾î¿Í Ãæµ¹ÇÏ´Â Äİ¶óÀÌ´õ°¡ ÀÖÀ¸¸é À¯È¿ÇÏÁö ¾ÊÀ½
+        // ë¸”ë¡ ë ˆì´ì–´ì™€ ì¶©ëŒí•˜ëŠ” ì½œë¼ì´ë”ê°€ ìˆìœ¼ë©´ ìœ íš¨í•˜ì§€ ì•ŠìŒ
         return colliders.Length == 0;
     }
 
-    // µå·¡±× Áß ½Ã°¢ È¿°ú Àû¿ë/Á¦°Å
+    // ë“œë˜ê·¸ ì¤‘ ì‹œê° íš¨ê³¼ ì ìš©/ì œê±°
     private void ApplyDragVisualEffects(bool isDragging)
     {
         if (spriteRenderer != null)
         {
-            // »ö»ó º¯°æ
+            // ìƒ‰ìƒ ë³€ê²½
             spriteRenderer.color = isDragging ? dragColor : originalColor;
         }
 
-        // Å©±â º¯°æ
+        // í¬ê¸° ë³€ê²½ (xì¶• ìŠ¤ì¼€ì¼ì˜ ë¶€í˜¸ëŠ” ìœ ì§€í•˜ë©´ì„œ í¬ê¸°ë§Œ ì¡°ì •)
         if (isDragging)
         {
-            transform.localScale = originalScale * dragScale;
+            float xSign = Mathf.Sign(transform.localScale.x);
+            float xMagnitude = Mathf.Abs(originalScale.x) * dragScale;
+            transform.localScale = new Vector3(xSign * xMagnitude, originalScale.y * dragScale, originalScale.z * dragScale);
         }
         else
         {
-            transform.localScale = originalScale;
+            float xSign = Mathf.Sign(transform.localScale.x);
+            float xMagnitude = Mathf.Abs(originalScale.x);
+            transform.localScale = new Vector3(xSign * xMagnitude, originalScale.y, originalScale.z);
         }
     }
 
-    // ¸¶¿ì½º ¿ùµå ÁÂÇ¥ °¡Á®¿À±â
+    // ë§ˆìš°ìŠ¤ ì›”ë“œ ì¢Œí‘œ ê°€ì ¸ì˜¤ê¸°
     private Vector3 GetMouseWorldPosition()
     {
         Vector3 mousePosition = Input.mousePosition;
@@ -210,41 +214,34 @@ public class DraggableResource : MonoBehaviour
         return mousePosition;
     }
 
-    // ÁÂ¿ì¹İÀü ÄÚ·çÆ¾
+    // ì¢Œìš°ë°˜ì „ ì½”ë£¨í‹´
     private IEnumerator FlipHorizontally()
     {
         isFlipping = true;
 
-        // ÁÂ¿ì¹İÀü ÀÌº¥Æ® ¹ß»ı
+        // ì¢Œìš°ë°˜ì „ ì´ë²¤íŠ¸ ë°œìƒ
         onFlip?.Invoke();
 
-        // ÇöÀç x ½ºÄÉÀÏ °ª
-        float startScaleX = transform.localScale.x;
-        float targetScaleX = -startScaleX; // ºÎÈ£ ¹İÀü
-        float elapsedTime = 0f;
+        // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ ë°˜ì „ ì²˜ë¦¬
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.flipX = !spriteRenderer.flipX;
+        }
 
-        // ¹İÀü ¾Ö´Ï¸ŞÀÌ¼Ç
+        // ì• ë‹ˆë©”ì´ì…˜ ì§„í–‰
+        float elapsedTime = 0f;
         while (elapsedTime < flipDuration)
         {
             elapsedTime += Time.unscaledDeltaTime;
-            float progress = elapsedTime / flipDuration;
-
-            // ½ºÄÉÀÏ º¸°£
-            float currentScaleX = Mathf.Lerp(startScaleX, targetScaleX, progress);
-            transform.localScale = new Vector3(currentScaleX, transform.localScale.y, transform.localScale.z);
-
             yield return null;
         }
 
-        // ÃÖÁ¾ ½ºÄÉÀÏ ¼³Á¤
-        transform.localScale = new Vector3(targetScaleX, transform.localScale.y, transform.localScale.z);
-
-        // ¹İÀü »óÅÂ Åä±Û
+        // ë°˜ì „ ìƒíƒœ í† ê¸€
         isFlipped = !isFlipped;
         isFlipping = false;
     }
 
-    // À§Ä¡·Î ÀÌµ¿ÇÏ´Â ÄÚ·çÆ¾
+    // ìœ„ì¹˜ë¡œ ì´ë™í•˜ëŠ” ì½”ë£¨í‹´
     private IEnumerator MoveToPosition(Vector3 position)
     {
         float duration = 0.3f;
@@ -256,10 +253,10 @@ public class DraggableResource : MonoBehaviour
             elapsedTime += Time.unscaledDeltaTime;
             float progress = elapsedTime / duration;
 
-            // À§Ä¡ º¸°£
+            // ìœ„ì¹˜ ë³´ê°„
             transform.position = Vector3.Lerp(startPosition, position, progress);
 
-            // ÀÌ¼Ò¸ŞÆ®¸¯ ºä Áö¿ø (z °ª Á¶Á¤)
+            // ì´ì†Œë©”íŠ¸ë¦­ ë·° ì§€ì› (z ê°’ ì¡°ì •)
             Vector3 currentPos = transform.position;
             currentPos.z = currentPos.y;
             transform.position = currentPos;
@@ -267,63 +264,65 @@ public class DraggableResource : MonoBehaviour
             yield return null;
         }
 
-        // ÃÖÁ¾ À§Ä¡ ¼³Á¤
+        // ìµœì¢… ìœ„ì¹˜ ì„¤ì •
         transform.position = position;
 
-        // ÀÌ¼Ò¸ŞÆ®¸¯ ºä Áö¿ø (z °ª Á¶Á¤)
+        // ì´ì†Œë©”íŠ¸ë¦­ ë·° ì§€ì› (z ê°’ ì¡°ì •)
         Vector3 finalPos = transform.position;
         finalPos.z = finalPos.y;
         transform.position = finalPos;
     }
 
-    // ±×¸²ÀÚ »ı¼º ¸Ş¼Òµå
+    // ê·¸ë¦¼ì ìƒì„± ë©”ì†Œë“œ
     private void CreateShadow()
     {
-        // ÀÌ¹Ì ±×¸²ÀÚ°¡ ÀÖÀ¸¸é »ı¼º ¾ÈÇÔ
+        // ì´ë¯¸ ê·¸ë¦¼ìê°€ ìˆìœ¼ë©´ ìƒì„± ì•ˆí•¨
         if (shadowObj != null) return;
 
-        // ±×¸²ÀÚ ¿ÀºêÁ§Æ® »ı¼º
+        // ê·¸ë¦¼ì ì˜¤ë¸Œì íŠ¸ ìƒì„±
         shadowObj = new GameObject("Shadow_" + gameObject.name);
         shadowObj.transform.SetParent(transform.parent);
 
-        // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯ º¹»ç
+        // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ ë³µì‚¬
         SpriteRenderer shadowRenderer = shadowObj.AddComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
             shadowRenderer.sprite = spriteRenderer.sprite;
-            shadowRenderer.sortingOrder = spriteRenderer.sortingOrder - 1; // º»Ã¼º¸´Ù ¾Æ·¡¿¡ ·»´õ¸µ
-            shadowRenderer.color = new Color(0, 0, 0, 0.3f); // ¹İÅõ¸í °ËÁ¤»ö
+            shadowRenderer.sortingOrder = spriteRenderer.sortingOrder - 1; // ë³¸ì²´ë³´ë‹¤ ì•„ë˜ì— ë Œë”ë§
+            shadowRenderer.color = new Color(0, 0, 0, 0.3f); // ë°˜íˆ¬ëª… ê²€ì •ìƒ‰
         }
 
-        // ±×¸²ÀÚ À§Ä¡ ¹× Å©±â ¼³Á¤
+        // ê·¸ë¦¼ì ìœ„ì¹˜ ë° í¬ê¸° ì„¤ì •
         shadowObj.transform.position = new Vector3(transform.position.x, transform.position.y - 0.2f, transform.position.z);
         shadowObj.transform.localScale = transform.localScale;
 
-        // ÃÊ±â¿¡´Â ºñÈ°¼ºÈ­
+        // ì´ˆê¸°ì—ëŠ” ë¹„í™œì„±í™”
         shadowObj.SetActive(false);
     }
 
-    // ±×¸²ÀÚ À§Ä¡ ¾÷µ¥ÀÌÆ®
+    // ê·¸ë¦¼ì ìœ„ì¹˜ ì—…ë°ì´íŠ¸
     private void UpdateShadowPosition()
     {
         if (shadowObj == null) return;
 
-        // ±×¸²ÀÚ À§Ä¡ ¾÷µ¥ÀÌÆ® (¾à°£ ¾Æ·¡¿¡ Ç¥½Ã)
+        // ê·¸ë¦¼ì ìœ„ì¹˜ ì—…ë°ì´íŠ¸ (ì•½ê°„ ì•„ë˜ì— í‘œì‹œ)
         shadowObj.transform.position = new Vector3(targetPosition.x, targetPosition.y - 0.2f, targetPosition.z);
 
-        // ±×¸²ÀÚµµ ÁÂ¿ì¹İÀü »óÅÂ¿¡ ¸ÂÃã
-        Vector3 shadowScale = shadowObj.transform.localScale;
-        shadowScale.x = Mathf.Abs(shadowScale.x) * (isFlipped ? -1 : 1);
-        shadowObj.transform.localScale = shadowScale;
+        // ê·¸ë¦¼ìë„ ì¢Œìš°ë°˜ì „ ìƒíƒœì— ë§ì¶¤
+        SpriteRenderer shadowRenderer = shadowObj.GetComponent<SpriteRenderer>();
+        if (shadowRenderer != null && spriteRenderer != null)
+        {
+            shadowRenderer.flipX = spriteRenderer.flipX;
+        }
     }
 
-    // µå·¡±× °¡´É ¿©ºÎ ¼³Á¤ ¸Ş¼Òµå (¿ÜºÎ¿¡¼­ È£Ãâ °¡´É)
+    // ë“œë˜ê·¸ ê°€ëŠ¥ ì—¬ë¶€ ì„¤ì • ë©”ì†Œë“œ (ì™¸ë¶€ì—ì„œ í˜¸ì¶œ ê°€ëŠ¥)
     public void SetDraggable(bool draggable)
     {
         isDraggable = draggable;
     }
 
-    // ÁÂ¿ì¹İÀü ¸Ş¼Òµå (¿ÜºÎ¿¡¼­ È£Ãâ °¡´É)
+    // ì¢Œìš°ë°˜ì „ ë©”ì†Œë“œ (ì™¸ë¶€ì—ì„œ í˜¸ì¶œ ê°€ëŠ¥)
     public void FlipObject()
     {
         if (!isFlipping)
@@ -332,9 +331,25 @@ public class DraggableResource : MonoBehaviour
         }
     }
 
-    // ¿ø·¡ À§Ä¡ Àç¼³Á¤ ¸Ş¼Òµå (¿ÜºÎ¿¡¼­ È£Ãâ °¡´É)
+    // ì›ë˜ ìœ„ì¹˜ ì¬ì„¤ì • ë©”ì†Œë“œ (ì™¸ë¶€ì—ì„œ í˜¸ì¶œ ê°€ëŠ¥)
     public void SetOriginalPosition(Vector3 position)
     {
         originalPosition = position;
+    }
+
+    // í˜„ì¬ ì¢Œìš°ë°˜ì „ ìƒíƒœ ë°˜í™˜ (ì™¸ë¶€ì—ì„œ í˜¸ì¶œ ê°€ëŠ¥)
+    public bool IsFlipped()
+    {
+        return isFlipped;
+    }
+
+    // SpriteRendererì˜ flipX ìƒíƒœ ë°˜í™˜ (ì™¸ë¶€ì—ì„œ í˜¸ì¶œ ê°€ëŠ¥)
+    public bool GetSpriteFlipX()
+    {
+        if (spriteRenderer != null)
+        {
+            return spriteRenderer.flipX;
+        }
+        return false;
     }
 }
