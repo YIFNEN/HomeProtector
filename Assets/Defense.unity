@@ -973,23 +973,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9abc1abfe372d1f4abcffda0cff2d39a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 4819599229317786291, guid: 705fa906163b8754e8c71018c62eb5f9, type: 3}
-  spawnTime: 0.5
-  wayPoints:
-  - {fileID: 962104179}
-  - {fileID: 618279640}
-  - {fileID: 850381627}
-  - {fileID: 229383395}
-  - {fileID: 1133236877}
-  - {fileID: 117582901}
-  - {fileID: 2099790488}
-  - {fileID: 1804910497}
-  - {fileID: 1393748972}
-  - {fileID: 907643192}
-  - {fileID: 1673441936}
-  - {fileID: 1501309002}
-  - {fileID: 813347462}
-  - {fileID: 635311499}
+  tilemap: {fileID: 0}
+  enemyHPSliderPrefab: {fileID: 0}
+  canvasTransform: {fileID: 0}
+  defaultTargetTag: Resource
+  playerGold: {fileID: 0}
+  debugMode: 0
 --- !u!4 &883172008
 Transform:
   m_ObjectHideFlags: 0

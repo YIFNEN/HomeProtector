@@ -35,7 +35,7 @@ public class MicrophoneSystem : MonoBehaviour
     [SerializeField] private Color placementIndicatorColor = new Color(0, 1, 0, 0.5f); // 배치 표시기 색상
     [SerializeField] private bool playerActivationEnabled = true; // 플레이어 활성화 가능 여부
     [SerializeField] private bool oneTimeUseOnly = true; // 한 웨이브당 한 번만 사용 가능 여부
-    [SerializeField] private float playerActiveTime = 10f; // 플레이어 활성화 유지 시간 (저녁 모드에서)
+    [SerializeField] private float playerActiveTime = 50f; // 플레이어 활성화 유지 시간 (저녁 모드에서)
     private bool hasActivatedPlayer = false; // 이미 플레이어를 활성화했는지 여부
     private Vector3 defaultPlayerPosition = Vector3.zero; // 기본 플레이어 위치 (0,0,0)
 

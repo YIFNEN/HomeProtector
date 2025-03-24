@@ -89,7 +89,9 @@ GameObject:
   - component: {fileID: 1020243856261622797}
   - component: {fileID: 6852979430877736228}
   - component: {fileID: 3308797380654754428}
+  - component: {fileID: 8383315888604001548}
   - component: {fileID: 4371868426479371123}
+  - component: {fileID: 2476078259433373361}
   m_Layer: 3
   m_Name: Bed
   m_TagString: Human
@@ -178,6 +180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTag: Human
+  autoRegister: 1
 --- !u!114 &1020243856261622797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,6 +252,30 @@ MonoBehaviour:
   onFlip:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8383315888604001548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4153582908150252417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eea7b2e151018a643aac37c4771fb0d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSpriteRenderer: {fileID: 8708783472918968060}
+  defaultSprite: {fileID: 21300000, guid: a0dd8fde308ec75479ca598ee78a5dd9, type: 3}
+  activatedSprite: {fileID: 21300000, guid: 58e7ecb3dd48cb74b80b65a50b679979, type: 3}
+  useTimeOfDaySprites: 0
+  morningSprite: {fileID: 0}
+  eveningSprite: {fileID: 0}
+  useTransitionEffect: 1
+  transitionDuration: 0.5
+  usePulseOnActivation: 1
+  pulseScale: 1.2
+  pulseDuration: 0.5
+  showDebugLogs: 0
 --- !u!61 &4371868426479371123
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -294,3 +321,28 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.64, y: 0.3449539}
   m_EdgeRadius: 0
+--- !u!114 &2476078259433373361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4153582908150252417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd95fc3e3c497fb4e83a9fe11a5e1b74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  waveSystem: {fileID: 0}
+  timeSystem: {fileID: 0}
+  interactionRadius: 1
+  interactionKey: 32
+  playerTag: Human
+  showDebugMessages: 1
+  interactionIndicator: {fileID: 0}
+  pulseSpeed: 1.5
+  pulseScale: 0.2
+  interactionPrompt: {fileID: 0}
+  promptText: {fileID: 0}
+  defaultPromptText: "\uC2A4\uD398\uC774\uC2A4\uBC14\uB97C \uB20C\uB7EC \uBC24\uC744
+    \uC2DC\uC791\uD558\uC138\uC694"

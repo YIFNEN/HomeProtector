@@ -42,7 +42,7 @@ public class WaveSystem : MonoBehaviour
     private PlayerExperience playerExperience; // 플레이어 경험치 참조
 
     [SerializeField]
-    private float defaultWaveDuration = 60f; // 기본 웨이브 지속 시간 (초)
+    private float defaultWaveDuration = 30f; // 기본 웨이브 지속 시간 (초)
 
     [SerializeField]
     private bool cleanupEnemiesAfterAllWaves = true; // 모든 웨이브 완료 후 적 제거 여부

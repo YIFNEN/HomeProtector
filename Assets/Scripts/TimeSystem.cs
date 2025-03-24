@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Linq;
+using UnityEngine.Tilemaps;
 
 public enum TimeOfDay { Morning, Evening }
 
@@ -16,6 +17,15 @@ public class TimeSystem : MonoBehaviour
     [Header("Visual Effects")]
     [SerializeField] private GameObject morningVisualEffect; // 아침 전환 시각효과
     [SerializeField] private GameObject eveningVisualEffect; // 저녁 전환 시각효과
+
+    [Header("Color Settings")]
+    [SerializeField] private bool useColorTransition = true; // 색상 전환 사용 여부
+    [SerializeField] private Color morningBackgroundColor = Color.cyan; // 아침 배경색
+    [SerializeField] private Color eveningBackgroundColor = Color.black; // 저녁 배경색
+    [SerializeField] private Color morningTilemapColor = Color.white; // 아침 타일맵 색상
+    [SerializeField] private Color eveningTilemapColor = new Color(0.5f, 0.5f, 0.5f, 1f); // 저녁 타일맵 색상
+    [SerializeField] private List<Tilemap> tilemaps = new List<Tilemap>(); // 색상을 변경할 타일맵 리스트
+    [SerializeField] private float colorTransitionSpeed = 1.0f; // 색상 전환 속도
 
     [Header("UI References")]
     [SerializeField] private GameObject morningOnlyUI; // 아침에만 표시되는 UI
@@ -53,6 +63,10 @@ public class TimeSystem : MonoBehaviour
     private int resourceLayer;
     private int towerLayer;
 
+    // 색상 전환 코루틴 참조
+    private Coroutine colorTransitionCoroutine;
+    private Camera mainCameraCache;
+
     private void Awake()
     {
         // 시스템 컴포넌트 찾기
@@ -62,6 +76,20 @@ public class TimeSystem : MonoBehaviour
         if (microphoneSystem == null) microphoneSystem = FindObjectOfType<MicrophoneSystem>();
         if (dayCounterSystem == null) dayCounterSystem = FindObjectOfType<DayCounterSystem>();
         if (waveResultSystem == null) waveResultSystem = FindObjectOfType<WaveResultSystem>();
+
+        // 메인 카메라 캐싱
+        mainCameraCache = Camera.main;
+
+        // 타일맵 자동 찾기 (리스트가 비어있는 경우)
+        if (tilemaps.Count == 0)
+        {
+            Tilemap[] foundTilemaps = FindObjectsOfType<Tilemap>();
+            if (foundTilemaps.Length > 0)
+            {
+                tilemaps.AddRange(foundTilemaps);
+                Debug.Log($"{foundTilemaps.Length}개의 타일맵을 자동으로 찾았습니다.");
+            }
+        }
 
         // 레이어 인덱스 캐싱
         morningLayer = LayerMask.NameToLayer(morningOnlyLayerName);
@@ -84,6 +112,12 @@ public class TimeSystem : MonoBehaviour
 
         // 초기 시간 설정에 따른 UI 설정
         UpdateUIBasedOnTime(currentTimeOfDay);
+
+        // 초기 색상 설정
+        if (useColorTransition)
+        {
+            ApplyTimeBasedColors(currentTimeOfDay);
+        }
     }
 
     private void Start()
@@ -115,6 +149,12 @@ public class TimeSystem : MonoBehaviour
             waveSystem.OnWaveStart -= HandleWaveStart;
             waveSystem.OnWaveEnd -= HandleWaveEnd;
             waveSystem.OnAllWavesCompleted -= HandleAllWavesCompleted;
+        }
+
+        // 코루틴 중지
+        if (colorTransitionCoroutine != null)
+        {
+            StopCoroutine(colorTransitionCoroutine);
         }
     }
 
@@ -182,6 +222,12 @@ public class TimeSystem : MonoBehaviour
             eveningVisualEffect.SetActive(true);
         }
 
+        // 색상 전환 시작 (배경색과 타일맵 색상)
+        if (useColorTransition)
+        {
+            StartColorTransition(TimeOfDay.Evening);
+        }
+
         // 전환 지연
         yield return new WaitForSeconds(eveningTransitionDuration);
 
@@ -208,6 +254,12 @@ public class TimeSystem : MonoBehaviour
         if (morningVisualEffect != null)
         {
             morningVisualEffect.SetActive(true);
+        }
+
+        // 색상 전환 시작 (배경색과 타일맵 색상)
+        if (useColorTransition)
+        {
+            StartColorTransition(TimeOfDay.Morning);
         }
 
         // 전환 지연
@@ -242,6 +294,12 @@ public class TimeSystem : MonoBehaviour
         // 게임플레이 요소 업데이트
         UpdateGameplayForEvening();
 
+        // 애니메이션 없이 바로 색상 적용
+        if (useColorTransition && !isTransitioning)
+        {
+            ApplyTimeBasedColors(TimeOfDay.Evening);
+        }
+
         // 이벤트 발생
         if (withEvents)
         {
@@ -268,6 +326,12 @@ public class TimeSystem : MonoBehaviour
         // 게임플레이 요소 업데이트
         UpdateGameplayForMorning();
 
+        // 애니메이션 없이 바로 색상 적용
+        if (useColorTransition && !isTransitioning)
+        {
+            ApplyTimeBasedColors(TimeOfDay.Morning);
+        }
+
         // 이벤트 발생
         if (withEvents)
         {
@@ -275,6 +339,101 @@ public class TimeSystem : MonoBehaviour
         }
 
         Debug.Log("아침으로 전환됨: 준비 단계");
+    }
+
+    #endregion
+
+    #region 색상 전환 관리
+
+    // 색상 전환 시작
+    private void StartColorTransition(TimeOfDay targetTime)
+    {
+        if (mainCameraCache == null) mainCameraCache = Camera.main;
+        if (mainCameraCache == null) return;
+
+        // 기존 코루틴 중지
+        if (colorTransitionCoroutine != null)
+        {
+            StopCoroutine(colorTransitionCoroutine);
+        }
+
+        // 새 코루틴 시작
+        colorTransitionCoroutine = StartCoroutine(
+            SwapColor(
+                targetTime == TimeOfDay.Morning ? eveningBackgroundColor : morningBackgroundColor,
+                targetTime == TimeOfDay.Morning ? morningBackgroundColor : eveningBackgroundColor,
+                targetTime == TimeOfDay.Morning ? eveningTilemapColor : morningTilemapColor,
+                targetTime == TimeOfDay.Morning ? morningTilemapColor : eveningTilemapColor
+            )
+        );
+    }
+
+    // 색상 전환 코루틴 (배경 및 타일맵)
+    private IEnumerator SwapColor(Color startBg, Color endBg, Color startTile, Color endTile)
+    {
+        float t = 0;
+        float duration = currentTimeOfDay == TimeOfDay.Morning ? eveningTransitionDuration : morningTransitionDuration;
+
+        while (t < 1)
+        {
+            t += Time.deltaTime / (duration * colorTransitionSpeed);
+
+            // 배경색 변경
+            if (mainCameraCache != null)
+            {
+                mainCameraCache.backgroundColor = Color.Lerp(startBg, endBg, t);
+            }
+
+            // 모든 타일맵의 색상 변경
+            foreach (var tilemap in tilemaps)
+            {
+                if (tilemap != null)
+                {
+                    tilemap.color = Color.Lerp(startTile, endTile, t);
+                }
+            }
+
+            yield return null;
+        }
+
+        // 최종 색상 적용
+        if (mainCameraCache != null)
+        {
+            mainCameraCache.backgroundColor = endBg;
+        }
+
+        foreach (var tilemap in tilemaps)
+        {
+            if (tilemap != null)
+            {
+                tilemap.color = endTile;
+            }
+        }
+
+        colorTransitionCoroutine = null;
+    }
+
+    // 시간에 따른 색상 즉시 적용 (애니메이션 없이)
+    private void ApplyTimeBasedColors(TimeOfDay time)
+    {
+        if (mainCameraCache == null) mainCameraCache = Camera.main;
+        if (mainCameraCache == null) return;
+
+        // 배경색 설정
+        if (mainCameraCache != null)
+        {
+            mainCameraCache.backgroundColor = time == TimeOfDay.Morning ? morningBackgroundColor : eveningBackgroundColor;
+        }
+
+        // 타일맵 색상 설정
+        Color tileColor = time == TimeOfDay.Morning ? morningTilemapColor : eveningTilemapColor;
+        foreach (var tilemap in tilemaps)
+        {
+            if (tilemap != null)
+            {
+                tilemap.color = tileColor;
+            }
+        }
     }
 
     #endregion
@@ -694,7 +853,127 @@ public class TimeSystem : MonoBehaviour
     }
     #endregion
 
-    // 디버그용 시간 전환 메소드
+    #region 추가된 색상 관련 메서드
+
+    // 카메라 배경색 직접 설정
+    public void SetBackgroundColor(Color color)
+    {
+        if (mainCameraCache == null) mainCameraCache = Camera.main;
+        if (mainCameraCache != null)
+        {
+            mainCameraCache.backgroundColor = color;
+        }
+    }
+
+    // 타일맵 색상 직접 설정
+    public void SetTilemapColor(Color color)
+    {
+        foreach (var tilemap in tilemaps)
+        {
+            if (tilemap != null)
+            {
+                tilemap.color = color;
+            }
+        }
+    }
+
+    // 아침/저녁 배경색 설정
+    public void SetDayColors(Color dayBackground, Color nightBackground)
+    {
+        morningBackgroundColor = dayBackground;
+        eveningBackgroundColor = nightBackground;
+
+        // 현재 시간에 맞게 색상 적용
+        if (currentTimeOfDay == TimeOfDay.Morning)
+        {
+            SetBackgroundColor(morningBackgroundColor);
+        }
+        else
+        {
+            SetBackgroundColor(eveningBackgroundColor);
+        }
+    }
+
+    // 아침/저녁 타일맵 색상 설정
+    public void SetTilemapColors(Color dayTileColor, Color nightTileColor)
+    {
+        morningTilemapColor = dayTileColor;
+        eveningTilemapColor = nightTileColor;
+
+        // 현재 시간에 맞게 색상 적용
+        if (currentTimeOfDay == TimeOfDay.Morning)
+        {
+            SetTilemapColor(morningTilemapColor);
+        }
+        else
+        {
+            SetTilemapColor(eveningTilemapColor);
+        }
+    }
+
+    // 타일맵 추가
+    public void AddTilemap(Tilemap tilemap)
+    {
+        if (tilemap != null && !tilemaps.Contains(tilemap))
+        {
+            tilemaps.Add(tilemap);
+
+            // 현재 시간에 맞는 색상 적용
+            tilemap.color = currentTimeOfDay == TimeOfDay.Morning ? morningTilemapColor : eveningTilemapColor;
+
+            Debug.Log($"타일맵 '{tilemap.name}'이(가) 색상 변경 목록에 추가되었습니다.");
+        }
+    }
+
+    // 타일맵 제거
+    public void RemoveTilemap(Tilemap tilemap)
+    {
+        if (tilemap != null && tilemaps.Contains(tilemap))
+        {
+            tilemaps.Remove(tilemap);
+
+            // 원래 색상으로 복원
+            tilemap.color = Color.white;
+
+            Debug.Log($"타일맵 '{tilemap.name}'이(가) 색상 변경 목록에서 제거되었습니다.");
+        }
+    }
+
+    // 색상 전환 사용 여부 설정
+    public void SetColorTransitionEnabled(bool enabled)
+    {
+        useColorTransition = enabled;
+
+        // 색상 전환이 비활성화되면 모든 색상을 기본값으로 리셋
+        if (!enabled)
+        {
+            if (mainCameraCache == null) mainCameraCache = Camera.main;
+            if (mainCameraCache != null)
+            {
+                mainCameraCache.backgroundColor = Color.black;
+            }
+
+            foreach (var tilemap in tilemaps)
+            {
+                if (tilemap != null)
+                {
+                    tilemap.color = Color.white;
+                }
+            }
+
+            Debug.Log("색상 전환 기능이 비활성화되었습니다. 모든 색상이 기본값으로 리셋되었습니다.");
+        }
+        else
+        {
+            // 색상 전환이 활성화되면 현재 시간에 맞는 색상 적용
+            ApplyTimeBasedColors(currentTimeOfDay);
+            Debug.Log("색상 전환 기능이 활성화되었습니다. 현재 시간에 맞는 색상이 적용되었습니다.");
+        }
+    }
+
+    #endregion
+
+    // 디버그용 시간 전환 메서드
     public void ToggleTimeOfDay()
     {
         if (currentTimeOfDay == TimeOfDay.Morning)
