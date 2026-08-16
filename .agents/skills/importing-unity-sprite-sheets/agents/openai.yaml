@@ -1,0 +1,4 @@
+interface:
+  display_name: "Import Home Protector Sprite Sheets"
+  short_description: "Import manifest-approved art through Unity"
+  default_prompt: "Use $importing-unity-sprite-sheets to import only manifest-approved Home Protector art through Unity Editor automation."
