@@ -7,7 +7,10 @@ Library/
 /[Tt]emp/
 /[Oo]bj/
 /[Bb]uild/
+/[Bb]uild*/
 /[Bb]uilds/
+/[Rr]eleases/
+/새 폴더/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 
