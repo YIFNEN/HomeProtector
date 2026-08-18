@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("±âº» ¼³Á¤")]
+    [Header("ê¸°ë³¸ ì„¤ì •")]
     [SerializeField]
     private Tilemap tilemap;
     [SerializeField]
@@ -13,35 +13,51 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField]
     private Transform canvasTransform;
     [SerializeField]
-    private string defaultTargetTag = "Resource"; // ±âº» Å¸°Ù ÅÂ±×
+    private string defaultTargetTag = "Resource"; // ê¸°ë³¸ íƒ€ê²Ÿ íƒœê·¸
 
-    [Header("¸®¼Ò½º ÂüÁ¶")]
+    [Header("ë¦¬ì†ŒìŠ¤ ì°¸ì¡°")]
     [SerializeField]
     private PlayerGold playerGold;
 
-    [Header("µğ¹ö±×")]
+    [Header("ë””ë²„ê·¸")]
     [SerializeField]
     private bool debugMode = false;
 
     private Wave currentWave;
     private int currentEnemyCount;
     private List<Enemy> enemyList;
+    private Coroutine spawnRoutine;
     private Vector3 offset = new Vector3(0.5f, 0.5f, 0);
     private List<Vector3> possibleSpawnPoints = new List<Vector3>();
 
-    // Àû ½ºÆù/Á¦°Å ÀÌº¥Æ®
+    // ì  ìŠ¤í°/ì œê±° ì´ë²¤íŠ¸
     public delegate void EnemyEvent(Transform enemy);
     public event EnemyEvent OnEnemySpawned;
     public event EnemyEvent OnEnemyDestroyed;
 
-    public List<Enemy> EnemyList => enemyList;
-    public int CurrentEnemyCount => currentEnemyCount;
+    public List<Enemy> EnemyList
+    {
+        get
+        {
+            PruneDestroyedEnemies();
+            return enemyList;
+        }
+    }
+
+    public int CurrentEnemyCount
+    {
+        get
+        {
+            PruneDestroyedEnemies();
+            return currentEnemyCount;
+        }
+    }
 
     private void Awake()
     {
         enemyList = new List<Enemy>();
 
-        // Å¸ÀÏ¸ÊÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é °¡´ÉÇÑ ½ºÆù À§Ä¡ °è»ê
+        // íƒ€ì¼ë§µì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ê°€ëŠ¥í•œ ìŠ¤í° ìœ„ì¹˜ ê³„ì‚°
         if (tilemap != null)
         {
             CalculatePossibleSpawnPoints();
@@ -50,10 +66,10 @@ public class EnemySpawner : MonoBehaviour
 
     private void Start()
     {
-        // TargetManager ÃÊ±âÈ­ È®ÀÎ
+        // TargetManager ì´ˆê¸°í™” í™•ì¸
         if (TargetManager.Instance == null)
         {
-            Debug.LogWarning("TargetManager°¡ ÃÊ±âÈ­µÇÁö ¾Ê¾Ò½À´Ï´Ù. »ı¼ºÇÕ´Ï´Ù.");
+            Debug.LogWarning("TargetManagerê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤. ìƒì„±í•©ë‹ˆë‹¤.");
             GameObject targetManagerObj = new GameObject("TargetManager");
             targetManagerObj.AddComponent<TargetManager>();
         }
@@ -83,7 +99,7 @@ public class EnemySpawner : MonoBehaviour
 
         if (debugMode)
         {
-            Debug.Log($"°¡´ÉÇÑ ½ºÆù Æ÷ÀÎÆ® °è»ê ¿Ï·á: {possibleSpawnPoints.Count}°³");
+            Debug.Log($"ê°€ëŠ¥í•œ ìŠ¤í° í¬ì¸íŠ¸ ê³„ì‚° ì™„ë£Œ: {possibleSpawnPoints.Count}ê°œ");
         }
     }
 
@@ -107,38 +123,55 @@ public class EnemySpawner : MonoBehaviour
         return transform.position;
     }
 
-    // Àû ±×·ì »ı¼º
+    // ì  ê·¸ë£¹ ìƒì„±
     private IEnumerator SpawnEnemyGroups()
     {
-        // ¿şÀÌºêÀÇ °¢ Àû ±×·ì Ã³¸®
+        if (currentWave.enemyGroups == null)
+        {
+            spawnRoutine = null;
+            yield break;
+        }
+
+        // ì›¨ì´ë¸Œì˜ ê° ì  ê·¸ë£¹ ì²˜ë¦¬
         foreach (var enemyGroup in currentWave.enemyGroups)
         {
-            // ÀÌ ±×·ìÀÇ Àû »ı¼º ½ÃÀÛ
+            // ì´ ê·¸ë£¹ì˜ ì  ìƒì„± ì‹œì‘
             yield return StartCoroutine(SpawnEnemyGroup(enemyGroup));
         }
+
+        spawnRoutine = null;
     }
 
     private IEnumerator SpawnEnemyGroup(EnemyGroup enemyGroup)
     {
-        // ½ºÆù À§Ä¡ °áÁ¤
-        Vector3 spawnPosition = enemyGroup.spawnPoint != null
-            ? enemyGroup.spawnPoint.position
-            : transform.position;
+        if (enemyGroup.enemyPrefab == null)
+        {
+            Debug.LogWarning("EnemySpawner: enemyPrefabì´ ì—†ëŠ” EnemyGroupì„ ê±´ë„ˆëœë‹ˆë‹¤.");
+            yield break;
+        }
+
+        if (enemyGroup.count <= 0)
+        {
+            yield break;
+        }
+
+        // ìŠ¤í° ìœ„ì¹˜ ê²°ì •
+        Vector3 spawnPosition = GetSpawnPosition(enemyGroup.spawnPoint);
 
         for (int i = 0; i < enemyGroup.count; i++)
         {
-            // ±âº» À§Ä¡¿¡ Àû »ı¼º
-            GameObject clone = Instantiate(enemyGroup.enemyPrefab, transform.position, Quaternion.identity, transform);
+            // ì‹¤ì œ ìŠ¤í° ìœ„ì¹˜ì— ì  ìƒì„±
+            GameObject clone = Instantiate(enemyGroup.enemyPrefab, spawnPosition, Quaternion.identity, transform);
             Enemy enemy = clone.GetComponent<Enemy>();
 
             if (enemy == null)
             {
-                Debug.LogError($"ÇÁ¸®ÆÕ {enemyGroup.enemyPrefab.name}¿¡ Enemy ÄÄÆ÷³ÍÆ®°¡ ¾ø½À´Ï´Ù!");
+                Debug.LogError($"í”„ë¦¬íŒ¹ {enemyGroup.enemyPrefab.name}ì— Enemy ì»´í¬ë„ŒíŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤!");
                 Destroy(clone);
                 continue;
             }
 
-            // ·£´ı ¿ÀÇÁ¼Â ¼³Á¤
+            // ëœë¤ ì˜¤í”„ì…‹ ì„¤ì •
             Vector3 randomOffset = new Vector3(
                 Random.Range(-1f, 1f),
                 Random.Range(-1f, 1f),
@@ -146,58 +179,60 @@ public class EnemySpawner : MonoBehaviour
             );
             enemy.SetSpawnOffset(randomOffset);
 
-            // ½ºÆù Æ÷ÀÎÆ® ¼³Á¤
+            // ìŠ¤í° í¬ì¸íŠ¸ ì„¤ì •
             enemy.SetCustomSpawnPoint(enemyGroup.spawnPoint);
 
-            // ÀûÀÇ °íÀ¯ ¼³Á¤À» »ç¿ëÇÏ¿© Å¸°Ù Ã£±â
+            // ì ì˜ ê³ ìœ  ì„¤ì •ì„ ì‚¬ìš©í•˜ì—¬ íƒ€ê²Ÿ ì°¾ê¸°
             Transform target = null;
+            Vector3 targetSearchOrigin = spawnPosition + randomOffset;
 
-            // TargetManager¸¦ ÅëÇØ ÇÁ¸®ÆÕ ÀÚ½ÅÀÇ Å¸°Ù ¿ì¼±¼øÀ§·Î Å¸°Ù Ã£±â
+            // TargetManagerë¥¼ í†µí•´ í”„ë¦¬íŒ¹ ìì‹ ì˜ íƒ€ê²Ÿ ìš°ì„ ìˆœìœ„ë¡œ íƒ€ê²Ÿ ì°¾ê¸°
             if (TargetManager.Instance != null)
             {
                 target = TargetManager.Instance.FindTargetByPriority(
                     enemy.GetTargetTagPriority(),
-                    spawnPosition,
+                    targetSearchOrigin,
                     enemy.GetTargetSearchRadius()
                 );
             }
 
-            // Å¸°ÙÀ» ¸ø Ã£À¸¸é °Ç³Ê¶Ù±â
+            // íƒ€ê²Ÿì„ ëª» ì°¾ìœ¼ë©´ ê±´ë„ˆë›°ê¸°
             if (target == null)
             {
-                Debug.LogWarning($"Àû {enemy.name}À» À§ÇÑ Å¸°ÙÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù. ½ºÅµÇÕ´Ï´Ù.");
+                Debug.LogWarning($"ì  {enemy.name}ì„ ìœ„í•œ íƒ€ê²Ÿì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. ìŠ¤í‚µí•©ë‹ˆë‹¤.");
                 Destroy(clone);
                 continue;
             }
 
-            // Àû ÃÊ±âÈ­
+            // ì  ì´ˆê¸°í™”
             enemy.Setup(this, target);
             enemyList.Add(enemy);
             currentEnemyCount++;
 
-            // HP ½½¶óÀÌ´õ »ı¼º
+            // HP ìŠ¬ë¼ì´ë” ìƒì„±
             SpawnEnemyHPSlider(clone);
 
-            // ÀÌº¥Æ® ¹ß»ı
+            // ì´ë²¤íŠ¸ ë°œìƒ
             OnEnemySpawned?.Invoke(enemy.transform);
 
             yield return new WaitForSeconds(enemyGroup.spawnTime);
         }
     }
 
-    // Æ¯Á¤ Àû¿¡ ´ëÇØ Å¸°ÙÀ» ÀçÇÒ´çÇÏ´Â ÇÔ¼ö
+    // íŠ¹ì • ì ì— ëŒ€í•´ íƒ€ê²Ÿì„ ì¬í• ë‹¹í•˜ëŠ” í•¨ìˆ˜
     public Transform ReassignTargetForEnemy(Enemy enemy, string targetTag = null)
     {
         if (enemy == null) return null;
+        if (TargetManager.Instance == null) return null;
 
-        // ÀûÀÇ ÀÚÃ¼ Å¸°Ù ¿ì¼±¼øÀ§ »ç¿ë
+        // ì ì˜ ìì²´ íƒ€ê²Ÿ ìš°ì„ ìˆœìœ„ ì‚¬ìš©
         Transform newTarget = TargetManager.Instance.FindTargetByPriority(
             enemy.GetTargetTagPriority(),
             enemy.transform.position,
             enemy.GetTargetSearchRadius()
         );
 
-        // »õ Å¸°Ù ¼³Á¤
+        // ìƒˆ íƒ€ê²Ÿ ì„¤ì •
         if (newTarget != null)
         {
             enemy.SetTarget(newTarget);
@@ -211,9 +246,11 @@ public class EnemySpawner : MonoBehaviour
         return newTarget;
     }
 
-    // ¸ğµç Àû¿¡ ´ëÇØ Å¸°ÙÀ» ÀçÇÒ´çÇÏ´Â ÇÔ¼ö
+    // ëª¨ë“  ì ì— ëŒ€í•´ íƒ€ê²Ÿì„ ì¬í• ë‹¹í•˜ëŠ” í•¨ìˆ˜
     public void ReassignTargetsForAllEnemies()
     {
+        PruneDestroyedEnemies();
+
         foreach (Enemy enemy in enemyList)
         {
             if (enemy != null)
@@ -230,44 +267,97 @@ public class EnemySpawner : MonoBehaviour
 
     public void DestroyEnemy(EnemyDestroyType type, Enemy enemy, int gold)
     {
-        if (type == EnemyDestroyType.Kill)
+        if (enemy == null)
         {
-            playerGold.CurrentGold += gold;
+            return;
         }
 
-        currentEnemyCount--;
-        enemyList.Remove(enemy);
+        if (type == EnemyDestroyType.Kill)
+        {
+            if (playerGold != null)
+            {
+                playerGold.CurrentGold += gold;
+            }
+        }
 
-        // ÀÌº¥Æ® ¹ß»ı
-        OnEnemyDestroyed?.Invoke(enemy.transform);
+        bool wasTracked = enemyList != null && enemyList.Remove(enemy);
+        if (wasTracked)
+        {
+            currentEnemyCount = Mathf.Max(0, currentEnemyCount - 1);
+        }
+        else if (debugMode)
+        {
+            Debug.LogWarning($"EnemySpawner: ì¶”ì  ì¤‘ì´ ì•„ë‹Œ ì  ì œê±° ìš”ì²­: {enemy.name}");
+        }
+
+        // ì´ë²¤íŠ¸ ë°œìƒ
+        Transform enemyTransform = enemy.transform;
+        OnEnemyDestroyed?.Invoke(enemyTransform);
 
         Destroy(enemy.gameObject);
     }
 
     private void SpawnEnemyHPSlider(GameObject enemy)
     {
+        if (enemyHPSliderPrefab == null || canvasTransform == null)
+        {
+            return;
+        }
+
         GameObject sliderclone = Instantiate(enemyHPSliderPrefab);
         sliderclone.transform.SetParent(canvasTransform, false);
         sliderclone.transform.localScale = Vector3.one;
-        sliderclone.GetComponent<SliderPositionAutoSetter>().Setup(enemy.transform);
-        sliderclone.GetComponent<EnemyHPViewer>().Setup(enemy.GetComponent<EnemyHP>());
+
+        SliderPositionAutoSetter positionAutoSetter = sliderclone.GetComponent<SliderPositionAutoSetter>();
+        if (positionAutoSetter != null)
+        {
+            positionAutoSetter.Setup(enemy.transform);
+        }
+
+        EnemyHPViewer hpViewer = sliderclone.GetComponent<EnemyHPViewer>();
+        EnemyHP enemyHP = enemy.GetComponent<EnemyHP>();
+        if (hpViewer != null && enemyHP != null)
+        {
+            hpViewer.Setup(enemyHP);
+        }
     }
 
     public void StartWave(Wave wave)
     {
         currentWave = wave;
+        PruneDestroyedEnemies();
 
-        // ÀÌ ¿şÀÌºêÀÇ ÃÑ Àû ¼ö °è»ê
-        currentEnemyCount = 0;
-        foreach (var enemyGroup in wave.enemyGroups)
+        if (spawnRoutine != null)
         {
-            // À¯È¿¼º °Ë»ç
-            if (enemyGroup.enemyPrefab != null)
-            {
-                currentEnemyCount += enemyGroup.count;
-            }
+            StopCoroutine(spawnRoutine);
+            spawnRoutine = null;
         }
 
-        StartCoroutine("SpawnEnemyGroups");
+        spawnRoutine = StartCoroutine(SpawnEnemyGroups());
+    }
+
+    private void PruneDestroyedEnemies()
+    {
+        if (enemyList == null)
+        {
+            enemyList = new List<Enemy>();
+            currentEnemyCount = 0;
+            return;
+        }
+
+        int removedCount = enemyList.RemoveAll(enemy => enemy == null);
+        if (removedCount > 0 || currentEnemyCount != enemyList.Count)
+        {
+            currentEnemyCount = enemyList.Count;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (spawnRoutine != null)
+        {
+            StopCoroutine(spawnRoutine);
+            spawnRoutine = null;
+        }
     }
 }

@@ -4,28 +4,30 @@ using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
 
-// ¿şÀÌºê ½Â¸®/ÆĞ¹è Á¶°Ç ¹× °á°ú Ã³¸® ½Ã½ºÅÛ
+// ì›¨ì´ë¸Œ ìŠ¹ë¦¬/íŒ¨ë°° ì¡°ê±´ ë° ê²°ê³¼ ì²˜ë¦¬ ì‹œìŠ¤í…œ
 public class WaveResultSystem : MonoBehaviour
 {
+    private readonly Dictionary<ResourceObject, UnityAction> humanDestroyedHandlers = new Dictionary<ResourceObject, UnityAction>();
+
     [Header("Victory/Defeat Settings")]
-    [SerializeField] private float healthRatioDefeatThreshold = 0.4f; // ÆĞ¹è Á¶°Ç: Ã¼·Â ºñÀ² ÀÓ°è°ª (±âº» 40%)
-    [SerializeField] private float victoryRewardMultiplier = 1.5f; // ½Â¸® ½Ã º¸»ó ¹èÀ²
+    [SerializeField] private float healthRatioDefeatThreshold = 0.4f; // íŒ¨ë°° ì¡°ê±´: ì²´ë ¥ ë¹„ìœ¨ ì„ê³„ê°’ (ê¸°ë³¸ 40%)
+    [SerializeField] private float victoryRewardMultiplier = 1.5f; // ìŠ¹ë¦¬ ì‹œ ë³´ìƒ ë°°ìœ¨
 
     [Header("UI Elements")]
-    [SerializeField] private GameObject resultPanel; // °á°ú ÆĞ³Î
-    [SerializeField] private TextMeshProUGUI resultTitle; // °á°ú Á¦¸ñ (½Â¸®/ÆĞ¹è)
-    [SerializeField] private TextMeshProUGUI resultDescription; // °á°ú ¼³¸í
-    [SerializeField] private TextMeshProUGUI rewardText; // º¸»ó Á¤º¸ ÅØ½ºÆ®
+    [SerializeField] private GameObject resultPanel; // ê²°ê³¼ íŒ¨ë„
+    [SerializeField] private TextMeshProUGUI resultTitle; // ê²°ê³¼ ì œëª© (ìŠ¹ë¦¬/íŒ¨ë°°)
+    [SerializeField] private TextMeshProUGUI resultDescription; // ê²°ê³¼ ì„¤ëª…
+    [SerializeField] private TextMeshProUGUI rewardText; // ë³´ìƒ ì •ë³´ í…ìŠ¤íŠ¸
 
     [Header("Sound Effects")]
-    [SerializeField] private AudioClip victorySound; // ½Â¸® È¿°úÀ½
-    [SerializeField] private AudioClip defeatSound; // ÆĞ¹è È¿°úÀ½
+    [SerializeField] private AudioClip victorySound; // ìŠ¹ë¦¬ íš¨ê³¼ìŒ
+    [SerializeField] private AudioClip defeatSound; // íŒ¨ë°° íš¨ê³¼ìŒ
 
-    // °á°ú ÀÌº¥Æ®
+    // ê²°ê³¼ ì´ë²¤íŠ¸
     public UnityEvent onVictory = new UnityEvent();
     public UnityEvent onDefeat = new UnityEvent();
 
-    // ½Ã½ºÅÛ ÂüÁ¶
+    // ì‹œìŠ¤í…œ ì°¸ì¡°
     private TimeSystem timeSystem;
     private WaveSystem waveSystem;
     private ResourceManager resourceManager;
@@ -33,33 +35,33 @@ public class WaveResultSystem : MonoBehaviour
     private PlayerExperience playerExperience;
     private AudioSource audioSource;
 
-    // ¿şÀÌºê »óÅÂ ÃßÀû
+    // ì›¨ì´ë¸Œ ìƒíƒœ ì¶”ì 
     private bool isWaveActive = false;
     private bool isWaveCompleted = false;
     private bool isHumanDestroyed = false;
     private bool isHealthBelowThreshold = false;
 
-    // º¸»ó Á¤º¸ ÀúÀå
+    // ë³´ìƒ ì •ë³´ ì €ì¥
     private int baseGoldReward = 0;
     private int baseExpReward = 0;
 
     private void Awake()
     {
-        // ½Ã½ºÅÛ ÄÄÆ÷³ÍÆ® Ã£±â
+        // ì‹œìŠ¤í…œ ì»´í¬ë„ŒíŠ¸ ì°¾ê¸°
         timeSystem = FindObjectOfType<TimeSystem>();
         waveSystem = FindObjectOfType<WaveSystem>();
         resourceManager = FindObjectOfType<ResourceManager>();
         playerGold = FindObjectOfType<PlayerGold>();
         playerExperience = FindObjectOfType<PlayerExperience>();
 
-        // ¿Àµğ¿À ¼Ò½º ÄÄÆ÷³ÍÆ® °¡Á®¿À±â/Ãß°¡
+        // ì˜¤ë””ì˜¤ ì†ŒìŠ¤ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°/ì¶”ê°€
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null && (victorySound != null || defeatSound != null))
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        // UI ÃÊ±âÈ­
+        // UI ì´ˆê¸°í™”
         if (resultPanel != null)
         {
             resultPanel.SetActive(false);
@@ -68,7 +70,7 @@ public class WaveResultSystem : MonoBehaviour
 
     private void Start()
     {
-        // ÀÌº¥Æ® ±¸µ¶
+        // ì´ë²¤íŠ¸ êµ¬ë…
         if (timeSystem != null)
         {
             timeSystem.onEveningStart.AddListener(OnEveningStart);
@@ -81,13 +83,13 @@ public class WaveResultSystem : MonoBehaviour
             waveSystem.OnWaveEnd += HandleWaveEnd;
         }
 
-        // ÀçÈ­ ¿ÀºêÁ§Æ® ÆÄ±« ÀÌº¥Æ® ±¸µ¶
+        // ì¬í™” ì˜¤ë¸Œì íŠ¸ íŒŒê´´ ì´ë²¤íŠ¸ êµ¬ë…
         StartCoroutine(SubscribeToResourceObjects());
     }
 
     private void OnDestroy()
     {
-        // ÀÌº¥Æ® ±¸µ¶ ÇØÁ¦
+        // ì´ë²¤íŠ¸ êµ¬ë… í•´ì œ
         if (timeSystem != null)
         {
             timeSystem.onEveningStart.RemoveListener(OnEveningStart);
@@ -99,56 +101,81 @@ public class WaveResultSystem : MonoBehaviour
             waveSystem.OnWaveStart -= HandleWaveStart;
             waveSystem.OnWaveEnd -= HandleWaveEnd;
         }
+
+        UnsubscribeFromHumanResources();
     }
 
-    // Update: Áö¼ÓÀûÀ¸·Î ÆĞ¹è Á¶°Ç Ã¼Å©
+    // Update: ì§€ì†ì ìœ¼ë¡œ íŒ¨ë°° ì¡°ê±´ ì²´í¬
     private void Update()
     {
         if (isWaveActive && !isWaveCompleted)
         {
-            // ÆĞ¹è Á¶°Ç 1: ÀçÈ­ ¿ÀºêÁ§Æ® Ã¼·Â ºñÀ²ÀÌ ÀÓ°è°ª ¹Ì¸¸
+            // íŒ¨ë°° ì¡°ê±´ 1: ì¬í™” ì˜¤ë¸Œì íŠ¸ ì²´ë ¥ ë¹„ìœ¨ì´ ì„ê³„ê°’ ë¯¸ë§Œ
             if (resourceManager != null && resourceManager.TotalHealthRatio < healthRatioDefeatThreshold)
             {
                 isHealthBelowThreshold = true;
-                HandleDefeat("ÀçÈ­ ¿ÀºêÁ§Æ® ¼Õ»ó ½É°¢");
+                HandleDefeat("ì¬í™” ì˜¤ë¸Œì íŠ¸ ì†ìƒ ì‹¬ê°");
             }
 
-            // ÆĞ¹è Á¶°Ç 2: ÀÌ¹Ì Ã¼Å©µÊ (Human ÅÂ±× ¿ÀºêÁ§Æ® ÆÄ±« ÀÌº¥Æ®¿¡¼­)
+            // íŒ¨ë°° ì¡°ê±´ 2: ì´ë¯¸ ì²´í¬ë¨ (Human íƒœê·¸ ì˜¤ë¸Œì íŠ¸ íŒŒê´´ ì´ë²¤íŠ¸ì—ì„œ)
         }
     }
 
-    // ÀçÈ­ ¿ÀºêÁ§Æ® ÀÌº¥Æ® ±¸µ¶ (Á¶±İ Áö¿¬ÇÏ¿© ¸ğµç ¿ÀºêÁ§Æ®°¡ ·ÎµåµÈ ÈÄ ½ÇÇà)
+    // ì¬í™” ì˜¤ë¸Œì íŠ¸ ì´ë²¤íŠ¸ êµ¬ë… (ì¡°ê¸ˆ ì§€ì—°í•˜ì—¬ ëª¨ë“  ì˜¤ë¸Œì íŠ¸ê°€ ë¡œë“œëœ í›„ ì‹¤í–‰)
     private IEnumerator SubscribeToResourceObjects()
     {
         yield return new WaitForSeconds(0.5f);
 
-        // ¾ÀÀÇ ¸ğµç ResourceObject Ã£±â
+        // ì”¬ì˜ ëª¨ë“  ResourceObject ì°¾ê¸°
         ResourceObject[] resourceObjects = FindObjectsOfType<ResourceObject>();
 
         foreach (ResourceObject resource in resourceObjects)
         {
-            // Human ÅÂ±×¸¦ °¡Áø ¸®¼Ò½º È®ÀÎ
             if (resource.gameObject.CompareTag("Human"))
             {
-                // Human ¸®¼Ò½º ÆÄ±« ÀÌº¥Æ® ±¸µ¶
-                resource.onDestroyed.AddListener(() => OnHumanResourceDestroyed(resource));
+                SubscribeToHumanResource(resource);
             }
         }
 
-        Debug.Log($"ÀçÈ­ ¿ÀºêÁ§Æ® ÀÌº¥Æ® ±¸µ¶ ¿Ï·á: {resourceObjects.Length}°³");
+        Debug.Log($"ì¬í™” ì˜¤ë¸Œì íŠ¸ ì´ë²¤íŠ¸ êµ¬ë… ì™„ë£Œ: {resourceObjects.Length}ê°œ");
     }
 
-    // Human ÅÂ±× ÀçÈ­ ÆÄ±« ½Ã È£Ãâ
+    private void SubscribeToHumanResource(ResourceObject resource)
+    {
+        if (resource == null || humanDestroyedHandlers.ContainsKey(resource))
+        {
+            return;
+        }
+
+        UnityAction handler = () => OnHumanResourceDestroyed(resource);
+        humanDestroyedHandlers.Add(resource, handler);
+        resource.onDestroyed.AddListener(handler);
+    }
+
+    private void UnsubscribeFromHumanResources()
+    {
+        foreach (KeyValuePair<ResourceObject, UnityAction> pair in humanDestroyedHandlers)
+        {
+            if (pair.Key != null)
+            {
+                pair.Key.onDestroyed.RemoveListener(pair.Value);
+            }
+        }
+
+        humanDestroyedHandlers.Clear();
+    }
+
+    // Human íƒœê·¸ ì¬í™” íŒŒê´´ ì‹œ í˜¸ì¶œ
     private void OnHumanResourceDestroyed(ResourceObject resource)
     {
         if (isWaveActive && !isWaveCompleted)
         {
             isHumanDestroyed = true;
-            HandleDefeat($"Áß¿ä ÀÚ¿ø '{resource.ResourceName}' ÆÄ±«µÊ");
+            HandleDefeat($"ì¤‘ìš” ìì› '{resource.ResourceName}' íŒŒê´´ë¨");
         }
     }
 
-    // Àú³á ¸ğµå ½ÃÀÛ ½Ã È£Ãâ
+    // ì €ë… ëª¨ë“œ ì‹œì‘ ì‹œ í˜¸ì¶œ
     private void OnEveningStart()
     {
         isWaveActive = true;
@@ -156,154 +183,154 @@ public class WaveResultSystem : MonoBehaviour
         isHumanDestroyed = false;
         isHealthBelowThreshold = false;
 
-        // ±âº» º¸»ó ±İ¾× °è»ê (¿şÀÌºê ½ÃÀÛ ½ÃÁ¡)
+        // ê¸°ë³¸ ë³´ìƒ ê¸ˆì•¡ ê³„ì‚° (ì›¨ì´ë¸Œ ì‹œì‘ ì‹œì )
         CalculateBaseRewards();
 
-        Debug.Log("ÀüÅõ ½ÃÀÛ: ¿şÀÌºê °á°ú ¸ğ´ÏÅÍ¸µ ½ÃÀÛ");
+        Debug.Log("ì „íˆ¬ ì‹œì‘: ì›¨ì´ë¸Œ ê²°ê³¼ ëª¨ë‹ˆí„°ë§ ì‹œì‘");
     }
 
-    // ¾ÆÄ§ ¸ğµå ½ÃÀÛ ½Ã È£Ãâ
+    // ì•„ì¹¨ ëª¨ë“œ ì‹œì‘ ì‹œ í˜¸ì¶œ
     private void OnMorningStart()
     {
         isWaveActive = false;
     }
 
-    // ¿şÀÌºê ½ÃÀÛ ½Ã È£Ãâ
+    // ì›¨ì´ë¸Œ ì‹œì‘ ì‹œ í˜¸ì¶œ
     private void HandleWaveStart(int waveNumber, string waveName)
     {
-        // ¿şÀÌºê ½ÃÀÛ ½Ã »óÅÂ ¸®¼Â
+        // ì›¨ì´ë¸Œ ì‹œì‘ ì‹œ ìƒíƒœ ë¦¬ì…‹
         isWaveCompleted = false;
         isHumanDestroyed = false;
         isHealthBelowThreshold = false;
     }
 
-    // ¿şÀÌºê Á¾·á ½Ã È£Ãâ
+    // ì›¨ì´ë¸Œ ì¢…ë£Œ ì‹œ í˜¸ì¶œ
     private void HandleWaveEnd(int waveNumber, string waveName)
     {
         isWaveCompleted = true;
 
-        // ½ÂÆĞ È®ÀÎ
+        // ìŠ¹íŒ¨ í™•ì¸
         if (!isHumanDestroyed && !isHealthBelowThreshold)
         {
-            // ¸ğµç ÆĞ¹è Á¶°ÇÀ» ÃæÁ·ÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î ½Â¸®
+            // ëª¨ë“  íŒ¨ë°° ì¡°ê±´ì„ ì¶©ì¡±í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ ìŠ¹ë¦¬
             HandleVictory();
         }
-        // ÆĞ¹è´Â ÀÌ¹Ì ¾÷µ¥ÀÌÆ®¿¡¼­ Ã³¸®µÊ
+        // íŒ¨ë°°ëŠ” ì´ë¯¸ ì—…ë°ì´íŠ¸ì—ì„œ ì²˜ë¦¬ë¨
     }
 
-    // ½Â¸® Ã³¸®
+    // ìŠ¹ë¦¬ ì²˜ë¦¬
     private void HandleVictory()
     {
-        Debug.Log("¿şÀÌºê ½Â¸®!");
+        Debug.Log("ì›¨ì´ë¸Œ ìŠ¹ë¦¬!");
 
-        // º¸»ó Áö±Ş
+        // ë³´ìƒ ì§€ê¸‰
         int goldReward = Mathf.RoundToInt(baseGoldReward * victoryRewardMultiplier);
         int expReward = Mathf.RoundToInt(baseExpReward * victoryRewardMultiplier);
 
-        // °ñµå Áö±Ş
+        // ê³¨ë“œ ì§€ê¸‰
         if (playerGold != null)
         {
             playerGold.CurrentGold += goldReward;
         }
 
-        // °æÇèÄ¡ Áö±Ş (±âº» °æÇèÄ¡´Â WaveSystem¿¡¼­ Ã³¸®)
+        // ê²½í—˜ì¹˜ ì§€ê¸‰ (ê¸°ë³¸ ê²½í—˜ì¹˜ëŠ” WaveSystemì—ì„œ ì²˜ë¦¬)
         if (playerExperience != null)
         {
-            // Ãß°¡ °æÇèÄ¡ º¸³Ê½º (±âº»ÀÇ 0.5¹è)
+            // ì¶”ê°€ ê²½í—˜ì¹˜ ë³´ë„ˆìŠ¤ (ê¸°ë³¸ì˜ 0.5ë°°)
             int bonusExp = Mathf.RoundToInt(baseExpReward * (victoryRewardMultiplier - 1.0f));
             playerExperience.AddExperience(bonusExp);
         }
 
-        // ½Â¸® È¿°úÀ½ Àç»ı
+        // ìŠ¹ë¦¬ íš¨ê³¼ìŒ ì¬ìƒ
         if (audioSource != null && victorySound != null)
         {
             audioSource.PlayOneShot(victorySound);
         }
 
-        // ½Â¸® UI Ç¥½Ã
-        ShowResultUI(true, "¿şÀÌºê ½Â¸®!",
-            $"¸ğµç Áß¿ä ÀÚ¿øÀ» ÁöÄÑ³Â½À´Ï´Ù.\nÇöÀç ÀÚ¿ø »óÅÂ: {Mathf.RoundToInt(resourceManager.TotalHealthRatio * 100)}%",
-            $"º¸»ó: {goldReward} °ñµå (+{Mathf.RoundToInt(baseGoldReward * (victoryRewardMultiplier - 1.0f))} º¸³Ê½º)\n°æÇèÄ¡: {expReward} (+{Mathf.RoundToInt(baseExpReward * (victoryRewardMultiplier - 1.0f))} º¸³Ê½º)");
+        // ìŠ¹ë¦¬ UI í‘œì‹œ
+        ShowResultUI(true, "ì›¨ì´ë¸Œ ìŠ¹ë¦¬!",
+            $"ëª¨ë“  ì¤‘ìš” ìì›ì„ ì§€ì¼œëƒˆìŠµë‹ˆë‹¤.\ní˜„ì¬ ìì› ìƒíƒœ: {Mathf.RoundToInt(resourceManager.TotalHealthRatio * 100)}%",
+            $"ë³´ìƒ: {goldReward} ê³¨ë“œ (+{Mathf.RoundToInt(baseGoldReward * (victoryRewardMultiplier - 1.0f))} ë³´ë„ˆìŠ¤)\nê²½í—˜ì¹˜: {expReward} (+{Mathf.RoundToInt(baseExpReward * (victoryRewardMultiplier - 1.0f))} ë³´ë„ˆìŠ¤)");
 
-        // ½Â¸® ÀÌº¥Æ® ¹ß»ı
+        // ìŠ¹ë¦¬ ì´ë²¤íŠ¸ ë°œìƒ
         onVictory.Invoke();
     }
 
-    // ÆĞ¹è Ã³¸®
+    // íŒ¨ë°° ì²˜ë¦¬
     private void HandleDefeat(string reason)
     {
-        // ÀÌ¹Ì Ã³¸®µÈ °æ¿ì Áßº¹ ½ÇÇà ¹æÁö
+        // ì´ë¯¸ ì²˜ë¦¬ëœ ê²½ìš° ì¤‘ë³µ ì‹¤í–‰ ë°©ì§€
         if (isWaveCompleted) return;
 
-        Debug.Log($"¿şÀÌºê ÆĞ¹è: {reason}");
+        Debug.Log($"ì›¨ì´ë¸Œ íŒ¨ë°°: {reason}");
         isWaveCompleted = true;
 
-        // ±âº» º¸»ó¸¸ Áö±Ş (¹èÀ² ¾øÀ½)
+        // ê¸°ë³¸ ë³´ìƒë§Œ ì§€ê¸‰ (ë°°ìœ¨ ì—†ìŒ)
         int goldReward = baseGoldReward;
         int expReward = baseExpReward;
 
-        // °ñµå Áö±Ş
+        // ê³¨ë“œ ì§€ê¸‰
         if (playerGold != null)
         {
             playerGold.CurrentGold += goldReward;
         }
 
-        // °æÇèÄ¡´Â WaveSystem¿¡¼­ Ã³¸®
+        // ê²½í—˜ì¹˜ëŠ” WaveSystemì—ì„œ ì²˜ë¦¬
 
-        // ÆĞ¹è È¿°úÀ½ Àç»ı
+        // íŒ¨ë°° íš¨ê³¼ìŒ ì¬ìƒ
         if (audioSource != null && defeatSound != null)
         {
             audioSource.PlayOneShot(defeatSound);
         }
 
-        // ÆĞ¹è UI Ç¥½Ã
-        ShowResultUI(false, "¿şÀÌºê ÆĞ¹è!",
-            $"ÆĞ¹è ¿øÀÎ: {reason}\nÇöÀç ÀÚ¿ø »óÅÂ: {Mathf.RoundToInt(resourceManager.TotalHealthRatio * 100)}%",
-            $"º¸»ó: {goldReward} °ñµå\n°æÇèÄ¡: {expReward}");
+        // íŒ¨ë°° UI í‘œì‹œ
+        ShowResultUI(false, "ì›¨ì´ë¸Œ íŒ¨ë°°!",
+            $"íŒ¨ë°° ì›ì¸: {reason}\ní˜„ì¬ ìì› ìƒíƒœ: {Mathf.RoundToInt(resourceManager.TotalHealthRatio * 100)}%",
+            $"ë³´ìƒ: {goldReward} ê³¨ë“œ\nê²½í—˜ì¹˜: {expReward}");
 
-        // ÆĞ¹è ÀÌº¥Æ® ¹ß»ı
+        // íŒ¨ë°° ì´ë²¤íŠ¸ ë°œìƒ
         onDefeat.Invoke();
 
-        // ¿şÀÌºê °­Á¦ Á¾·á (ÇÊ¿ä½Ã)
+        // ì›¨ì´ë¸Œ ê°•ì œ ì¢…ë£Œ (í•„ìš”ì‹œ)
         if (waveSystem != null && !isWaveCompleted)
         {
-            // ¿©±â¿¡ ¿şÀÌºê °­Á¦ Á¾·á ·ÎÁ÷ Ãß°¡ (WaveSystem¿¡ ¸Ş¼Òµå ÇÊ¿ä)
+            // ì—¬ê¸°ì— ì›¨ì´ë¸Œ ê°•ì œ ì¢…ë£Œ ë¡œì§ ì¶”ê°€ (WaveSystemì— ë©”ì†Œë“œ í•„ìš”)
         }
     }
 
-    // ±âº» º¸»ó °è»ê
+    // ê¸°ë³¸ ë³´ìƒ ê³„ì‚°
     private void CalculateBaseRewards()
     {
-        // ±âº» °ñµå º¸»ó = ÇöÀç ¿şÀÌºê * 10 + 50
+        // ê¸°ë³¸ ê³¨ë“œ ë³´ìƒ = í˜„ì¬ ì›¨ì´ë¸Œ * 10 + 50
         if (waveSystem != null)
         {
             baseGoldReward = waveSystem.CurrentWave * 10 + 50;
         }
         else
         {
-            baseGoldReward = 50; // ±âº»°ª
+            baseGoldReward = 50; // ê¸°ë³¸ê°’
         }
 
-        // ±âº» °æÇèÄ¡ º¸»ó = ÇöÀç ¿şÀÌºê * 15 + 30
+        // ê¸°ë³¸ ê²½í—˜ì¹˜ ë³´ìƒ = í˜„ì¬ ì›¨ì´ë¸Œ * 15 + 30
         if (waveSystem != null)
         {
             baseExpReward = waveSystem.CurrentWave * 15 + 30;
         }
         else
         {
-            baseExpReward = 30; // ±âº»°ª
+            baseExpReward = 30; // ê¸°ë³¸ê°’
         }
     }
 
-    // °á°ú UI Ç¥½Ã
+    // ê²°ê³¼ UI í‘œì‹œ
     private void ShowResultUI(bool isVictory, string title, string description, string rewardInfo)
     {
         if (resultPanel == null) return;
 
-        // ÆĞ³Î È°¼ºÈ­
+        // íŒ¨ë„ í™œì„±í™”
         resultPanel.SetActive(true);
 
-        // ÅØ½ºÆ® ¼³Á¤
+        // í…ìŠ¤íŠ¸ ì„¤ì •
         if (resultTitle != null)
         {
             resultTitle.text = title;
@@ -320,11 +347,11 @@ public class WaveResultSystem : MonoBehaviour
             rewardText.text = rewardInfo;
         }
 
-        // ½Ã°£ Áö¿¬ ÈÄ ÆĞ³Î ¼û±â±â
+        // ì‹œê°„ ì§€ì—° í›„ íŒ¨ë„ ìˆ¨ê¸°ê¸°
         StartCoroutine(HideResultPanel(5f));
     }
 
-    // °á°ú ÆĞ³Î ¼û±â±â
+    // ê²°ê³¼ íŒ¨ë„ ìˆ¨ê¸°ê¸°
     private IEnumerator HideResultPanel(float delay)
     {
         yield return new WaitForSeconds(delay);

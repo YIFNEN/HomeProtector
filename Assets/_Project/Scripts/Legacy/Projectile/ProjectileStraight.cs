@@ -2,36 +2,47 @@ using UnityEngine;
 
 public class ProjectileStraight : ProjectileBase
 {
-    [SerializeField] private float moveSpeed = 8f; // ¹ß»çÃ¼ ÀÌµ¿ ¼Óµµ
-    private Vector3 moveDirection; // ¹ß»çÃ¼ ÀÌµ¿ ¹æÇâ
+    [SerializeField] private float moveSpeed = 8f; // ë°œì‚¬ì²´ ì´ë™ ì†ë„
+    private Vector3 moveDirection; // ë°œì‚¬ì²´ ì´ë™ ë°©í–¥
+    private bool flipDirection;
 
     public override void Setup(Transform target, float damage, int maxCount = 1, int index = 0)
     {
         base.Setup(target, damage, maxCount, index);
 
-        // Å¸°Ù ¹æÇâÀ¸·Î ¹ß»ç
+        // íƒ€ê²Ÿ ë°©í–¥ìœ¼ë¡œ ë°œì‚¬
         if (target != null)
         {
             moveDirection = (target.position - transform.position).normalized;
         }
         else
         {
-            moveDirection = transform.right; // ±âº»ÀûÀ¸·Î ¿À¸¥ÂÊ ¹æÇâ
+            moveDirection = transform.right; // ê¸°ë³¸ì ìœ¼ë¡œ ì˜¤ë¥¸ìª½ ë°©í–¥
         }
 
-        // ÀÌµ¿ ¹æÇâ¿¡ µû¶ó ½ºÇÁ¶óÀÌÆ® È¸Àü
+        if (flipDirection)
+        {
+            moveDirection.x *= -1f;
+        }
+
+        // ì´ë™ ë°©í–¥ì— ë”°ë¼ ìŠ¤í”„ë¼ì´íŠ¸ íšŒì „
         RotateToMoveDirection();
     }
 
-    // ÀÌµ¿ ¹æÇâ¿¡ µû¶ó ½ºÇÁ¶óÀÌÆ® È¸Àü
+    public void SetFlipDirection(bool flipped)
+    {
+        flipDirection = flipped;
+    }
+
+    // ì´ë™ ë°©í–¥ì— ë”°ë¼ ìŠ¤í”„ë¼ì´íŠ¸ íšŒì „
     private void RotateToMoveDirection()
     {
-        // ÀÌµ¿ ¹æÇâ º¤ÅÍ°¡ À¯È¿ÇÑÁö È®ÀÎ
+        // ì´ë™ ë°©í–¥ ë²¡í„°ê°€ ìœ íš¨í•œì§€ í™•ì¸
         if (moveDirection.sqrMagnitude > 0.001f)
         {
             float angle = Mathf.Atan2(moveDirection.y, moveDirection.x) * Mathf.Rad2Deg;
 
-            // ¿ŞÂÊ ¹æÇâÀÏ ¶§ 180µµ Ãß°¡ º¸Á¤
+            // ì™¼ìª½ ë°©í–¥ì¼ ë•Œ 180ë„ ì¶”ê°€ ë³´ì •
             if (moveDirection.x < 0)
             {
                 angle += 180f;
@@ -43,17 +54,17 @@ public class ProjectileStraight : ProjectileBase
 
     public override void Process()
     {
-        // ÀÌµ¿ ¹æÇâÀ¸·Î °è¼Ó ÀÌµ¿
+        // ì´ë™ ë°©í–¥ìœ¼ë¡œ ê³„ì† ì´ë™
         transform.position += moveDirection * moveSpeed * Time.deltaTime;
     }
 
-    // Update ¸Ş¼Òµå ¿À¹ö¶óÀÌµå - ºÎ¸ğ Å¬·¡½ºÀÇ Å¸°Ù null Ã¼Å©¸¦ ¿ìÈ¸
+    // Update ë©”ì†Œë“œ ì˜¤ë²„ë¼ì´ë“œ - ë¶€ëª¨ í´ë˜ìŠ¤ì˜ íƒ€ê²Ÿ null ì²´í¬ë¥¼ ìš°íšŒ
     protected override void Update()
     {
-        // Á÷¼± ¹ß»çÃ¼´Â Å¸°ÙÀÌ ¾ø¾îµµ °è¼Ó ÀÌµ¿ÇØ¾ß ÇÔ
+        // ì§ì„  ë°œì‚¬ì²´ëŠ” íƒ€ê²Ÿì´ ì—†ì–´ë„ ê³„ì† ì´ë™í•´ì•¼ í•¨
         Process();
 
-        // Z À§Ä¡ ¾÷µ¥ÀÌÆ® (ÀÌ¼Ò¸ŞÆ®¸¯ ÇÚµé·¯°¡ ¾ø´Â °æ¿ì)
+        // Z ìœ„ì¹˜ ì—…ë°ì´íŠ¸ (ì´ì†Œë©”íŠ¸ë¦­ í•¸ë“¤ëŸ¬ê°€ ì—†ëŠ” ê²½ìš°)
         if (updateZPosition && isometricPosition == null)
         {
             Vector3 position = transform.position;
@@ -66,10 +77,10 @@ public class ProjectileStraight : ProjectileBase
     {
         if (collision.CompareTag("Enemy"))
         {
-            // È÷Æ® ÀÌÆåÆ® »ı¼º
+            // íˆíŠ¸ ì´í™íŠ¸ ìƒì„±
             CreateHitEffect(transform.position);
 
-            // µ¥¹ÌÁö Àû¿ë
+            // ë°ë¯¸ì§€ ì ìš©
             EnemyHP enemyHP = collision.GetComponent<EnemyHP>();
             if (enemyHP != null)
             {

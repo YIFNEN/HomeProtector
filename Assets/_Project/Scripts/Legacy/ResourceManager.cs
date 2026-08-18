@@ -1,23 +1,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class ResourceManager : MonoBehaviour
 {
     private List<ResourceObject> allResources = new List<ResourceObject>();
-    private List<ResourceObject> initialResources = new List<ResourceObject>(); // ÃÊ±â ¸®¼Ò½º ¸ñ·Ï ÀúÀå
-    private float initialTotalMaxHP = 0f; // ÃÊ±â ÃÖ´ë Ã¼·Â ÇÕ°è
+    private List<ResourceObject> initialResources = new List<ResourceObject>(); // ì´ˆê¸° ë¦¬ì†ŒìŠ¤ ëª©ë¡ ì €ì¥
+    private readonly Dictionary<ResourceObject, UnityAction> resourceDestroyedHandlers = new Dictionary<ResourceObject, UnityAction>();
+    private float initialTotalMaxHP = 0f; // ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ í•©ê³„
 
-    // ÆÄ±«µÈ ¸®¼Ò½º Á¤º¸¸¦ ÀúÀåÇÏ´Â Å¬·¡½º
+    // íŒŒê´´ëœ ë¦¬ì†ŒìŠ¤ ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” í´ë˜ìŠ¤
     [System.Serializable]
     private class DestroyedResourceData
     {
-        public GameObject prefab; // ¸®¼Ò½º ÇÁ¸®ÆÕ
-        public Vector3 position; // À§Ä¡
-        public Quaternion rotation; // È¸Àü
-        public string resourceName; // ¸®¼Ò½º ÀÌ¸§
-        public float maxHP; // ÃÖ´ë Ã¼·Â
-        public string objectName; // ¿ÀºêÁ§Æ® ÀÌ¸§ (ÇÁ¸®ÆÕ ÀÌ¸§¿¡ È°¿ë)
+        public GameObject prefab; // ë¦¬ì†ŒìŠ¤ í”„ë¦¬íŒ¹
+        public Vector3 position; // ìœ„ì¹˜
+        public Quaternion rotation; // íšŒì „
+        public string resourceName; // ë¦¬ì†ŒìŠ¤ ì´ë¦„
+        public float maxHP; // ìµœëŒ€ ì²´ë ¥
+        public string objectName; // ì˜¤ë¸Œì íŠ¸ ì´ë¦„ (í”„ë¦¬íŒ¹ ì´ë¦„ì— í™œìš©)
 
         public DestroyedResourceData(GameObject prefab, Vector3 position, Quaternion rotation, string resourceName, float maxHP, string objectName)
         {
@@ -30,24 +32,24 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
-    // ÆÄ±«µÈ ¸®¼Ò½º µ¥ÀÌÅÍ ¸ñ·Ï
+    // íŒŒê´´ëœ ë¦¬ì†ŒìŠ¤ ë°ì´í„° ëª©ë¡
     private List<DestroyedResourceData> destroyedResources = new List<DestroyedResourceData>();
 
-    [SerializeField] private bool debugMode = false; // µğ¹ö±× ·Î±× Ãâ·Â ¿©ºÎ
-    [SerializeField] private List<GameObject> resourcePrefabs; // ¸®¼Ò½º ¿ÀºêÁ§Æ® ÇÁ¸®ÆÕ ¸ñ·Ï
-    [SerializeField] private GameObject defaultResourcePrefab; // ±âº» ¸®¼Ò½º ÇÁ¸®ÆÕ (º¹±¸ ½ÇÆĞ ½Ã »ç¿ë)
+    [SerializeField] private bool debugMode = false; // ë””ë²„ê·¸ ë¡œê·¸ ì¶œë ¥ ì—¬ë¶€
+    [SerializeField] private List<GameObject> resourcePrefabs; // ë¦¬ì†ŒìŠ¤ ì˜¤ë¸Œì íŠ¸ í”„ë¦¬íŒ¹ ëª©ë¡
+    [SerializeField] private GameObject defaultResourcePrefab; // ê¸°ë³¸ ë¦¬ì†ŒìŠ¤ í”„ë¦¬íŒ¹ (ë³µêµ¬ ì‹¤íŒ¨ ì‹œ ì‚¬ìš©)
 
-    // ¸®¼Ò½º ÃÊ±â ÀúÀå µ¥ÀÌÅÍ (ÃÊ±âÈ­ ´Ü°è¿¡¼­ ¼³Á¤)
+    // ë¦¬ì†ŒìŠ¤ ì´ˆê¸° ì €ì¥ ë°ì´í„° (ì´ˆê¸°í™” ë‹¨ê³„ì—ì„œ ì„¤ì •)
     private Dictionary<string, GameObject> initialResourceData = new Dictionary<string, GameObject>();
 
-    // ¸ğµç ÀçÈ­ ¿ÀºêÁ§Æ®ÀÇ ÃÑ Ã¼·Â ´ëºñ ³²Àº Ã¼·Â ºñÀ² (0~1, 1ÀÌ¸é ¸ğµç ¿ÀºêÁ§Æ®°¡ Ç®Ã¼·Â)
+    // ëª¨ë“  ì¬í™” ì˜¤ë¸Œì íŠ¸ì˜ ì´ ì²´ë ¥ ëŒ€ë¹„ ë‚¨ì€ ì²´ë ¥ ë¹„ìœ¨ (0~1, 1ì´ë©´ ëª¨ë“  ì˜¤ë¸Œì íŠ¸ê°€ í’€ì²´ë ¥)
     public float TotalHealthRatio
     {
         get
         {
             float totalCurrentHP = 0f;
 
-            // ÇöÀç Ã¼·Â¸¸ ½Ç½Ã°£ °è»ê
+            // í˜„ì¬ ì²´ë ¥ë§Œ ì‹¤ì‹œê°„ ê³„ì‚°
             foreach (ResourceObject resource in allResources)
             {
                 if (resource != null)
@@ -56,32 +58,32 @@ public class ResourceManager : MonoBehaviour
                 }
             }
 
-            // ÃÊ±â ÃÖ´ë Ã¼·ÂÀ¸·Î ³ª´©±â (0À¸·Î ³ª´©±â ¹æÁö)
+            // ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ìœ¼ë¡œ ë‚˜ëˆ„ê¸° (0ìœ¼ë¡œ ë‚˜ëˆ„ê¸° ë°©ì§€)
             return initialTotalMaxHP > 0 ? totalCurrentHP / initialTotalMaxHP : 1f;
         }
     }
 
-    // ¼Õ½Çµµ (0~1, 1ÀÌ¸é ¸ğµç ¿ÀºêÁ§Æ®°¡ ÆÄ±«µÊ)
+    // ì†ì‹¤ë„ (0~1, 1ì´ë©´ ëª¨ë“  ì˜¤ë¸Œì íŠ¸ê°€ íŒŒê´´ë¨)
     public float DamageRatio => 1f - TotalHealthRatio;
 
     private void Awake()
     {
-        // ¾ÀÀÇ ¸ğµç ResourceObject Ã£±â
+        // ì”¬ì˜ ëª¨ë“  ResourceObject ì°¾ê¸°
         RefreshResourceList();
 
-        // ÃÊ±â ÃÖ´ë Ã¼·Â °è»ê ¹× ÃÊ±â ¸®¼Ò½º ¸ñ·Ï ÀúÀå
+        // ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ ê³„ì‚° ë° ì´ˆê¸° ë¦¬ì†ŒìŠ¤ ëª©ë¡ ì €ì¥
         CalculateInitialMaxHP();
 
-        // ÃÊ±â ¸®¼Ò½º µ¥ÀÌÅÍ º¹»ç (º¹±¸¿ë)
+        // ì´ˆê¸° ë¦¬ì†ŒìŠ¤ ë°ì´í„° ë³µì‚¬ (ë³µêµ¬ìš©)
         CacheInitialResourceData();
     }
 
     private void Start()
     {
-        // ResourceObject¿¡ ÆÄ±« ÀÌº¥Æ® µî·Ï
+        // ResourceObjectì— íŒŒê´´ ì´ë²¤íŠ¸ ë“±ë¡
         RegisterResourceEvents();
 
-        // TimeSystem ÀÌº¥Æ® ±¸µ¶
+        // TimeSystem ì´ë²¤íŠ¸ êµ¬ë…
         TimeSystem timeSystem = FindObjectOfType<TimeSystem>();
         if (timeSystem != null)
         {
@@ -89,56 +91,58 @@ public class ResourceManager : MonoBehaviour
 
             if (debugMode)
             {
-                Debug.Log("ResourceManager: TimeSystemÀÇ onMorningStart ÀÌº¥Æ®¿¡ ±¸µ¶µÊ");
+                Debug.Log("ResourceManager: TimeSystemì˜ onMorningStart ì´ë²¤íŠ¸ì— êµ¬ë…ë¨");
             }
         }
         else if (debugMode)
         {
-            Debug.LogWarning("ResourceManager: TimeSystemÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("ResourceManager: TimeSystemì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
         }
 
         if (debugMode)
         {
-            Debug.Log($"ResourceManager: ÃÊ±â ÃÖ´ë Ã¼·Â ÇÕ°è = {initialTotalMaxHP}");
-            Debug.Log($"ResourceManager: ÃÊ±â ¸®¼Ò½º °³¼ö = {initialResources.Count}");
-            Debug.Log($"ResourceManager: Ä³½ÃµÈ ¸®¼Ò½º ÇÁ¸®ÆÕ °³¼ö = {initialResourceData.Count}");
+            Debug.Log($"ResourceManager: ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ í•©ê³„ = {initialTotalMaxHP}");
+            Debug.Log($"ResourceManager: ì´ˆê¸° ë¦¬ì†ŒìŠ¤ ê°œìˆ˜ = {initialResources.Count}");
+            Debug.Log($"ResourceManager: ìºì‹œëœ ë¦¬ì†ŒìŠ¤ í”„ë¦¬íŒ¹ ê°œìˆ˜ = {initialResourceData.Count}");
         }
     }
 
     private void OnDestroy()
     {
-        // TimeSystem ÀÌº¥Æ® ±¸µ¶ ÇØÁ¦
+        // TimeSystem ì´ë²¤íŠ¸ êµ¬ë… í•´ì œ
         TimeSystem timeSystem = FindObjectOfType<TimeSystem>();
         if (timeSystem != null)
         {
             timeSystem.onMorningStart.RemoveListener(OnMorningStart);
         }
+
+        UnsubscribeAllResourceDestroyedHandlers();
     }
 
-    // ÃÊ±â ¸®¼Ò½º µ¥ÀÌÅÍ Ä³½Ì (º¹±¸¿ë)
+    // ì´ˆê¸° ë¦¬ì†ŒìŠ¤ ë°ì´í„° ìºì‹± (ë³µêµ¬ìš©)
     private void CacheInitialResourceData()
     {
         initialResourceData.Clear();
 
-        // ¾À¿¡ ÀÖ´Â ¸ğµç ¸®¼Ò½º ¿ÀºêÁ§Æ®ÀÇ ÇÁ¸®ÆÕ Á¤º¸ ÀúÀå
+        // ì”¬ì— ìˆëŠ” ëª¨ë“  ë¦¬ì†ŒìŠ¤ ì˜¤ë¸Œì íŠ¸ì˜ í”„ë¦¬íŒ¹ ì •ë³´ ì €ì¥
         foreach (ResourceObject resource in initialResources)
         {
             if (resource != null)
             {
                 string objectName = resource.gameObject.name.Replace("(Clone)", "").Trim();
 
-                // ÀÌ¹Ì Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì¿¡¸¸ Ãß°¡
+                // ì´ë¯¸ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ë§Œ ì¶”ê°€
                 if (!initialResourceData.ContainsKey(resource.ResourceName))
                 {
-                    // ¸ÕÀú ÇÁ¸®ÆÕ ¸ñ·Ï¿¡¼­ Ã£±â
+                    // ë¨¼ì € í”„ë¦¬íŒ¹ ëª©ë¡ì—ì„œ ì°¾ê¸°
                     GameObject prefab = FindPrefabByName(objectName);
 
-                    // Ã£Áö ¸øÇß´Ù¸é ¸®¼Ò½º ¿ÀºêÁ§Æ® ÀÚÃ¼¸¦ ÅÛÇÃ¸´À¸·Î ÀúÀå
+                    // ì°¾ì§€ ëª»í–ˆë‹¤ë©´ ë¦¬ì†ŒìŠ¤ ì˜¤ë¸Œì íŠ¸ ìì²´ë¥¼ í…œí”Œë¦¿ìœ¼ë¡œ ì €ì¥
                     if (prefab == null)
                     {
                         if (debugMode)
                         {
-                            Debug.LogWarning($"ResourceManager: '{objectName}' ÇÁ¸®ÆÕÀ» Ã£À» ¼ö ¾ø¾î ¿ÀºêÁ§Æ® ÀÚÃ¼¸¦ ÅÛÇÃ¸´À¸·Î »ç¿ëÇÕ´Ï´Ù.");
+                            Debug.LogWarning($"ResourceManager: '{objectName}' í”„ë¦¬íŒ¹ì„ ì°¾ì„ ìˆ˜ ì—†ì–´ ì˜¤ë¸Œì íŠ¸ ìì²´ë¥¼ í…œí”Œë¦¿ìœ¼ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.");
                         }
                         prefab = resource.gameObject;
                     }
@@ -147,48 +151,79 @@ public class ResourceManager : MonoBehaviour
 
                     if (debugMode)
                     {
-                        Debug.Log($"ResourceManager: '{resource.ResourceName}' ¸®¼Ò½º µ¥ÀÌÅÍ Ä³½ÌµÊ, ÇÁ¸®ÆÕ: {objectName}");
+                        Debug.Log($"ResourceManager: '{resource.ResourceName}' ë¦¬ì†ŒìŠ¤ ë°ì´í„° ìºì‹±ë¨, í”„ë¦¬íŒ¹: {objectName}");
                     }
                 }
             }
         }
     }
 
-    // ¸®¼Ò½º ÀÌº¥Æ® µî·Ï
+    // ë¦¬ì†ŒìŠ¤ ì´ë²¤íŠ¸ ë“±ë¡
     private void RegisterResourceEvents()
     {
         foreach (ResourceObject resource in allResources)
         {
-            if (resource != null)
-            {
-                // ±âÁ¸ ¸®½º³Ê Á¦°Å ÈÄ ´Ù½Ã µî·Ï (Áßº¹ ¹æÁö)
-                resource.onDestroyed.RemoveListener(() => OnResourceDestroyed(resource));
-                resource.onDestroyed.AddListener(() => OnResourceDestroyed(resource));
-            }
+            SubscribeToResourceDestroyed(resource);
         }
     }
 
-    // ¸®¼Ò½º ÆÄ±« ÀÌº¥Æ® ÇÚµé·¯
+    private void SubscribeToResourceDestroyed(ResourceObject resource)
+    {
+        if (resource == null || resourceDestroyedHandlers.ContainsKey(resource))
+        {
+            return;
+        }
+
+        UnityAction handler = () => OnResourceDestroyed(resource);
+        resourceDestroyedHandlers.Add(resource, handler);
+        resource.onDestroyed.AddListener(handler);
+    }
+
+    private void UnsubscribeFromResourceDestroyed(ResourceObject resource)
+    {
+        if (resource == null || !resourceDestroyedHandlers.TryGetValue(resource, out UnityAction handler))
+        {
+            return;
+        }
+
+        resource.onDestroyed.RemoveListener(handler);
+        resourceDestroyedHandlers.Remove(resource);
+    }
+
+    private void UnsubscribeAllResourceDestroyedHandlers()
+    {
+        foreach (KeyValuePair<ResourceObject, UnityAction> pair in resourceDestroyedHandlers)
+        {
+            if (pair.Key != null)
+            {
+                pair.Key.onDestroyed.RemoveListener(pair.Value);
+            }
+        }
+
+        resourceDestroyedHandlers.Clear();
+    }
+
+    // ë¦¬ì†ŒìŠ¤ íŒŒê´´ ì´ë²¤íŠ¸ í•¸ë“¤ëŸ¬
     private void OnResourceDestroyed(ResourceObject resource)
     {
         if (resource == null) return;
 
-        // ÆÄ±«µÈ ¸®¼Ò½º Á¤º¸ ÀúÀå
+        // íŒŒê´´ëœ ë¦¬ì†ŒìŠ¤ ì •ë³´ ì €ì¥
         string objectName = resource.gameObject.name.Replace("(Clone)", "").Trim();
         GameObject prefab = FindPrefabByName(objectName);
 
-        // ÇÁ¸®ÆÕÀ» Ã£Áö ¸øÇß´Ù¸é ÃÊ±â µ¥ÀÌÅÍ¿¡¼­ Ã£±â
+        // í”„ë¦¬íŒ¹ì„ ì°¾ì§€ ëª»í–ˆë‹¤ë©´ ì´ˆê¸° ë°ì´í„°ì—ì„œ ì°¾ê¸°
         if (prefab == null && initialResourceData.ContainsKey(resource.ResourceName))
         {
             prefab = initialResourceData[resource.ResourceName];
 
             if (debugMode)
             {
-                Debug.Log($"ResourceManager: '{objectName}' ÇÁ¸®ÆÕÀ» Ã£Áö ¸øÇßÁö¸¸ Ä³½ÃµÈ µ¥ÀÌÅÍ¿¡¼­ Ã£À½: {resource.ResourceName}");
+                Debug.Log($"ResourceManager: '{objectName}' í”„ë¦¬íŒ¹ì„ ì°¾ì§€ ëª»í–ˆì§€ë§Œ ìºì‹œëœ ë°ì´í„°ì—ì„œ ì°¾ìŒ: {resource.ResourceName}");
             }
         }
 
-        // Á¤º¸ ÀúÀå
+        // ì •ë³´ ì €ì¥
         DestroyedResourceData data = new DestroyedResourceData(
             prefab,
             resource.transform.position,
@@ -202,46 +237,46 @@ public class ResourceManager : MonoBehaviour
 
         if (debugMode)
         {
-            Debug.Log($"ResourceManager: ¸®¼Ò½º '{resource.ResourceName}' ÆÄ±« Á¤º¸ ÀúÀåµÊ (º¹±¸ ´ë±â ¸®¼Ò½º: {destroyedResources.Count}°³)");
+            Debug.Log($"ResourceManager: ë¦¬ì†ŒìŠ¤ '{resource.ResourceName}' íŒŒê´´ ì •ë³´ ì €ì¥ë¨ (ë³µêµ¬ ëŒ€ê¸° ë¦¬ì†ŒìŠ¤: {destroyedResources.Count}ê°œ)");
         }
 
-        // ¸®½ºÆ®¿¡¼­ ¸®¼Ò½º Á¦°Å
+        // ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¦¬ì†ŒìŠ¤ ì œê±°
         RemoveResource(resource);
     }
 
-    // ¾ÆÄ§ ½ÃÀÛ ½Ã È£ÃâµÇ´Â ¸Ş¼Òµå
+    // ì•„ì¹¨ ì‹œì‘ ì‹œ í˜¸ì¶œë˜ëŠ” ë©”ì†Œë“œ
     private void OnMorningStart()
     {
         if (debugMode)
         {
-            Debug.Log("ResourceManager: ¾ÆÄ§ ½ÃÀÛ, ÆÄ±«µÈ ¸®¼Ò½º º¹±¸ ½ÃÀÛ");
+            Debug.Log("ResourceManager: ì•„ì¹¨ ì‹œì‘, íŒŒê´´ëœ ë¦¬ì†ŒìŠ¤ ë³µêµ¬ ì‹œì‘");
         }
 
         StartCoroutine(RestoreDestroyedResources());
     }
 
-    // ÆÄ±«µÈ ¸®¼Ò½º º¹±¸ ÄÚ·çÆ¾
+    // íŒŒê´´ëœ ë¦¬ì†ŒìŠ¤ ë³µêµ¬ ì½”ë£¨í‹´
     private IEnumerator RestoreDestroyedResources()
     {
-        // º¹±¸ÇÒ ¸®¼Ò½º°¡ ¾øÀ¸¸é Á¾·á
+        // ë³µêµ¬í•  ë¦¬ì†ŒìŠ¤ê°€ ì—†ìœ¼ë©´ ì¢…ë£Œ
         if (destroyedResources.Count == 0)
         {
             if (debugMode)
             {
-                Debug.Log("ResourceManager: º¹±¸ÇÒ ¸®¼Ò½º°¡ ¾ø½À´Ï´Ù.");
+                Debug.Log("ResourceManager: ë³µêµ¬í•  ë¦¬ì†ŒìŠ¤ê°€ ì—†ìŠµë‹ˆë‹¤.");
             }
             yield break;
         }
 
         if (debugMode)
         {
-            Debug.Log($"ResourceManager: {destroyedResources.Count}°³ÀÇ ¸®¼Ò½º º¹±¸ ½ÃÀÛ");
+            Debug.Log($"ResourceManager: {destroyedResources.Count}ê°œì˜ ë¦¬ì†ŒìŠ¤ ë³µêµ¬ ì‹œì‘");
         }
 
-        // ¾à°£ÀÇ Áö¿¬ ÈÄ º¹±¸ ½ÃÀÛ (´Ù¸¥ ½Ã½ºÅÛÀÌ ÁØºñµÉ ½Ã°£)
+        // ì•½ê°„ì˜ ì§€ì—° í›„ ë³µêµ¬ ì‹œì‘ (ë‹¤ë¥¸ ì‹œìŠ¤í…œì´ ì¤€ë¹„ë  ì‹œê°„)
         yield return new WaitForSeconds(0.5f);
 
-        // ¸ğµç ÆÄ±«µÈ ¸®¼Ò½º º¹±¸
+        // ëª¨ë“  íŒŒê´´ëœ ë¦¬ì†ŒìŠ¤ ë³µêµ¬
         List<DestroyedResourceData> resourcesToRestore = new List<DestroyedResourceData>(destroyedResources);
         int successCount = 0;
 
@@ -249,7 +284,7 @@ public class ResourceManager : MonoBehaviour
         {
             GameObject newObject = null;
 
-            // ÇÁ¸®ÆÕÀ¸·Î º¹±¸ ½Ãµµ
+            // í”„ë¦¬íŒ¹ìœ¼ë¡œ ë³µêµ¬ ì‹œë„
             if (data.prefab != null)
             {
                 newObject = Instantiate(data.prefab, data.position, data.rotation);
@@ -257,15 +292,15 @@ public class ResourceManager : MonoBehaviour
 
                 if (debugMode)
                 {
-                    Debug.Log($"ResourceManager: ¸®¼Ò½º '{data.resourceName}' ¿ø·¡ ÇÁ¸®ÆÕÀ¸·Î º¹±¸µÊ");
+                    Debug.Log($"ResourceManager: ë¦¬ì†ŒìŠ¤ '{data.resourceName}' ì›ë˜ í”„ë¦¬íŒ¹ìœ¼ë¡œ ë³µêµ¬ë¨");
                 }
             }
-            // ÇÁ¸®ÆÕÀ» Ã£Áö ¸øÇß´Ù¸é ¸®¼Ò½º ÇÁ¸®ÆÕ ¹è¿­¿¡¼­ ÀÌ¸§À¸·Î ´Ù½Ã Ã£±â
+            // í”„ë¦¬íŒ¹ì„ ì°¾ì§€ ëª»í–ˆë‹¤ë©´ ë¦¬ì†ŒìŠ¤ í”„ë¦¬íŒ¹ ë°°ì—´ì—ì„œ ì´ë¦„ìœ¼ë¡œ ë‹¤ì‹œ ì°¾ê¸°
             else
             {
                 GameObject matchingPrefab = null;
 
-                // ¸®¼Ò½º ÀÌ¸§À¸·Î ÇÁ¸®ÆÕ Ã£±â
+                // ë¦¬ì†ŒìŠ¤ ì´ë¦„ìœ¼ë¡œ í”„ë¦¬íŒ¹ ì°¾ê¸°
                 foreach (GameObject prefab in resourcePrefabs)
                 {
                     if (prefab != null)
@@ -279,7 +314,7 @@ public class ResourceManager : MonoBehaviour
                     }
                 }
 
-                // Ã£Àº ÇÁ¸®ÆÕÀ¸·Î º¹±¸
+                // ì°¾ì€ í”„ë¦¬íŒ¹ìœ¼ë¡œ ë³µêµ¬
                 if (matchingPrefab != null)
                 {
                     newObject = Instantiate(matchingPrefab, data.position, data.rotation);
@@ -287,27 +322,19 @@ public class ResourceManager : MonoBehaviour
 
                     if (debugMode)
                     {
-                        Debug.Log($"ResourceManager: ¸®¼Ò½º '{data.resourceName}' ÀÌ¸§ ÀÏÄ¡ ÇÁ¸®ÆÕÀ¸·Î º¹±¸µÊ");
+                        Debug.Log($"ResourceManager: ë¦¬ì†ŒìŠ¤ '{data.resourceName}' ì´ë¦„ ì¼ì¹˜ í”„ë¦¬íŒ¹ìœ¼ë¡œ ë³µêµ¬ë¨");
                     }
                 }
-                // ±âº» ÇÁ¸®ÆÕÀ¸·Î º¹±¸ ½Ãµµ
+                // ê¸°ë³¸ í”„ë¦¬íŒ¹ìœ¼ë¡œ ë³µêµ¬ ì‹œë„
                 else if (defaultResourcePrefab != null)
                 {
                     newObject = Instantiate(defaultResourcePrefab, data.position, data.rotation);
 
-                    // ±âº» Á¤º¸ ¼³Á¤
+                    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
                     ResourceObject resourceObj = newObject.GetComponent<ResourceObject>();
                     if (resourceObj != null)
                     {
-                        // ÇÁ·ÎÆÛÆ¼°¡ ÀÖÀ¸¸é ¼³Á¤
-                        System.Type type = typeof(ResourceObject);
-                        System.Reflection.PropertyInfo propName = type.GetProperty("ResourceName");
-                        if (propName != null && propName.CanWrite)
-                        {
-                            propName.SetValue(resourceObj, data.resourceName);
-                        }
-
-                        // Ã¼·Â ¼³Á¤ ¸Ş¼Òµå È£Ãâ
+                        resourceObj.SetResourceName(data.resourceName);
                         resourceObj.SetMaxHealth(data.maxHP);
                     }
 
@@ -315,19 +342,19 @@ public class ResourceManager : MonoBehaviour
 
                     if (debugMode)
                     {
-                        Debug.Log($"ResourceManager: ¸®¼Ò½º '{data.resourceName}' ±âº» ÇÁ¸®ÆÕÀ¸·Î º¹±¸µÊ");
+                        Debug.Log($"ResourceManager: ë¦¬ì†ŒìŠ¤ '{data.resourceName}' ê¸°ë³¸ í”„ë¦¬íŒ¹ìœ¼ë¡œ ë³µêµ¬ë¨");
                     }
                 }
                 else
                 {
                     if (debugMode)
                     {
-                        Debug.LogWarning($"ResourceManager: ¸®¼Ò½º '{data.resourceName}' º¹±¸ ½ÇÆĞ (ÇÁ¸®ÆÕ ¾øÀ½, ±âº» ÇÁ¸®ÆÕµµ ¾øÀ½)");
+                        Debug.LogWarning($"ResourceManager: ë¦¬ì†ŒìŠ¤ '{data.resourceName}' ë³µêµ¬ ì‹¤íŒ¨ (í”„ë¦¬íŒ¹ ì—†ìŒ, ê¸°ë³¸ í”„ë¦¬íŒ¹ë„ ì—†ìŒ)");
                     }
                 }
             }
 
-            // »ı¼ºµÈ ¿ÀºêÁ§Æ®°¡ ÀÖÀ¸¸é ¸®¼Ò½º µî·Ï
+            // ìƒì„±ëœ ì˜¤ë¸Œì íŠ¸ê°€ ìˆìœ¼ë©´ ë¦¬ì†ŒìŠ¤ ë“±ë¡
             if (newObject != null)
             {
                 ResourceObject resourceComponent = newObject.GetComponent<ResourceObject>();
@@ -337,21 +364,21 @@ public class ResourceManager : MonoBehaviour
                 }
             }
 
-            // °¢ ¿ÀºêÁ§Æ® »ı¼º »çÀÌ¿¡ ¾à°£ÀÇ Áö¿¬
+            // ê° ì˜¤ë¸Œì íŠ¸ ìƒì„± ì‚¬ì´ì— ì•½ê°„ì˜ ì§€ì—°
             yield return new WaitForSeconds(0.1f);
         }
 
-        // º¹±¸µÈ ¸®¼Ò½º ¸ñ·Ï ºñ¿ì±â
+        // ë³µêµ¬ëœ ë¦¬ì†ŒìŠ¤ ëª©ë¡ ë¹„ìš°ê¸°
         destroyedResources.Clear();
 
         if (debugMode)
         {
-            Debug.Log($"ResourceManager: ¸®¼Ò½º º¹±¸ ¿Ï·á ({successCount}/{resourcesToRestore.Count} ¼º°ø)");
+            Debug.Log($"ResourceManager: ë¦¬ì†ŒìŠ¤ ë³µêµ¬ ì™„ë£Œ ({successCount}/{resourcesToRestore.Count} ì„±ê³µ)");
             LogResourceStatus();
         }
     }
 
-    // ¸®¼Ò½º ÇÁ¸®ÆÕ Ã£±â (ÀÌ¸§ ±âÁØ)
+    // ë¦¬ì†ŒìŠ¤ í”„ë¦¬íŒ¹ ì°¾ê¸° (ì´ë¦„ ê¸°ì¤€)
     private GameObject FindPrefabByName(string name)
     {
         if (string.IsNullOrEmpty(name)) return null;
@@ -367,13 +394,13 @@ public class ResourceManager : MonoBehaviour
         return null;
     }
 
-    // ÃÊ±â ÃÖ´ë Ã¼·Â °è»ê - ¾À ½ÃÀÛ ½Ã ÇÑ ¹ø¸¸ È£Ãâ
+    // ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ ê³„ì‚° - ì”¬ ì‹œì‘ ì‹œ í•œ ë²ˆë§Œ í˜¸ì¶œ
     private void CalculateInitialMaxHP()
     {
         initialTotalMaxHP = 0f;
         initialResources.Clear();
 
-        // ¸ğµç ¸®¼Ò½ºÀÇ ÃÖ´ë Ã¼·Â ÇÕ»ê ¹× ÃÊ±â ¸®¼Ò½º ¸ñ·Ï ÀúÀå
+        // ëª¨ë“  ë¦¬ì†ŒìŠ¤ì˜ ìµœëŒ€ ì²´ë ¥ í•©ì‚° ë° ì´ˆê¸° ë¦¬ì†ŒìŠ¤ ëª©ë¡ ì €ì¥
         foreach (ResourceObject resource in allResources)
         {
             if (resource != null)
@@ -385,38 +412,38 @@ public class ResourceManager : MonoBehaviour
 
         if (debugMode)
         {
-            Debug.Log($"ResourceManager: ÃÊ±â ÃÖ´ë Ã¼·Â °è»ê ¿Ï·á = {initialTotalMaxHP}");
+            Debug.Log($"ResourceManager: ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ ê³„ì‚° ì™„ë£Œ = {initialTotalMaxHP}");
         }
     }
 
     public void RefreshResourceList()
     {
+        UnsubscribeAllResourceDestroyedHandlers();
         allResources.Clear();
         allResources.AddRange(FindObjectsOfType<ResourceObject>());
+        RegisterResourceEvents();
 
         if (debugMode)
         {
-            Debug.Log($"ResourceManager: {allResources.Count}°³ÀÇ ÀçÈ­ ¿ÀºêÁ§Æ® ¹ß°ß");
+            Debug.Log($"ResourceManager: {allResources.Count}ê°œì˜ ì¬í™” ì˜¤ë¸Œì íŠ¸ ë°œê²¬");
         }
     }
 
-    // »õ ÀÚ¿ø Ãß°¡
+    // ìƒˆ ìì› ì¶”ê°€
     public void AddResource(ResourceObject resource)
     {
         if (resource != null && !allResources.Contains(resource))
         {
             allResources.Add(resource);
-            // ÆÄ±« ÀÌº¥Æ® µî·Ï
-            resource.onDestroyed.RemoveListener(() => OnResourceDestroyed(resource));
-            resource.onDestroyed.AddListener(() => OnResourceDestroyed(resource));
+            SubscribeToResourceDestroyed(resource);
 
             if (debugMode)
             {
-                Debug.Log($"ResourceManager: ÀçÈ­ ¿ÀºêÁ§Æ® '{resource.ResourceName}' Ãß°¡");
+                Debug.Log($"ResourceManager: ì¬í™” ì˜¤ë¸Œì íŠ¸ '{resource.ResourceName}' ì¶”ê°€");
             }
 
-            // ÃÊ±âÈ­ ÀÌÈÄ¿¡ Ãß°¡µÈ ¸®¼Ò½º´Â ÃÊ±â ÃÖ´ë Ã¼·Â¿¡ ¿µÇâÀ» ÁÖÁö ¾ÊÀ½
-            // ÇÊ¿ä½Ã ¾Æ·¡ ÄÚµå ÁÖ¼® ÇØÁ¦ÇÏ¿© µ¿ÀûÀ¸·Î ÃÊ±â ÃÖ´ë Ã¼·Â ¾÷µ¥ÀÌÆ® °¡´É
+            // ì´ˆê¸°í™” ì´í›„ì— ì¶”ê°€ëœ ë¦¬ì†ŒìŠ¤ëŠ” ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ì— ì˜í–¥ì„ ì£¼ì§€ ì•ŠìŒ
+            // í•„ìš”ì‹œ ì•„ë˜ ì½”ë“œ ì£¼ì„ í•´ì œí•˜ì—¬ ë™ì ìœ¼ë¡œ ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ ì—…ë°ì´íŠ¸ ê°€ëŠ¥
             /*
             if (!initialResources.Contains(resource))
             {
@@ -425,29 +452,30 @@ public class ResourceManager : MonoBehaviour
                 
                 if (debugMode)
                 {
-                    Debug.Log($"ResourceManager: ÃÊ±â ÃÖ´ë Ã¼·Â ¾÷µ¥ÀÌÆ® = {initialTotalMaxHP} (+{resource.MaxHP})");
+                    Debug.Log($"ResourceManager: ì´ˆê¸° ìµœëŒ€ ì²´ë ¥ ì—…ë°ì´íŠ¸ = {initialTotalMaxHP} (+{resource.MaxHP})");
                 }
             }
             */
         }
     }
 
-    // ÀÚ¿ø Á¦°Å
+    // ìì› ì œê±°
     public void RemoveResource(ResourceObject resource)
     {
         if (resource != null && allResources.Contains(resource))
         {
+            UnsubscribeFromResourceDestroyed(resource);
             allResources.Remove(resource);
 
             if (debugMode)
             {
-                Debug.Log($"ResourceManager: ÀçÈ­ ¿ÀºêÁ§Æ® '{resource.ResourceName}' Á¦°ÅµÊ, ³²Àº °³¼ö: {allResources.Count}");
-                Debug.Log($"ResourceManager: ÇöÀç Ã¼·Â ºñÀ² = {TotalHealthRatio:P2}");
+                Debug.Log($"ResourceManager: ì¬í™” ì˜¤ë¸Œì íŠ¸ '{resource.ResourceName}' ì œê±°ë¨, ë‚¨ì€ ê°œìˆ˜: {allResources.Count}");
+                Debug.Log($"ResourceManager: í˜„ì¬ ì²´ë ¥ ë¹„ìœ¨ = {TotalHealthRatio:P2}");
             }
         }
     }
 
-    // ÃÊ±â »óÅÂ ¸®¼Â (ÇÊ¿ä½Ã È£Ãâ)
+    // ì´ˆê¸° ìƒíƒœ ë¦¬ì…‹ (í•„ìš”ì‹œ í˜¸ì¶œ)
     public void ResetInitialState()
     {
         RefreshResourceList();
@@ -456,23 +484,23 @@ public class ResourceManager : MonoBehaviour
 
         if (debugMode)
         {
-            Debug.Log("ResourceManager: ÃÊ±â »óÅÂ ¸®¼ÂµÊ");
+            Debug.Log("ResourceManager: ì´ˆê¸° ìƒíƒœ ë¦¬ì…‹ë¨");
         }
     }
 
-    // ÀüÃ¼ ÀçÈ­ ¿ÀºêÁ§Æ® °³¼ö °¡Á®¿À±â
+    // ì „ì²´ ì¬í™” ì˜¤ë¸Œì íŠ¸ ê°œìˆ˜ ê°€ì ¸ì˜¤ê¸°
     public int GetTotalResourceCount()
     {
         return allResources.Count;
     }
 
-    // ÃÊ±â ÀçÈ­ ¿ÀºêÁ§Æ® °³¼ö °¡Á®¿À±â
+    // ì´ˆê¸° ì¬í™” ì˜¤ë¸Œì íŠ¸ ê°œìˆ˜ ê°€ì ¸ì˜¤ê¸°
     public int GetInitialResourceCount()
     {
         return initialResources.Count;
     }
 
-    // ÇöÀç ¼Õ»óµÈ ÀçÈ­ ¿ÀºêÁ§Æ® °³¼ö °¡Á®¿À±â
+    // í˜„ì¬ ì†ìƒëœ ì¬í™” ì˜¤ë¸Œì íŠ¸ ê°œìˆ˜ ê°€ì ¸ì˜¤ê¸°
     public int GetDamagedResourceCount()
     {
         int count = 0;
@@ -486,7 +514,7 @@ public class ResourceManager : MonoBehaviour
         return count;
     }
 
-    // ÆÄ±«µÈ ÀçÈ­ ¿ÀºêÁ§Æ® °³¼ö °¡Á®¿À±â (¸®½ºÆ®¿¡¼­ Á¦°ÅµÇÁö ¾ÊÀº 0Ã¼·Â ¿ÀºêÁ§Æ®)
+    // íŒŒê´´ëœ ì¬í™” ì˜¤ë¸Œì íŠ¸ ê°œìˆ˜ ê°€ì ¸ì˜¤ê¸° (ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°ë˜ì§€ ì•Šì€ 0ì²´ë ¥ ì˜¤ë¸Œì íŠ¸)
     public int GetDestroyedResourceCount()
     {
         int count = 0;
@@ -500,13 +528,13 @@ public class ResourceManager : MonoBehaviour
         return count;
     }
 
-    // º¹±¸ ´ë±â ÁßÀÎ ÆÄ±«µÈ ¸®¼Ò½º °³¼ö °¡Á®¿À±â
+    // ë³µêµ¬ ëŒ€ê¸° ì¤‘ì¸ íŒŒê´´ëœ ë¦¬ì†ŒìŠ¤ ê°œìˆ˜ ê°€ì ¸ì˜¤ê¸°
     public int GetPendingRestoreCount()
     {
         return destroyedResources.Count;
     }
 
-    // ÃÊ±â ¸®¼Ò½º Áß ÆÄ±«µÈ ºñÀ² (0~1)
+    // ì´ˆê¸° ë¦¬ì†ŒìŠ¤ ì¤‘ íŒŒê´´ëœ ë¹„ìœ¨ (0~1)
     public float GetDestroyedRatio()
     {
         int initialCount = initialResources.Count;
@@ -524,20 +552,20 @@ public class ResourceManager : MonoBehaviour
         return (float)destroyedCount / initialCount;
     }
 
-    // ÀüÃ¼ ÀçÈ­ ¿ÀºêÁ§Æ® »óÅÂ ·Î±× Ãâ·Â
+    // ì „ì²´ ì¬í™” ì˜¤ë¸Œì íŠ¸ ìƒíƒœ ë¡œê·¸ ì¶œë ¥
     public void LogResourceStatus()
     {
-        Debug.Log($"=== ÀçÈ­ ¿ÀºêÁ§Æ® »óÅÂ ===");
-        Debug.Log($"ÃÊ±â ÃÖ´ë Ã¼·Â: {initialTotalMaxHP}");
-        Debug.Log($"ÃÊ±â °³¼ö: {initialResources.Count}");
-        Debug.Log($"ÇöÀç °³¼ö: {allResources.Count}");
-        Debug.Log($"º¹±¸ ´ë±â ÁßÀÎ °³¼ö: {destroyedResources.Count}");
-        Debug.Log($"ÃÑ Ã¼·Â ºñÀ²: {TotalHealthRatio:P2}");
-        Debug.Log($"¼Õ½Çµµ: {DamageRatio:P2}");
-        Debug.Log($"¼Õ»óµÈ °³¼ö: {GetDamagedResourceCount()}");
-        Debug.Log($"ÆÄ±«µÈ °³¼ö: {GetDestroyedResourceCount()}");
+        Debug.Log($"=== ì¬í™” ì˜¤ë¸Œì íŠ¸ ìƒíƒœ ===");
+        Debug.Log($"ì´ˆê¸° ìµœëŒ€ ì²´ë ¥: {initialTotalMaxHP}");
+        Debug.Log($"ì´ˆê¸° ê°œìˆ˜: {initialResources.Count}");
+        Debug.Log($"í˜„ì¬ ê°œìˆ˜: {allResources.Count}");
+        Debug.Log($"ë³µêµ¬ ëŒ€ê¸° ì¤‘ì¸ ê°œìˆ˜: {destroyedResources.Count}");
+        Debug.Log($"ì´ ì²´ë ¥ ë¹„ìœ¨: {TotalHealthRatio:P2}");
+        Debug.Log($"ì†ì‹¤ë„: {DamageRatio:P2}");
+        Debug.Log($"ì†ìƒëœ ê°œìˆ˜: {GetDamagedResourceCount()}");
+        Debug.Log($"íŒŒê´´ëœ ê°œìˆ˜: {GetDestroyedResourceCount()}");
 
-        Debug.Log($"--- ÇöÀç ¸®¼Ò½º »óÅÂ ---");
+        Debug.Log($"--- í˜„ì¬ ë¦¬ì†ŒìŠ¤ ìƒíƒœ ---");
         foreach (ResourceObject resource in allResources)
         {
             if (resource != null)

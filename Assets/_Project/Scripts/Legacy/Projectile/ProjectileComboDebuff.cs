@@ -1,84 +1,137 @@
-// ÀÌµ¿ ¼Óµµ¿Í °ø°İ ¼Óµµ¸¦ µ¿½Ã¿¡ °¨¼Ò½ÃÅ°´Â ¹ß»çÃ¼ (º¹ÇÕ µğ¹öÇÁ)
 using UnityEngine;
-
 public class ProjectileComboDebuff : ProjectileBase
 {
     [SerializeField] private float effectRadius = 2f;
     [SerializeField] private string enemyTag = "Enemy";
     [SerializeField] private float moveSpeed = 5f;
+    [Header("ì´ë™ ì†ë„ ê°ì†Œ íš¨ê³¼")]
+    [SerializeField] private float moveSlowAmount = 0.3f; // ì´ë™ ì†ë„ ê°ì†Œ ë¹„ìœ¨ (0.3 = 30% ê°ì†Œ)
+    [SerializeField] private float moveSlowDuration = 4.0f; // ì´ë™ ì†ë„ ê°ì†Œ ì§€ì† ì‹œê°„
+    [Header("ê³µê²© ì†ë„ ê°ì†Œ íš¨ê³¼")]
+    [SerializeField] private float attackSlowAmount = 0.25f; // ê³µê²© ì†ë„ ê°ì†Œ ë¹„ìœ¨ (0.25 = 25% ê°ì†Œ)
+    [SerializeField] private float attackSlowDuration = 3.0f; // ê³µê²© ì†ë„ ê°ì†Œ ì§€ì† ì‹œê°„
+    [Header("íš¨ê³¼ ì‹œê°í™”")]
+    [SerializeField] private GameObject debuffEffectPrefab; // ë””ë²„í”„ íš¨ê³¼ ì‹œê°í™” í”„ë¦¬íŒ¹ (ì„ íƒì )
+    [Header("ì¶©ëŒ ê°ì§€")]
+    [SerializeField] private bool useCollisionDetection = true; // ì¶©ëŒ ê°ì§€ ì‚¬ìš© ì—¬ë¶€
+    [SerializeField] private LayerMask enemyLayer; // ì  ë ˆì´ì–´ (ì¶©ëŒ ê°ì§€ìš©)
 
-    [Header("ÀÌµ¿ ¼Óµµ °¨¼Ò È¿°ú")]
-    [SerializeField] private float moveSlowAmount = 0.3f; // ÀÌµ¿ ¼Óµµ °¨¼Ò ºñÀ² (0.3 = 30% °¨¼Ò)
-    [SerializeField] private float moveSlowDuration = 4.0f; // ÀÌµ¿ ¼Óµµ °¨¼Ò Áö¼Ó ½Ã°£
+    // ì´ë™ ë°©í–¥ ë³€ìˆ˜ ì¶”ê°€
+    private Vector3 moveDirection;
+    // ë°œì‚¬ì²´ê°€ ì´ë¯¸ ì¶©ëŒí–ˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í”Œë˜ê·¸
+    private bool hasHit = false;
 
-    [Header("°ø°İ ¼Óµµ °¨¼Ò È¿°ú")]
-    [SerializeField] private float attackSlowAmount = 0.25f; // °ø°İ ¼Óµµ °¨¼Ò ºñÀ² (0.25 = 25% °¨¼Ò)
-    [SerializeField] private float attackSlowDuration = 3.0f; // °ø°İ ¼Óµµ °¨¼Ò Áö¼Ó ½Ã°£
+    public override void Setup(Transform target, float damage, int maxCount = 1, int index = 0)
+    {
+        base.Setup(target, damage, maxCount, index);
 
-    [Header("È¿°ú ½Ã°¢È­")]
-    [SerializeField] private GameObject debuffEffectPrefab; // µğ¹öÇÁ È¿°ú ½Ã°¢È­ ÇÁ¸®ÆÕ (¼±ÅÃÀû)
+        // íƒ€ê²Ÿ ë°©í–¥ìœ¼ë¡œ ì´ˆê¸° ì´ë™ ë°©í–¥ ì„¤ì •
+        if (target != null)
+        {
+            moveDirection = (target.position - transform.position).normalized;
+            // ì´ˆê¸° ë°©í–¥ì— ë”°ë¥¸ íšŒì „ ì„¤ì •
+            RotateToMoveDirection(moveDirection);
+        }
+
+        // ì¶©ëŒ ê°ì§€ë¥¼ ìœ„í•´ ì½œë¼ì´ë”ê°€ ì—†ëŠ” ê²½ìš° ì¶”ê°€
+        if (useCollisionDetection && GetComponent<Collider2D>() == null)
+        {
+            CircleCollider2D collider = gameObject.AddComponent<CircleCollider2D>();
+            collider.isTrigger = true;
+            collider.radius = 0.3f; // ì ì ˆí•œ í¬ê¸°ë¡œ ì¡°ì •
+        }
+    }
 
     public override void Process()
     {
-        // Å¸°ÙÀÌ ¾øÀ¸¸é Ã³¸®ÇÏÁö ¾ÊÀ½
-        if (target == null) return;
+        // íƒ€ê²Ÿì´ ì—†ê±°ë‚˜ ì´ë¯¸ ì¶©ëŒí–ˆìœ¼ë©´ ì²˜ë¦¬í•˜ì§€ ì•ŠìŒ
+        if (target == null || hasHit) return;
 
-        // ¹ß»çÃ¼°¡ Å¸°Ù¿¡ µµ´ŞÇß´ÂÁö È®ÀÎ
+        // ë°œì‚¬ì²´ê°€ íƒ€ê²Ÿì— ë„ë‹¬í–ˆëŠ”ì§€ í™•ì¸
         float distance = Vector3.Distance(transform.position, target.position);
         if (distance < 0.1f)
         {
-            // È¿°ú Àû¿ë
-            ApplyEffectInArea(target.position);
-
-            // Å¸°İ È¿°ú »ı¼º
-            if (hitEffect != null)
-            {
-                Instantiate(hitEffect, transform.position, Quaternion.identity);
-            }
-
-            // ¹ß»çÃ¼ ÆÄ±«
-            Destroy(gameObject);
+            // íš¨ê³¼ ì ìš©
+            ApplyEffectInArea(transform.position);
+            // ë°œì‚¬ì²´ íŒŒê´´
+            DestroyProjectile();
         }
         else
         {
-            // Å¸°ÙÀ» ÇâÇØ ÀÌµ¿
+            // ì¶©ëŒ ê°ì§€ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ì´ë™ ì¤‘ ì ê³¼ì˜ ì¶©ëŒ ê²€ì‚¬
+            if (useCollisionDetection)
+            {
+                CheckCollisionDuringMovement();
+            }
+
+            // íƒ€ê²Ÿì„ í–¥í•´ ì´ë™
             MoveToTarget();
+        }
+    }
+
+    // ì´ë™ ì¤‘ ì¶©ëŒ ì²´í¬ (ë ˆì´ìºìŠ¤íŠ¸ ì‚¬ìš©)
+    private void CheckCollisionDuringMovement()
+    {
+        RaycastHit2D hit = Physics2D.CircleCast(
+            transform.position,
+            0.3f, // ì¶©ëŒ ì²´í¬ ë°˜ê²½
+            moveDirection,
+            moveSpeed * Time.deltaTime,
+            enemyLayer
+        );
+
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag(enemyTag))
+            {
+                // ì¶©ëŒ ì§€ì ì— íš¨ê³¼ ì ìš©
+                ApplyEffectInArea(hit.point);
+                // ë°œì‚¬ì²´ íŒŒê´´
+                DestroyProjectile();
+            }
+        }
+    }
+
+    // íŠ¸ë¦¬ê±° ì¶©ëŒ ì´ë²¤íŠ¸
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!hasHit && other.CompareTag(enemyTag))
+        {
+            // ì¶©ëŒ ì§€ì ì— íš¨ê³¼ ì ìš©
+            ApplyEffectInArea(transform.position);
+            // ë°œì‚¬ì²´ íŒŒê´´
+            DestroyProjectile();
         }
     }
 
     private void ApplyEffectInArea(Vector3 centerPosition)
     {
-        // È¿°ú ¹üÀ§ ³»ÀÇ ¸ğµç Äİ¶óÀÌ´õ °¨Áö
+        // íš¨ê³¼ ë²”ìœ„ ë‚´ì˜ ëª¨ë“  ì½œë¼ì´ë” ê°ì§€
         Collider2D[] colliders = Physics2D.OverlapCircleAll(centerPosition, effectRadius);
-
         foreach (Collider2D collider in colliders)
         {
             if (collider.CompareTag(enemyTag))
             {
                 GameObject enemy = collider.gameObject;
-
-                // ±âº» µ¥¹ÌÁö Àû¿ë
+                // ê¸°ë³¸ ë°ë¯¸ì§€ ì ìš©
                 EnemyHP enemyHP = enemy.GetComponent<EnemyHP>();
                 if (enemyHP != null)
                 {
                     enemyHP.TakeDamage(damage);
                 }
-
-                // ÀÌµ¿ ¼Óµµ °¨¼Ò È¿°ú Àû¿ë
+                // ì´ë™ ì†ë„ ê°ì†Œ íš¨ê³¼ ì ìš©
                 Movement2D movement = enemy.GetComponent<Movement2D>();
                 if (movement != null)
                 {
                     movement.ApplySlow(moveSlowAmount, moveSlowDuration);
                 }
-
-                // °ø°İ ¼Óµµ °¨¼Ò È¿°ú Àû¿ë
+                // ê³µê²© ì†ë„ ê°ì†Œ íš¨ê³¼ ì ìš©
                 EnemyAttack enemyAttack = enemy.GetComponent<EnemyAttack>();
                 if (enemyAttack != null)
                 {
                     enemyAttack.ApplyAttackSlow(attackSlowAmount, attackSlowDuration);
                 }
-
-                // µğ¹öÇÁ È¿°ú ½Ã°¢È­ (¼±ÅÃÀû)
+                // ë””ë²„í”„ íš¨ê³¼ ì‹œê°í™” (ì„ íƒì )
                 if (debuffEffectPrefab != null)
                 {
                     GameObject effectObj = Instantiate(debuffEffectPrefab, enemy.transform.position, Quaternion.identity);
@@ -91,22 +144,87 @@ public class ProjectileComboDebuff : ProjectileBase
 
     private void MoveToTarget()
     {
-        // Å¸°Ù ¹æÇâÀ¸·Î ÀÌµ¿
+        // ìƒˆë¡œìš´ íƒ€ê²Ÿ ë°©í–¥ ê³„ì‚°
         Vector3 direction = (target.position - transform.position).normalized;
-        transform.position += direction * moveSpeed * Time.deltaTime;
 
-        // ¹ß»çÃ¼ È¸Àü (¼±ÅÃÀû)
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle);
+        // ë°©í–¥ì´ ë³€ê²½ë˜ì—ˆë‹¤ë©´ íšŒì „ ì—…ë°ì´íŠ¸
+        if (Vector3.Dot(direction, moveDirection) < 0.99f)
+        {
+            moveDirection = direction;
+            RotateToMoveDirection(moveDirection);
+        }
+
+        // íƒ€ê²Ÿ ë°©í–¥ìœ¼ë¡œ ì´ë™
+        transform.position += direction * moveSpeed * Time.deltaTime;
     }
 
-    // ¿¡µğÅÍ¿¡¼­ ¹üÀ§ ½Ã°¢È­
+    // ì´ë™ ë°©í–¥ì— ë”°ë¼ ìŠ¤í”„ë¼ì´íŠ¸ íšŒì „
+    private void RotateToMoveDirection(Vector3 direction)
+    {
+        // ì´ë™ ë°©í–¥ ë²¡í„°ê°€ ìœ íš¨í•œì§€ í™•ì¸
+        if (direction.sqrMagnitude > 0.001f)
+        {
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+            // ì™¼ìª½ ë°©í–¥ì¼ ë•Œ 180ë„ ì¶”ê°€ ë³´ì •
+            if (direction.x < 0)
+            {
+                angle += 180f;
+            }
+
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        }
+    }
+
+    // ë°œì‚¬ì²´ íŒŒê´´ ê³µí†µ ë©”ì„œë“œ
+    private void DestroyProjectile()
+    {
+        // ì¤‘ë³µ íŒŒê´´ ë°©ì§€ë¥¼ ìœ„í•œ í”Œë˜ê·¸ ì„¤ì •
+        hasHit = true;
+
+        // íƒ€ê²© íš¨ê³¼ ìƒì„±
+        if (hitEffect != null)
+        {
+            Instantiate(hitEffect, transform.position, Quaternion.identity);
+        }
+
+        // ë°œì‚¬ì²´ íŒŒê´´
+        Destroy(gameObject);
+    }
+
+    // ì—ë””í„°ì—ì„œ ë²”ìœ„ ì‹œê°í™”
     private void OnDrawGizmosSelected()
     {
+        // íš¨ê³¼ ë²”ìœ„ ì‹œê°í™”
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, effectRadius);
+
+        // ì¶©ëŒ ê°ì§€ ë²”ìœ„ ì‹œê°í™”
+        if (useCollisionDetection)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, 0.3f);
+        }
+    }
+
+    // Update ë©”ì†Œë“œ ì˜¤ë²„ë¼ì´ë“œ - ë¶€ëª¨ í´ë˜ìŠ¤ì˜ íƒ€ê²Ÿ null ì²´í¬ë¥¼ ìš°íšŒ
+    protected override void Update()
+    {
+        // ë°œì‚¬ì²´ê°€ ì´ë¯¸ ì ì¤‘í–ˆìœ¼ë©´ ë” ì´ìƒ ì²˜ë¦¬í•˜ì§€ ì•ŠìŒ
+        if (hasHit) return;
+
+        // ë³µí•© ë””ë²„í”„ ë°œì‚¬ì²´ëŠ” íƒ€ê²Ÿì´ ìˆì„ ë•Œë§Œ ì²˜ë¦¬
         if (target != null)
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(target.position, effectRadius);
+            Process();
+        }
+
+        // Z ìœ„ì¹˜ ì—…ë°ì´íŠ¸ (ì´ì†Œë©”íŠ¸ë¦­ í•¸ë“¤ëŸ¬ê°€ ì—†ëŠ” ê²½ìš°)
+        if (updateZPosition && isometricPosition == null)
+        {
+            Vector3 position = transform.position;
+            position.z = position.y;
+            transform.position = position;
         }
     }
 }

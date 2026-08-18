@@ -5,83 +5,84 @@ using System.Collections.Generic;
 [System.Serializable]
 public struct EnemyGroup
 {
-    [Header("±âº» ¼³Á¤")]
-    [Tooltip("»ı¼ºÇÒ Àû ÇÁ¸®ÆÕ")]
-    public GameObject enemyPrefab;  // Àû ÇÁ¸®ÆÕ
-    [Tooltip("»ı¼ºÇÒ ÀûÀÇ ¼ö")]
-    public int count;               // »ı¼ºÇÒ ÀûÀÇ ¼ö
-    [Tooltip("Àû »ı¼º °£°İ (ÃÊ)")]
-    public float spawnTime;         // Àû »ı¼º °£°İ
+    [Header("ê¸°ë³¸ ì„¤ì •")]
+    [Tooltip("ìƒì„±í•  ì  í”„ë¦¬íŒ¹")]
+    public GameObject enemyPrefab;  // ì  í”„ë¦¬íŒ¹
+    [Tooltip("ìƒì„±í•  ì ì˜ ìˆ˜")]
+    public int count;               // ìƒì„±í•  ì ì˜ ìˆ˜
+    [Tooltip("ì  ìƒì„± ê°„ê²© (ì´ˆ)")]
+    public float spawnTime;         // ì  ìƒì„± ê°„ê²©
 
-    [Header("À§Ä¡ ¼³Á¤")]
-    [Tooltip("Æ¯Á¤ ½ºÆù À§Ä¡ (¾øÀ¸¸é ±âº» ½ºÆ÷³Ê À§Ä¡ »ç¿ë)")]
-    public Transform spawnPoint;    // ½ºÆù À§Ä¡ (nullÀÌ¸é ±âº» À§Ä¡)
+    [Header("ìœ„ì¹˜ ì„¤ì •")]
+    [Tooltip("íŠ¹ì • ìŠ¤í° ìœ„ì¹˜ (ì—†ìœ¼ë©´ ê¸°ë³¸ ìŠ¤í¬ë„ˆ ìœ„ì¹˜ ì‚¬ìš©)")]
+    public Transform spawnPoint;    // ìŠ¤í° ìœ„ì¹˜ (nullì´ë©´ ê¸°ë³¸ ìœ„ì¹˜)
 }
 
 [System.Serializable]
 public struct Wave
 {
-    public string waveName; // ¿şÀÌºê ÀÌ¸§
-    public EnemyGroup[] enemyGroups; // Àû ±×·ì ¹è¿­
-    public float delayBeforeNextWave; // ´ÙÀ½ ¿şÀÌºê ½ÃÀÛ Àü µô·¹ÀÌ
-    public float baseDuration; // ¿şÀÌºê ±âº» Áö¼Ó ½Ã°£ (ÃÊ)
+    public string waveName; // ì›¨ì´ë¸Œ ì´ë¦„
+    public EnemyGroup[] enemyGroups; // ì  ê·¸ë£¹ ë°°ì—´
+    public float delayBeforeNextWave; // ë‹¤ìŒ ì›¨ì´ë¸Œ ì‹œì‘ ì „ ë”œë ˆì´
+    public float baseDuration; // ì›¨ì´ë¸Œ ê¸°ë³¸ ì§€ì† ì‹œê°„ (ì´ˆ)
 }
 
 public class WaveSystem : MonoBehaviour
 {
     [SerializeField]
-    private Wave[] waves; // ¿şÀÌºê ¹è¿­
+    private Wave[] waves; // ì›¨ì´ë¸Œ ë°°ì—´
 
     [SerializeField]
-    private EnemySpawner enemySpawner; // Àû ½ºÆ÷³Ê ÂüÁ¶
+    private EnemySpawner enemySpawner; // ì  ìŠ¤í¬ë„ˆ ì°¸ì¡°
 
     [SerializeField]
-    private PlayerGold playerGold; // ÇÃ·¹ÀÌ¾î °ñµå/ÇÇ·Îµµ ÂüÁ¶
+    private PlayerGold playerGold; // í”Œë ˆì´ì–´ ê³¨ë“œ/í”¼ë¡œë„ ì°¸ì¡°
 
     [SerializeField]
-    private PlayerExperience playerExperience; // ÇÃ·¹ÀÌ¾î °æÇèÄ¡ ÂüÁ¶
+    private PlayerExperience playerExperience; // í”Œë ˆì´ì–´ ê²½í—˜ì¹˜ ì°¸ì¡°
 
     [SerializeField]
-    private float defaultWaveDuration = 30f; // ±âº» ¿şÀÌºê Áö¼Ó ½Ã°£ (ÃÊ)
+    private float defaultWaveDuration = 30f; // ê¸°ë³¸ ì›¨ì´ë¸Œ ì§€ì† ì‹œê°„ (ì´ˆ)
 
     [SerializeField]
-    private bool cleanupEnemiesAfterAllWaves = true; // ¸ğµç ¿şÀÌºê ¿Ï·á ÈÄ Àû Á¦°Å ¿©ºÎ
+    private bool cleanupEnemiesAfterAllWaves = true; // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ í›„ ì  ì œê±° ì—¬ë¶€
 
     [SerializeField]
-    private float finalCleanupDelay = 3f; // ¸ğµç ¿şÀÌºê ¿Ï·á ÈÄ Àû Á¦°Å±îÁö ´ë±â ½Ã°£ (ÃÊ)
+    private float finalCleanupDelay = 3f; // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ í›„ ì  ì œê±°ê¹Œì§€ ëŒ€ê¸° ì‹œê°„ (ì´ˆ)
 
     [SerializeField]
-    private bool showDebugMessages = true; // µğ¹ö±× ¸Ş½ÃÁö Ç¥½Ã ¿©ºÎ
+    private bool showDebugMessages = true; // ë””ë²„ê·¸ ë©”ì‹œì§€ í‘œì‹œ ì—¬ë¶€
 
-    private int currentWaveIndex = -1; // ÇöÀç ¿şÀÌºê ÀÎµ¦½º
-    private bool isWaveActive = false; // ¿şÀÌºê È°¼ºÈ­ »óÅÂ
-    private float waveTimer = 0f; // ¿şÀÌºê Å¸ÀÌ¸Ó
-    private int enemiesKilledInWave = 0; // ¿şÀÌºê Áß Ã³Ä¡ÇÑ Àû ¼ö
-    private bool allWavesCompleted = false; // ¸ğµç ¿şÀÌºê ¿Ï·á ¿©ºÎ
+    private int currentWaveIndex = -1; // í˜„ì¬ ì›¨ì´ë¸Œ ì¸ë±ìŠ¤
+    private bool isWaveActive = false; // ì›¨ì´ë¸Œ í™œì„±í™” ìƒíƒœ
+    private float waveTimer = 0f; // ì›¨ì´ë¸Œ íƒ€ì´ë¨¸
+    private int enemiesKilledInWave = 0; // ì›¨ì´ë¸Œ ì¤‘ ì²˜ì¹˜í•œ ì  ìˆ˜
+    private bool allWavesCompleted = false; // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ ì—¬ë¶€
+    private bool isSubscribedToEnemySpawner = false;
 
-    // ¿şÀÌºê ÀÌº¥Æ® µ¨¸®°ÔÀÌÆ®
+    // ì›¨ì´ë¸Œ ì´ë²¤íŠ¸ ë¸ë¦¬ê²Œì´íŠ¸
     public delegate void WaveEventHandler(int waveNumber, string waveName);
-    public event WaveEventHandler OnWaveStart; // ¿şÀÌºê ½ÃÀÛ ÀÌº¥Æ®
-    public event WaveEventHandler OnWaveEnd; // ¿şÀÌºê Á¾·á ÀÌº¥Æ®
+    public event WaveEventHandler OnWaveStart; // ì›¨ì´ë¸Œ ì‹œì‘ ì´ë²¤íŠ¸
+    public event WaveEventHandler OnWaveEnd; // ì›¨ì´ë¸Œ ì¢…ë£Œ ì´ë²¤íŠ¸
 
-    // ¸ğµç ¿şÀÌºê ¿Ï·á ÀÌº¥Æ® µ¨¸®°ÔÀÌÆ®
+    // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ ì´ë²¤íŠ¸ ë¸ë¦¬ê²Œì´íŠ¸
     public delegate void AllWavesCompletedHandler();
-    public event AllWavesCompletedHandler OnAllWavesCompleted; // ¸ğµç ¿şÀÌºê ¿Ï·á ÀÌº¥Æ®
+    public event AllWavesCompletedHandler OnAllWavesCompleted; // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ ì´ë²¤íŠ¸
 
-    // ÇöÀç ¿şÀÌºê ¹øÈ£ ÇÁ·ÎÆÛÆ¼ (1ºÎÅÍ ½ÃÀÛ)
+    // í˜„ì¬ ì›¨ì´ë¸Œ ë²ˆí˜¸ í”„ë¡œí¼í‹° (1ë¶€í„° ì‹œì‘)
     public int CurrentWave => currentWaveIndex + 1;
 
-    // ÃÖ´ë ¿şÀÌºê ¼ö ÇÁ·ÎÆÛÆ¼
-    public int MaxWave => waves.Length;
+    // ìµœëŒ€ ì›¨ì´ë¸Œ ìˆ˜ í”„ë¡œí¼í‹°
+    public int MaxWave => waves != null ? waves.Length : 0;
 
-    // ÇöÀç ¿şÀÌºê ÀÌ¸§ ÇÁ·ÎÆÛÆ¼
+    // í˜„ì¬ ì›¨ì´ë¸Œ ì´ë¦„ í”„ë¡œí¼í‹°
     public string CurrentWaveName => currentWaveIndex >= 0 && currentWaveIndex < waves.Length ?
                                     waves[currentWaveIndex].waveName : "None";
 
-    // ¸ğµç ¿şÀÌºê ¿Ï·á ¿©ºÎ ÇÁ·ÎÆÛÆ¼
+    // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ ì—¬ë¶€ í”„ë¡œí¼í‹°
     public bool AllWavesCompleted => allWavesCompleted;
 
-    // ÇöÀç ¿şÀÌºê Áö¼Ó ½Ã°£ ÇÁ·ÎÆÛÆ¼
+    // í˜„ì¬ ì›¨ì´ë¸Œ ì§€ì† ì‹œê°„ í”„ë¡œí¼í‹°
     public float CurrentWaveDuration
     {
         get
@@ -89,11 +90,11 @@ public class WaveSystem : MonoBehaviour
             if (currentWaveIndex < 0 || currentWaveIndex >= waves.Length)
                 return defaultWaveDuration;
 
-            // ¿şÀÌºê¿¡ ÁöÁ¤µÈ Áö¼Ó ½Ã°£ÀÌ ÀÖÀ¸¸é »ç¿ë, ¾øÀ¸¸é ±âº»°ª »ç¿ë
+            // ì›¨ì´ë¸Œì— ì§€ì •ëœ ì§€ì† ì‹œê°„ì´ ìˆìœ¼ë©´ ì‚¬ìš©, ì—†ìœ¼ë©´ ê¸°ë³¸ê°’ ì‚¬ìš©
             float baseDuration = waves[currentWaveIndex].baseDuration > 0 ?
                                 waves[currentWaveIndex].baseDuration : defaultWaveDuration;
 
-            // ÇÃ·¹ÀÌ¾îÀÇ ÇÇ·Îµµ¿¡ µû¸¥ ¿şÀÌºê Áö¼Ó½Ã°£ °è»ê
+            // í”Œë ˆì´ì–´ì˜ í”¼ë¡œë„ì— ë”°ë¥¸ ì›¨ì´ë¸Œ ì§€ì†ì‹œê°„ ê³„ì‚°
             if (playerGold != null)
             {
                 return playerGold.GetWaveDuration(baseDuration);
@@ -103,18 +104,24 @@ public class WaveSystem : MonoBehaviour
         }
     }
 
-    // ³²Àº ¿şÀÌºê ½Ã°£ ÇÁ·ÎÆÛÆ¼
+    // ë‚¨ì€ ì›¨ì´ë¸Œ ì‹œê°„ í”„ë¡œí¼í‹°
     public float RemainingWaveTime => Mathf.Max(0, CurrentWaveDuration - waveTimer);
 
-    // ¿şÀÌºê ÁøÇà·ü ÇÁ·ÎÆÛÆ¼ (0~1)
+    // ì›¨ì´ë¸Œ ì§„í–‰ë¥  í”„ë¡œí¼í‹° (0~1)
     public float WaveProgress => Mathf.Clamp01(waveTimer / CurrentWaveDuration);
+
+    private void OnEnable()
+    {
+        SubscribeEnemySpawnerEvents();
+    }
 
     private void Start()
     {
-        // ÃÊ±âÈ­
+        // ì´ˆê¸°í™”
         InitializeReferences();
+        SubscribeEnemySpawnerEvents();
 
-        // ÀÚµ¿À¸·Î Ã¹ ¿şÀÌºê ½ÃÀÛ (ÇÊ¿ä½Ã ÁÖ¼® ÇØÁ¦)
+        // ìë™ìœ¼ë¡œ ì²« ì›¨ì´ë¸Œ ì‹œì‘ (í•„ìš”ì‹œ ì£¼ì„ í•´ì œ)
         // StartWave();
     }
 
@@ -125,7 +132,7 @@ public class WaveSystem : MonoBehaviour
             playerGold = FindObjectOfType<PlayerGold>();
             if (playerGold == null)
             {
-                Debug.LogWarning("PlayerGold ÂüÁ¶¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù!");
+                Debug.LogWarning("PlayerGold ì°¸ì¡°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤!");
             }
         }
 
@@ -139,7 +146,7 @@ public class WaveSystem : MonoBehaviour
             enemySpawner = FindObjectOfType<EnemySpawner>();
             if (enemySpawner == null)
             {
-                Debug.LogError("EnemySpawner¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù!");
+                Debug.LogError("EnemySpawnerë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤!");
             }
         }
     }
@@ -148,162 +155,185 @@ public class WaveSystem : MonoBehaviour
     {
         if (isWaveActive)
         {
-            // ¿şÀÌºê Å¸ÀÌ¸Ó ¾÷µ¥ÀÌÆ®
+            if (enemySpawner == null)
+            {
+                Debug.LogError("WaveSystem: EnemySpawner ì°¸ì¡°ê°€ ì—†ì–´ ì›¨ì´ë¸Œë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.");
+                EndCurrentWave();
+                return;
+            }
+
+            // ì›¨ì´ë¸Œ íƒ€ì´ë¨¸ ì—…ë°ì´íŠ¸
             waveTimer += Time.deltaTime;
 
-            // ¿şÀÌºê ½Ã°£ÀÌ ´Ù µÇ¾ú°Å³ª ÀûÀÌ ¸ğµÎ Ã³¸®µÈ °æ¿ì
+            // ì›¨ì´ë¸Œ ì‹œê°„ì´ ë‹¤ ë˜ì—ˆê±°ë‚˜ ì ì´ ëª¨ë‘ ì²˜ë¦¬ëœ ê²½ìš°
             if (waveTimer >= CurrentWaveDuration ||
-                (enemySpawner.EnemyList.Count == 0 && enemySpawner.CurrentEnemyCount <= 0))
+                NoActiveEnemies())
             {
                 EndCurrentWave();
             }
         }
     }
 
-    // ÇöÀç ¿şÀÌºê Á¾·á ¸Ş¼Òµå
+    // í˜„ì¬ ì›¨ì´ë¸Œ ì¢…ë£Œ ë©”ì†Œë“œ
     private void EndCurrentWave()
     {
         if (!isWaveActive) return;
 
         isWaveActive = false;
 
-        // ¿şÀÌºê Á¾·á ÀÌº¥Æ® ¹ß»ı
+        // ì›¨ì´ë¸Œ ì¢…ë£Œ ì´ë²¤íŠ¸ ë°œìƒ
         OnWaveEnd?.Invoke(CurrentWave, CurrentWaveName);
 
-        LogDebug($"¿şÀÌºê {CurrentWave} Á¾·á! Ã³Ä¡ÇÑ Àû: {enemiesKilledInWave}¸¶¸®");
+        LogDebug($"ì›¨ì´ë¸Œ {CurrentWave} ì¢…ë£Œ! ì²˜ì¹˜í•œ ì : {enemiesKilledInWave}ë§ˆë¦¬");
 
-        // °æÇèÄ¡ Á¤»ê
+        // ê²½í—˜ì¹˜ ì •ì‚°
         if (playerExperience != null)
         {
             playerExperience.AddExperienceForWaveCompletion(enemiesKilledInWave);
         }
 
-        // ÇÇ·Îµµ ¸®¼Â (Ãß°¡µÈ ºÎºĞ)
+        // í”¼ë¡œë„ ë¦¬ì…‹ (ì¶”ê°€ëœ ë¶€ë¶„)
         if (playerGold != null)
         {
             playerGold.ResetFatigue();
-            LogDebug("¿şÀÌºê Á¾·á ½Ã ÇÇ·Îµµ ¸®¼ÂµÊ");
+            LogDebug("ì›¨ì´ë¸Œ ì¢…ë£Œ ì‹œ í”¼ë¡œë„ ë¦¬ì…‹ë¨");
         }
 
-        // Àû Ã³Ä¡ ¼ö ÃÊ±âÈ­
+        // ì  ì²˜ì¹˜ ìˆ˜ ì´ˆê¸°í™”
         enemiesKilledInWave = 0;
 
-        // ´ÙÀ½ ¿şÀÌºê°¡ ÀÖ´ÂÁö È®ÀÎ
+        // ë‹¤ìŒ ì›¨ì´ë¸Œê°€ ìˆëŠ”ì§€ í™•ì¸
         if (currentWaveIndex < waves.Length - 1)
         {
-            // ´ÙÀ½ ¿şÀÌºê ÁØºñ
+            // ë‹¤ìŒ ì›¨ì´ë¸Œ ì¤€ë¹„
             float delay = waves[currentWaveIndex].delayBeforeNextWave;
             StartCoroutine(StartNextWaveAfterDelay(delay));
         }
         else
         {
-            // ¸ğµç ¿şÀÌºê ¿Ï·á
+            // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ
             HandleAllWavesCompleted();
         }
     }
 
-    // ¸ğµç ¿şÀÌºê ¿Ï·á Ã³¸®
+    // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ ì²˜ë¦¬
     private void HandleAllWavesCompleted()
     {
         allWavesCompleted = true;
-        LogDebug("¸ğµç ¿şÀÌºê°¡ ¿Ï·áµÇ¾ú½À´Ï´Ù!");
+        LogDebug("ëª¨ë“  ì›¨ì´ë¸Œê°€ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤!");
 
-        // ¸ğµç ¿şÀÌºê ¿Ï·á ÀÌº¥Æ® ¹ß»ı
+        // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ ì´ë²¤íŠ¸ ë°œìƒ
         OnAllWavesCompleted?.Invoke();
 
-        // ¸ğµç ¿şÀÌºê ¿Ï·á ÈÄ Àû Á¦°Å
+        // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ í›„ ì  ì œê±°
         if (cleanupEnemiesAfterAllWaves)
         {
             StartCoroutine(CleanupAllEnemiesAfterDelay());
         }
 
-        // °ÔÀÓ Å¬¸®¾î Ã³¸® (ÇÊ¿ä½Ã Ãß°¡)
+        // ê²Œì„ í´ë¦¬ì–´ ì²˜ë¦¬ (í•„ìš”ì‹œ ì¶”ê°€)
         // GameManager.Instance.HandleGameWin();
     }
 
-    // ¸ğµç ¿şÀÌºê ¿Ï·á ÈÄ Àû Á¦°Å ÄÚ·çÆ¾
+    // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ í›„ ì  ì œê±° ì½”ë£¨í‹´
     private IEnumerator CleanupAllEnemiesAfterDelay()
     {
-        // ÁöÁ¤µÈ Áö¿¬ ½Ã°£ ÈÄ ½ÇÇà
+        // ì§€ì •ëœ ì§€ì—° ì‹œê°„ í›„ ì‹¤í–‰
         yield return new WaitForSeconds(finalCleanupDelay);
 
         int enemyCount = enemySpawner.EnemyList.Count;
         if (enemyCount > 0)
         {
-            LogDebug($"¸ğµç ¿şÀÌºê ¿Ï·á ÈÄ ³²Àº {enemyCount}¸¶¸®ÀÇ Àû Á¦°Å Áß...");
+            LogDebug($"ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ í›„ ë‚¨ì€ {enemyCount}ë§ˆë¦¬ì˜ ì  ì œê±° ì¤‘...");
 
-            // ¸®½ºÆ®¸¦ º¹»çÇÏ¿© ¼øÈ¸ Áß º¯°æ ¹®Á¦ ¹æÁö
+            // ë¦¬ìŠ¤íŠ¸ë¥¼ ë³µì‚¬í•˜ì—¬ ìˆœíšŒ ì¤‘ ë³€ê²½ ë¬¸ì œ ë°©ì§€
             List<Enemy> enemiesToDestroy = new List<Enemy>(enemySpawner.EnemyList);
 
             foreach (Enemy enemy in enemiesToDestroy)
             {
                 if (enemy != null)
                 {
-                    // Àû Á¦°Å (Kill Å¸ÀÔÀ¸·Î - °ñµå/°æÇèÄ¡ ¾øÀ½)
-                    enemy.gold = 0; // °ñµå º¸»ó ¾øÀ½
+                    // ì  ì œê±° (Kill íƒ€ì…ìœ¼ë¡œ - ê³¨ë“œ/ê²½í—˜ì¹˜ ì—†ìŒ)
+                    enemy.gold = 0; // ê³¨ë“œ ë³´ìƒ ì—†ìŒ
                     enemy.OnDie(EnemyDestroyType.Kill);
 
-                    // ¾à°£ÀÇ ½Ã°£Â÷¸¦ µÎ°í Á¦°ÅÇÏ¿© ½Ã°¢Àû È¿°ú °³¼± (¼±ÅÃÀû)
+                    // ì•½ê°„ì˜ ì‹œê°„ì°¨ë¥¼ ë‘ê³  ì œê±°í•˜ì—¬ ì‹œê°ì  íš¨ê³¼ ê°œì„  (ì„ íƒì )
                     yield return new WaitForSeconds(0.05f);
                 }
             }
 
-            LogDebug($"¸ğµç ¿şÀÌºê ¿Ï·á ÈÄ Àû Á¦°Å ¿Ï·á");
+            LogDebug($"ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ í›„ ì  ì œê±° ì™„ë£Œ");
         }
     }
 
-    // ¿şÀÌºê Áß Àû Ã³Ä¡ ÃßÀû ¸Ş¼Òµå
+    // ì›¨ì´ë¸Œ ì¤‘ ì  ì²˜ì¹˜ ì¶”ì  ë©”ì†Œë“œ
     public void OnEnemyKilled()
     {
         enemiesKilledInWave++;
     }
 
-    // ´ÙÀ½ ¿şÀÌºê ½ÃÀÛ µô·¹ÀÌ ÄÚ·çÆ¾
+    // ë‹¤ìŒ ì›¨ì´ë¸Œ ì‹œì‘ ë”œë ˆì´ ì½”ë£¨í‹´
     private IEnumerator StartNextWaveAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
         StartWave();
     }
 
-    // ¿şÀÌºê ½ÃÀÛ ¸Ş¼Òµå
+    // ì›¨ì´ë¸Œ ì‹œì‘ ë©”ì†Œë“œ
     public void StartWave()
     {
+        if (waves == null || waves.Length == 0)
+        {
+            LogDebug("ì‹œì‘í•  ì›¨ì´ë¸Œê°€ ì—†ìŠµë‹ˆë‹¤.");
+            return;
+        }
+
+        if (enemySpawner == null)
+        {
+            InitializeReferences();
+        }
+
+        if (enemySpawner == null)
+        {
+            Debug.LogError("WaveSystem: EnemySpawnerê°€ ì—†ì–´ ì›¨ì´ë¸Œë¥¼ ì‹œì‘í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            return;
+        }
+
+        SubscribeEnemySpawnerEvents();
+
         if (!isWaveActive && currentWaveIndex < waves.Length - 1)
         {
             currentWaveIndex++;
 
             float waveDuration = CurrentWaveDuration;
-            LogDebug($"¿şÀÌºê {CurrentWave} ½ÃÀÛ: {CurrentWaveName}, Áö¼Ó ½Ã°£: {waveDuration}ÃÊ (ÇÇ·Îµµ: {playerGold?.FatigueRatio:P0})");
+            LogDebug($"ì›¨ì´ë¸Œ {CurrentWave} ì‹œì‘: {CurrentWaveName}, ì§€ì† ì‹œê°„: {waveDuration}ì´ˆ (í”¼ë¡œë„: {playerGold?.FatigueRatio:P0})");
 
-            // ¿şÀÌºê ½ÃÀÛ ÀÌº¥Æ® ¹ß»ı
+            // ì›¨ì´ë¸Œ ì‹œì‘ ì´ë²¤íŠ¸ ë°œìƒ
             OnWaveStart?.Invoke(CurrentWave, CurrentWaveName);
 
-            // Àû ½ºÆù ½ÃÀÛ
+            // ì  ìŠ¤í° ì‹œì‘
             enemySpawner.StartWave(waves[currentWaveIndex]);
 
-            // Àû Ã³Ä¡ ÀÌº¥Æ® ±¸µ¶
-            enemySpawner.OnEnemyDestroyed += OnEnemyDestroyed;
-
             isWaveActive = true;
-            waveTimer = 0f; // Å¸ÀÌ¸Ó ÃÊ±âÈ­
+            waveTimer = 0f; // íƒ€ì´ë¨¸ ì´ˆê¸°í™”
         }
         else if (currentWaveIndex >= waves.Length - 1)
         {
-            LogDebug("´õ ÀÌ»ó ½ÃÀÛÇÒ ¿şÀÌºê°¡ ¾ø½À´Ï´Ù!");
+            LogDebug("ë” ì´ìƒ ì‹œì‘í•  ì›¨ì´ë¸Œê°€ ì—†ìŠµë‹ˆë‹¤!");
         }
     }
 
-    // Àû Ã³Ä¡ ÀÌº¥Æ® ÇÚµé·¯
+    // ì  ì²˜ì¹˜ ì´ë²¤íŠ¸ í•¸ë“¤ëŸ¬
     private void OnEnemyDestroyed(Transform enemy)
     {
-        // Àû Ã³Ä¡ ½Ã È£Ãâ
+        // ì  ì²˜ì¹˜ ì‹œ í˜¸ì¶œ
         if (isWaveActive)
         {
             OnEnemyKilled();
         }
     }
 
-    // °ÔÀÓ Àç½ÃÀÛ ¶Ç´Â ¸®¼Â ½Ã È£Ãâ
+    // ê²Œì„ ì¬ì‹œì‘ ë˜ëŠ” ë¦¬ì…‹ ì‹œ í˜¸ì¶œ
     public void ResetWaveSystem()
     {
         StopAllCoroutines();
@@ -313,16 +343,45 @@ public class WaveSystem : MonoBehaviour
         enemiesKilledInWave = 0;
         allWavesCompleted = false;
 
-        // ÇÇ·Îµµµµ ÃÊ±âÈ­
+        // í”¼ë¡œë„ë„ ì´ˆê¸°í™”
         if (playerGold != null)
         {
             playerGold.ResetFatigue();
         }
 
-        LogDebug("¿şÀÌºê ½Ã½ºÅÛ ¸®¼Â");
+        LogDebug("ì›¨ì´ë¸Œ ì‹œìŠ¤í…œ ë¦¬ì…‹");
     }
 
-    // µğ¹ö±× ·Î±× Ãâ·Â ÇïÆÛ ¸Ş¼Òµå
+    private bool NoActiveEnemies()
+    {
+        return enemySpawner != null &&
+               enemySpawner.EnemyList.Count == 0 &&
+               enemySpawner.CurrentEnemyCount <= 0;
+    }
+
+    private void SubscribeEnemySpawnerEvents()
+    {
+        if (enemySpawner == null || isSubscribedToEnemySpawner)
+        {
+            return;
+        }
+
+        enemySpawner.OnEnemyDestroyed += OnEnemyDestroyed;
+        isSubscribedToEnemySpawner = true;
+    }
+
+    private void UnsubscribeEnemySpawnerEvents()
+    {
+        if (enemySpawner == null || !isSubscribedToEnemySpawner)
+        {
+            return;
+        }
+
+        enemySpawner.OnEnemyDestroyed -= OnEnemyDestroyed;
+        isSubscribedToEnemySpawner = false;
+    }
+
+    // ë””ë²„ê·¸ ë¡œê·¸ ì¶œë ¥ í—¬í¼ ë©”ì†Œë“œ
     private void LogDebug(string message)
     {
         if (showDebugMessages)
@@ -331,194 +390,196 @@ public class WaveSystem : MonoBehaviour
         }
     }
 
-    // OnDestroy: ÀÌº¥Æ® ±¸µ¶ ÇØÁ¦
-    private void OnDestroy()
+    private void OnDisable()
     {
-        if (enemySpawner != null)
-        {
-            enemySpawner.OnEnemyDestroyed -= OnEnemyDestroyed;
-        }
+        UnsubscribeEnemySpawnerEvents();
     }
 
-    // µ¿ÀûÀ¸·Î ¿şÀÌºê¸¦ ¼³Á¤ÇÏ´Â ¸Ş¼Òµå
+    // OnDestroy: ì´ë²¤íŠ¸ êµ¬ë… í•´ì œ
+    private void OnDestroy()
+    {
+        UnsubscribeEnemySpawnerEvents();
+    }
+
+    // ë™ì ìœ¼ë¡œ ì›¨ì´ë¸Œë¥¼ ì„¤ì •í•˜ëŠ” ë©”ì†Œë“œ
     public void SetWaves(Wave[] newWaves)
     {
         if (newWaves == null || newWaves.Length == 0)
         {
-            Debug.LogWarning("¼³Á¤ÇÏ·Á´Â ¿şÀÌºê°¡ ºñ¾îÀÖ½À´Ï´Ù.");
+            Debug.LogWarning("ì„¤ì •í•˜ë ¤ëŠ” ì›¨ì´ë¸Œê°€ ë¹„ì–´ìˆìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ÇöÀç ÁøÇà ÁßÀÎ ¿şÀÌºê°¡ ÀÖ´ÂÁö È®ÀÎ
+        // í˜„ì¬ ì§„í–‰ ì¤‘ì¸ ì›¨ì´ë¸Œê°€ ìˆëŠ”ì§€ í™•ì¸
         if (isWaveActive)
         {
-            Debug.LogWarning("¿şÀÌºê°¡ ÁøÇà ÁßÀÏ ¶§´Â »õ ¿şÀÌºê¸¦ ¼³Á¤ÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("ì›¨ì´ë¸Œê°€ ì§„í–‰ ì¤‘ì¼ ë•ŒëŠ” ìƒˆ ì›¨ì´ë¸Œë¥¼ ì„¤ì •í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ±âÁ¸ ¿şÀÌºê ÀúÀå
+        // ê¸°ì¡´ ì›¨ì´ë¸Œ ì €ì¥
         Wave[] oldWaves = waves;
 
-        // »õ ¿şÀÌºê ¼³Á¤
+        // ìƒˆ ì›¨ì´ë¸Œ ì„¤ì •
         waves = newWaves;
 
-        // ¿şÀÌºê °ü·Ã »óÅÂ ÃÊ±âÈ­
+        // ì›¨ì´ë¸Œ ê´€ë ¨ ìƒíƒœ ì´ˆê¸°í™”
         ResetWaveSystem();
 
-        Debug.Log($"¿şÀÌºê ¼³Á¤ÀÌ º¯°æµÇ¾ú½À´Ï´Ù. ¿şÀÌºê ¼ö: {waves.Length}°³");
+        Debug.Log($"ì›¨ì´ë¸Œ ì„¤ì •ì´ ë³€ê²½ë˜ì—ˆìŠµë‹ˆë‹¤. ì›¨ì´ë¸Œ ìˆ˜: {waves.Length}ê°œ");
 
-        // ¿şÀÌºê Á¤º¸ Ãâ·Â (µğ¹ö±×¿ë)
+        // ì›¨ì´ë¸Œ ì •ë³´ ì¶œë ¥ (ë””ë²„ê·¸ìš©)
         for (int i = 0; i < waves.Length; i++)
         {
-            Debug.Log($"¿şÀÌºê {i + 1}: {waves[i].waveName}, Àû ±×·ì ¼ö: {waves[i].enemyGroups.Length}°³");
+            Debug.Log($"ì›¨ì´ë¸Œ {i + 1}: {waves[i].waveName}, ì  ê·¸ë£¹ ìˆ˜: {waves[i].enemyGroups.Length}ê°œ");
         }
     }
 
-    // ¿şÀÌºê Ãß°¡ ¸Ş¼Òµå
+    // ì›¨ì´ë¸Œ ì¶”ê°€ ë©”ì†Œë“œ
     public void AddWaves(Wave[] additionalWaves)
     {
         if (additionalWaves == null || additionalWaves.Length == 0)
         {
-            Debug.LogWarning("Ãß°¡ÇÏ·Á´Â ¿şÀÌºê°¡ ºñ¾îÀÖ½À´Ï´Ù.");
+            Debug.LogWarning("ì¶”ê°€í•˜ë ¤ëŠ” ì›¨ì´ë¸Œê°€ ë¹„ì–´ìˆìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ±âÁ¸ ¿şÀÌºê¿Í »õ ¿şÀÌºê º´ÇÕ
+        // ê¸°ì¡´ ì›¨ì´ë¸Œì™€ ìƒˆ ì›¨ì´ë¸Œ ë³‘í•©
         Wave[] combinedWaves = new Wave[waves.Length + additionalWaves.Length];
 
-        // ±âÁ¸ ¿şÀÌºê º¹»ç
+        // ê¸°ì¡´ ì›¨ì´ë¸Œ ë³µì‚¬
         for (int i = 0; i < waves.Length; i++)
         {
             combinedWaves[i] = waves[i];
         }
 
-        // »õ ¿şÀÌºê Ãß°¡
+        // ìƒˆ ì›¨ì´ë¸Œ ì¶”ê°€
         for (int i = 0; i < additionalWaves.Length; i++)
         {
             combinedWaves[waves.Length + i] = additionalWaves[i];
         }
 
-        // º´ÇÕµÈ ¿şÀÌºê ¼³Á¤
+        // ë³‘í•©ëœ ì›¨ì´ë¸Œ ì„¤ì •
         waves = combinedWaves;
 
-        Debug.Log($"¿şÀÌºê°¡ Ãß°¡µÇ¾ú½À´Ï´Ù. ÃÑ ¿şÀÌºê ¼ö: {waves.Length}°³");
+        Debug.Log($"ì›¨ì´ë¸Œê°€ ì¶”ê°€ë˜ì—ˆìŠµë‹ˆë‹¤. ì´ ì›¨ì´ë¸Œ ìˆ˜: {waves.Length}ê°œ");
     }
 
-    // Æ¯Á¤ ÀÎµ¦½ºÀÇ ¿şÀÌºê °¡Á®¿À±â
+    // íŠ¹ì • ì¸ë±ìŠ¤ì˜ ì›¨ì´ë¸Œ ê°€ì ¸ì˜¤ê¸°
     public Wave GetWave(int index)
     {
         if (index < 0 || index >= waves.Length)
         {
-            Debug.LogWarning($"À¯È¿ÇÏÁö ¾ÊÀº ¿şÀÌºê ÀÎµ¦½º: {index}, ¿şÀÌºê ¼ö: {waves.Length}");
+            Debug.LogWarning($"ìœ íš¨í•˜ì§€ ì•Šì€ ì›¨ì´ë¸Œ ì¸ë±ìŠ¤: {index}, ì›¨ì´ë¸Œ ìˆ˜: {waves.Length}");
             return default(Wave);
         }
 
         return waves[index];
     }
 
-    // ÇöÀç ¿şÀÌºê Á¤º¸ º¹Á¦ÇÏ¿© °¡Á®¿À±â
+    // í˜„ì¬ ì›¨ì´ë¸Œ ì •ë³´ ë³µì œí•˜ì—¬ ê°€ì ¸ì˜¤ê¸°
     public Wave GetCurrentWaveInfo()
     {
         if (currentWaveIndex < 0 || currentWaveIndex >= waves.Length)
         {
-            Debug.LogWarning("ÇöÀç È°¼ºÈ­µÈ ¿şÀÌºê°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("í˜„ì¬ í™œì„±í™”ëœ ì›¨ì´ë¸Œê°€ ì—†ìŠµë‹ˆë‹¤.");
             return default(Wave);
         }
 
         return waves[currentWaveIndex];
     }
 
-    // ·£´ı ¿şÀÌºê »ı¼º (¼±ÅÃÀû)
+    // ëœë¤ ì›¨ì´ë¸Œ ìƒì„± (ì„ íƒì )
     public Wave GenerateRandomWave(int difficulty = 1)
     {
-        // ºó ¿şÀÌºê »ı¼º
+        // ë¹ˆ ì›¨ì´ë¸Œ ìƒì„±
         Wave randomWave = new Wave();
 
-        // ¿şÀÌºê ÀÌ¸§ ¼³Á¤
+        // ì›¨ì´ë¸Œ ì´ë¦„ ì„¤ì •
         randomWave.waveName = $"Random Wave (Difficulty {difficulty})";
 
-        // ±âº» Áö¼Ó ½Ã°£ ¼³Á¤
+        // ê¸°ë³¸ ì§€ì† ì‹œê°„ ì„¤ì •
         randomWave.baseDuration = 60f + (difficulty * 10f);
 
-        // Àû ±×·ì »ı¼º
+        // ì  ê·¸ë£¹ ìƒì„±
         int groupCount = Mathf.Max(1, Random.Range(1, 3 + difficulty / 2));
         randomWave.enemyGroups = new EnemyGroup[groupCount];
 
-        // ·£´ı Àû ÇÁ¸®ÆÕ °¡Á®¿À±â (Resources Æú´õ¿¡¼­)
+        // ëœë¤ ì  í”„ë¦¬íŒ¹ ê°€ì ¸ì˜¤ê¸° (Resources í´ë”ì—ì„œ)
         GameObject[] enemyPrefabs = Resources.LoadAll<GameObject>("Prefabs/Enemies");
 
-        // Àû ÇÁ¸®ÆÕÀÌ ¾øÀ¸¸é ºó ¿şÀÌºê ¹İÈ¯
+        // ì  í”„ë¦¬íŒ¹ì´ ì—†ìœ¼ë©´ ë¹ˆ ì›¨ì´ë¸Œ ë°˜í™˜
         if (enemyPrefabs == null || enemyPrefabs.Length == 0)
         {
-            Debug.LogWarning("·£´ı ¿şÀÌºê »ı¼ºÀ» À§ÇÑ Àû ÇÁ¸®ÆÕÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("ëœë¤ ì›¨ì´ë¸Œ ìƒì„±ì„ ìœ„í•œ ì  í”„ë¦¬íŒ¹ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return randomWave;
         }
 
-        // °¢ ±×·ì ¼³Á¤
+        // ê° ê·¸ë£¹ ì„¤ì •
         for (int i = 0; i < groupCount; i++)
         {
             EnemyGroup group = new EnemyGroup();
 
-            // ·£´ı Àû ÇÁ¸®ÆÕ ¼±ÅÃ
+            // ëœë¤ ì  í”„ë¦¬íŒ¹ ì„ íƒ
             group.enemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
 
-            // Àû ¼ö·® ¼³Á¤ (³­ÀÌµµ¿¡ µû¶ó)
+            // ì  ìˆ˜ëŸ‰ ì„¤ì • (ë‚œì´ë„ì— ë”°ë¼)
             group.count = Mathf.Max(3, 5 + difficulty * 2 + Random.Range(-2, 3));
 
-            // ½ºÆù °£°İ ¼³Á¤
+            // ìŠ¤í° ê°„ê²© ì„¤ì •
             group.spawnTime = Mathf.Max(0.5f, 2f - (difficulty * 0.1f) + Random.Range(-0.2f, 0.2f));
 
-            // ±×·ì Ãß°¡
+            // ê·¸ë£¹ ì¶”ê°€
             randomWave.enemyGroups[i] = group;
         }
 
-        // ´ÙÀ½ ¿şÀÌºê µô·¹ÀÌ ¼³Á¤
+        // ë‹¤ìŒ ì›¨ì´ë¸Œ ë”œë ˆì´ ì„¤ì •
         randomWave.delayBeforeNextWave = 5f + Random.Range(0f, 5f);
 
         return randomWave;
     }
 
-    // ¿şÀÌºêÀÇ Æ¯Á¤ ¼Ó¼º Á¶Á¤
+    // ì›¨ì´ë¸Œì˜ íŠ¹ì • ì†ì„± ì¡°ì •
     public void AdjustWaveDifficulty(float difficultyMultiplier)
     {
-        // ¿şÀÌºê ¹è¿­ÀÇ »õ ¹öÀü »ı¼º (¿øº» ¼öÁ¤ ¹æÁö)
+        // ì›¨ì´ë¸Œ ë°°ì—´ì˜ ìƒˆ ë²„ì „ ìƒì„± (ì›ë³¸ ìˆ˜ì • ë°©ì§€)
         Wave[] adjustedWaves = new Wave[waves.Length];
 
         for (int i = 0; i < waves.Length; i++)
         {
-            // ¿şÀÌºê º¹»ç
+            // ì›¨ì´ë¸Œ ë³µì‚¬
             adjustedWaves[i] = waves[i];
 
-            // ¿şÀÌºê Áö¼Ó ½Ã°£ Á¶Á¤
+            // ì›¨ì´ë¸Œ ì§€ì† ì‹œê°„ ì¡°ì •
             if (adjustedWaves[i].baseDuration > 0)
             {
                 adjustedWaves[i].baseDuration *= Mathf.Max(0.5f, difficultyMultiplier);
             }
 
-            // Àû ±×·ì º¹»ç ¹× Á¶Á¤
+            // ì  ê·¸ë£¹ ë³µì‚¬ ë° ì¡°ì •
             EnemyGroup[] adjustedGroups = new EnemyGroup[adjustedWaves[i].enemyGroups.Length];
 
             for (int j = 0; j < adjustedWaves[i].enemyGroups.Length; j++)
             {
-                // ±×·ì º¹»ç
+                // ê·¸ë£¹ ë³µì‚¬
                 adjustedGroups[j] = adjustedWaves[i].enemyGroups[j];
 
-                // Àû ¼ö·® Á¶Á¤ (±¸Á¶Ã¼´Â Á÷Á¢ ¼öÁ¤ ºÒ°¡ÇÏ¹Ç·Î »õ·Î¿î ÀÎ½ºÅÏ½º »ı¼º)
+                // ì  ìˆ˜ëŸ‰ ì¡°ì • (êµ¬ì¡°ì²´ëŠ” ì§ì ‘ ìˆ˜ì • ë¶ˆê°€í•˜ë¯€ë¡œ ìƒˆë¡œìš´ ì¸ìŠ¤í„´ìŠ¤ ìƒì„±)
                 int newCount = Mathf.Max(1, Mathf.RoundToInt(adjustedGroups[j].count * difficultyMultiplier));
                 adjustedGroups[j].count = newCount;
 
-                // ½ºÆù ½Ã°£ Á¶Á¤ (¹İºñ·Ê)
+                // ìŠ¤í° ì‹œê°„ ì¡°ì • (ë°˜ë¹„ë¡€)
                 float newSpawnTime = Mathf.Max(0.2f, adjustedGroups[j].spawnTime / Mathf.Max(0.5f, difficultyMultiplier));
                 adjustedGroups[j].spawnTime = newSpawnTime;
             }
 
-            // Á¶Á¤µÈ ±×·ì ¼³Á¤
+            // ì¡°ì •ëœ ê·¸ë£¹ ì„¤ì •
             adjustedWaves[i].enemyGroups = adjustedGroups;
         }
 
-        // Á¶Á¤µÈ ¿şÀÌºê·Î ¾÷µ¥ÀÌÆ®
+        // ì¡°ì •ëœ ì›¨ì´ë¸Œë¡œ ì—…ë°ì´íŠ¸
         waves = adjustedWaves;
 
-        Debug.Log($"¿şÀÌºê ³­ÀÌµµ°¡ Á¶Á¤µÇ¾ú½À´Ï´Ù. ¹èÀ²: {difficultyMultiplier}");
+        Debug.Log($"ì›¨ì´ë¸Œ ë‚œì´ë„ê°€ ì¡°ì •ë˜ì—ˆìŠµë‹ˆë‹¤. ë°°ìœ¨: {difficultyMultiplier}");
     }
 }

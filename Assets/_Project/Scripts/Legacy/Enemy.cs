@@ -8,42 +8,42 @@ public enum EnemyDestroyType { Kill = 0, Arrive }
 public class Enemy : MonoBehaviour
 {
     [Header("Basic Settings")]
-    [SerializeField] public int gold = 10; // Àû »ç¸Á½Ã È¹µæ °ñµå
-    [SerializeField] public int expValue = 20; // Àû »ç¸Á½Ã È¹µæ °æÇèÄ¡
+    [SerializeField] public int gold = 10; // ì  ì‚¬ë§ì‹œ íšë“ ê³¨ë“œ
+    [SerializeField] public int expValue = 20; // ì  ì‚¬ë§ì‹œ íšë“ ê²½í—˜ì¹˜
 
     [Header("Target Selection")]
-    [SerializeField, Tooltip("Å¸°Ù ÅÂ±× ¿ì¼±¼øÀ§ (¼ø¼­´ë·Î °Ë»ö)")]
-    public string[] targetTagPriority = { "Goods", "Food", "Human" }; // Å¸°Ù ÅÂ±× ¿ì¼±¼øÀ§
-    [SerializeField, Tooltip("Å¸°Ù °Ë»ö ¹üÀ§")]
-    private float targetSearchRadius = 10f; // Å¸°Ù °Ë»ö ¹üÀ§
-    [SerializeField, Tooltip("Å¸°Ù °»½Å ÁÖ±â (ÃÊ)")]
-    private float targetUpdateInterval = 1f; // Å¸°Ù °»½Å ÁÖ±â
-    [SerializeField, Tooltip("±âº» Å¸°Ù ÅÂ±×")]
-    private string defaultTargetTag = "Target"; // ±âº» Å¸°Ù ÅÂ±×
+    [SerializeField, Tooltip("íƒ€ê²Ÿ íƒœê·¸ ìš°ì„ ìˆœìœ„ (ìˆœì„œëŒ€ë¡œ ê²€ìƒ‰)")]
+    public string[] targetTagPriority = { "Goods", "Food", "Human" }; // íƒ€ê²Ÿ íƒœê·¸ ìš°ì„ ìˆœìœ„
+    [SerializeField, Tooltip("íƒ€ê²Ÿ ê²€ìƒ‰ ë²”ìœ„")]
+    private float targetSearchRadius = 30f; // íƒ€ê²Ÿ ê²€ìƒ‰ ë²”ìœ„
+    [SerializeField, Tooltip("íƒ€ê²Ÿ ê°±ì‹  ì£¼ê¸° (ì´ˆ)")]
+    private float targetUpdateInterval = 1f; // íƒ€ê²Ÿ ê°±ì‹  ì£¼ê¸°
+    [SerializeField, Tooltip("ê¸°ë³¸ íƒ€ê²Ÿ íƒœê·¸")]
+    private string defaultTargetTag = "Target"; // ê¸°ë³¸ íƒ€ê²Ÿ íƒœê·¸
 
     [Header("Attack Settings")]
-    [SerializeField] private bool hasAttack = true; // °ø°İ ±â´É È°¼ºÈ­ ¿©ºÎ
+    [SerializeField] private bool hasAttack = true; // ê³µê²© ê¸°ëŠ¥ í™œì„±í™” ì—¬ë¶€
 
     [Header("Isometric Settings")]
-    [SerializeField] private bool useIsometricPosition = true; // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ »ç¿ë ¿©ºÎ
+    [SerializeField] private bool useIsometricPosition = true; // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ ì‚¬ìš© ì—¬ë¶€
 
     [Header("Debug")]
-    [SerializeField] private bool debugMode = false; // µğ¹ö±× ¸ğµå
+    [SerializeField] private bool debugMode = false; // ë””ë²„ê·¸ ëª¨ë“œ
 
-    private Transform target; // ÇöÀç Å¸°Ù
+    private Transform target; // í˜„ì¬ íƒ€ê²Ÿ
     private NavMeshAgent navMeshAgent;
     private EnemySpawner enemySpawner;
     private EnemyHP enemyHP;
     private EnemyAttack enemyAttack;
-    private EnemyDirectionFlipper directionFlipper; // ¹æÇâ ÀüÈ¯ ÄÄÆ÷³ÍÆ® ÂüÁ¶
-    private IsometricPositionHandler isometricPosition; // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯
+    private EnemyDirectionFlipper directionFlipper; // ë°©í–¥ ì „í™˜ ì»´í¬ë„ŒíŠ¸ ì°¸ì¡°
+    private IsometricPositionHandler isometricPosition; // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬
     private Vector3 spawnOffset = Vector3.zero;
     private Transform customSpawnPoint = null;
-    private string targetTag = "Target"; // ÇöÀç »ç¿ë ÁßÀÎ Å¸°Ù ÅÂ±×
-    private float lastTargetSearchTime; // ¸¶Áö¸· Å¸°Ù °Ë»ö ½Ã°£
-    private bool isSearchingForTarget = false; // Å¸°Ù °Ë»ö Áß ¿©ºÎ(Áßº¹ °Ë»ö ¹æÁö)
+    private string targetTag = "Target"; // í˜„ì¬ ì‚¬ìš© ì¤‘ì¸ íƒ€ê²Ÿ íƒœê·¸
+    private float lastTargetSearchTime; // ë§ˆì§€ë§‰ íƒ€ê²Ÿ ê²€ìƒ‰ ì‹œê°„
+    private bool isSearchingForTarget = false; // íƒ€ê²Ÿ ê²€ìƒ‰ ì¤‘ ì—¬ë¶€(ì¤‘ë³µ ê²€ìƒ‰ ë°©ì§€)
 
-    // ÇöÀç Å¸°Ù¿¡ ´ëÇÑ Á¢±ÙÀÚ Ãß°¡
+    // í˜„ì¬ íƒ€ê²Ÿì— ëŒ€í•œ ì ‘ê·¼ì ì¶”ê°€
     public Transform CurrentTarget => target;
     public string TargetTag => targetTag;
     public int GoldValue => gold;
@@ -51,24 +51,24 @@ public class Enemy : MonoBehaviour
 
     private void Awake()
     {
-        // ÇÊ¿äÇÑ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+        // í•„ìš”í•œ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
         enemyHP = GetComponent<EnemyHP>();
         enemyAttack = GetComponent<EnemyAttack>();
 
-        // °ø°İ ÄÄÆ÷³ÍÆ®°¡ ¾øÀ¸¸é¼­ °ø°İ ±â´ÉÀÌ È°¼ºÈ­µÈ °æ¿ì, ÄÄÆ÷³ÍÆ® Ãß°¡
+        // ê³µê²© ì»´í¬ë„ŒíŠ¸ê°€ ì—†ìœ¼ë©´ì„œ ê³µê²© ê¸°ëŠ¥ì´ í™œì„±í™”ëœ ê²½ìš°, ì»´í¬ë„ŒíŠ¸ ì¶”ê°€
         if (hasAttack && enemyAttack == null)
         {
             enemyAttack = gameObject.AddComponent<EnemyAttack>();
         }
 
-        // ¹æÇâ ÀüÈ¯ ÄÄÆ÷³ÍÆ® È®ÀÎ ¹× Ãß°¡
+        // ë°©í–¥ ì „í™˜ ì»´í¬ë„ŒíŠ¸ í™•ì¸ ë° ì¶”ê°€
         directionFlipper = GetComponent<EnemyDirectionFlipper>();
         if (directionFlipper == null)
         {
             directionFlipper = gameObject.AddComponent<EnemyDirectionFlipper>();
         }
 
-        // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯ È®ÀÎ ¹× Ãß°¡
+        // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬ í™•ì¸ ë° ì¶”ê°€
         if (useIsometricPosition)
         {
             isometricPosition = GetComponent<IsometricPositionHandler>();
@@ -79,16 +79,16 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Update ¸Ş¼­µå¿¡¼­ ´õ Àû±ØÀûÀ¸·Î Å¸°ÙÀ» Ã£µµ·Ï ¼öÁ¤
+    // Update ë©”ì„œë“œì—ì„œ ë” ì ê·¹ì ìœ¼ë¡œ íƒ€ê²Ÿì„ ì°¾ë„ë¡ ìˆ˜ì •
     private void Update()
     {
-        // Å¸°ÙÀÌ ¾ø°Å³ª À¯È¿ÇÏÁö ¾ÊÀº °æ¿ì »õ Å¸°Ù Ã£±â
+        // íƒ€ê²Ÿì´ ì—†ê±°ë‚˜ ìœ íš¨í•˜ì§€ ì•Šì€ ê²½ìš° ìƒˆ íƒ€ê²Ÿ ì°¾ê¸°
         if ((target == null || (TargetManager.Instance != null && !TargetManager.Instance.IsTargetValid(target))) && !isSearchingForTarget)
         {
-            // Å¸°ÙÀÌ ¾ø´Â °æ¿ì ´õ ºü¸£°Ô °Ë»ö
+            // íƒ€ê²Ÿì´ ì—†ëŠ” ê²½ìš° ë” ë¹ ë¥´ê²Œ ê²€ìƒ‰
             float interval = target == null ? targetUpdateInterval * 0.5f : targetUpdateInterval;
 
-            // ¸¶Áö¸· °Ë»öÀ¸·ÎºÎÅÍ ÀÏÁ¤ ½Ã°£ÀÌ Áö³µ´ÂÁö È®ÀÎ
+            // ë§ˆì§€ë§‰ ê²€ìƒ‰ìœ¼ë¡œë¶€í„° ì¼ì • ì‹œê°„ì´ ì§€ë‚¬ëŠ”ì§€ í™•ì¸
             if (Time.time - lastTargetSearchTime >= interval)
             {
                 SearchForNewTarget();
@@ -114,10 +114,10 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Å¸°Ù ÅÂ±× ¿ì¼±¼øÀ§ ¹è¿­ °¡Á®¿À±â
+    // íƒ€ê²Ÿ íƒœê·¸ ìš°ì„ ìˆœìœ„ ë°°ì—´ ê°€ì ¸ì˜¤ê¸°
     public string[] GetTargetTagPriority()
     {
-        // ºñ¾îÀÖÀ¸¸é ±âº» ÅÂ±× ¹İÈ¯
+        // ë¹„ì–´ìˆìœ¼ë©´ ê¸°ë³¸ íƒœê·¸ ë°˜í™˜
         if (targetTagPriority == null || targetTagPriority.Length == 0)
         {
             return new string[] { defaultTargetTag };
@@ -125,26 +125,23 @@ public class Enemy : MonoBehaviour
         return targetTagPriority;
     }
 
-    // Å¸°Ù °Ë»ö ¹üÀ§ °¡Á®¿À±â
+    // íƒ€ê²Ÿ ê²€ìƒ‰ ë²”ìœ„ ê°€ì ¸ì˜¤ê¸°
     public float GetTargetSearchRadius()
     {
         return targetSearchRadius;
     }
 
-    // Å¸°ÙÀ» º¯°æÇÏ´Â ¸Ş¼­µå
+    // íƒ€ê²Ÿì„ ë³€ê²½í•˜ëŠ” ë©”ì„œë“œ
     public void SetTarget(Transform newTarget)
     {
         if (newTarget != null && newTarget != target)
         {
             target = newTarget;
 
-            // NavMeshAgent °æ·Î Àç¼³Á¤
-            if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
-            {
-                navMeshAgent.SetDestination(target.position);
-            }
+            // NavMeshAgent ê²½ë¡œ ì¬ì„¤ì •
+            TrySetDestination(target.position);
 
-            // ¹æÇâ ÀüÈ¯ ÄÄÆ÷³ÍÆ®°¡ ÀÖÀ¸¸é Å¸°Ù ¹æÇâÀ¸·Î ¼³Á¤
+            // ë°©í–¥ ì „í™˜ ì»´í¬ë„ŒíŠ¸ê°€ ìˆìœ¼ë©´ íƒ€ê²Ÿ ë°©í–¥ìœ¼ë¡œ ì„¤ì •
             if (directionFlipper != null)
             {
                 directionFlipper.SetFacingDirection(target.position);
@@ -162,7 +159,7 @@ public class Enemy : MonoBehaviour
         enemySpawner = spawner;
         this.target = target;
 
-        // NavMeshAgent ¼³Á¤
+        // NavMeshAgent ì„¤ì •
         navMeshAgent = GetComponent<NavMeshAgent>();
         if (navMeshAgent != null)
         {
@@ -174,44 +171,44 @@ public class Enemy : MonoBehaviour
             Debug.LogError("NavMeshAgent component not found on enemy!");
         }
 
-        // ½ºÆù À§Ä¡ ¼³Á¤
+        // ìŠ¤í° ìœ„ì¹˜ ì„¤ì •
         SetSpawnPosition();
 
-        // TargetManager ÀÌº¥Æ® ±¸µ¶
+        // TargetManager ì´ë²¤íŠ¸ êµ¬ë…
         if (TargetManager.Instance != null)
         {
             TargetManager.Instance.OnTargetAdded += HandleTargetAdded;
             TargetManager.Instance.OnTargetRemoved += HandleTargetRemoved;
         }
 
-        // ÃÊ±â Å¸°ÙÀÌ ¾øÀ¸¸é »õ Å¸°Ù Ã£±â
+        // ì´ˆê¸° íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ ìƒˆ íƒ€ê²Ÿ ì°¾ê¸°
         if (target == null)
         {
             SearchForNewTarget();
         }
         else
         {
-            // ÃÊ±â Å¸°ÙÀÌ ÀÖÀ¸¸é ÇØ´ç ÅÂ±× ÀúÀå
+            // ì´ˆê¸° íƒ€ê²Ÿì´ ìˆìœ¼ë©´ í•´ë‹¹ íƒœê·¸ ì €ì¥
             if (target != null)
             {
                 targetTag = target.tag;
             }
         }
 
-        // ¹æÇâ ÀüÈ¯ ¼³Á¤ (ÃÊ±â ¹æÇâ ¼³Á¤)
+        // ë°©í–¥ ì „í™˜ ì„¤ì • (ì´ˆê¸° ë°©í–¥ ì„¤ì •)
         if (target != null && directionFlipper != null)
         {
             directionFlipper.SetFacingDirection(target.position);
         }
 
-        // ÀÌµ¿ ÄÚ·çÆ¾ ½ÃÀÛ
+        // ì´ë™ ì½”ë£¨í‹´ ì‹œì‘
         StartCoroutine(OnMoveWithDirectionUpdate());
     }
 
-    // ½ºÆù À§Ä¡¸¦ ¼³Á¤
+    // ìŠ¤í° ìœ„ì¹˜ë¥¼ ì„¤ì •
     private void SetSpawnPosition()
     {
-        // ±âº» ½ºÆù À§Ä¡ °¡Á®¿À±â
+        // ê¸°ë³¸ ìŠ¤í° ìœ„ì¹˜ ê°€ì ¸ì˜¤ê¸°
         Vector3 spawnPosition;
         if (customSpawnPoint != null)
         {
@@ -222,53 +219,60 @@ public class Enemy : MonoBehaviour
             spawnPosition = enemySpawner.GetSpawnPosition();
         }
 
-        // °³º° ¿ÀÇÁ¼Â Àû¿ë
+        // ê°œë³„ ì˜¤í”„ì…‹ ì ìš©
         spawnPosition += spawnOffset;
 
-        // NavMesh À§Ä¡·Î Á¶Á¤ (°¡Àå °¡±î¿î NavMesh ÁöÁ¡ Ã£±â)
+        // NavMesh ìœ„ì¹˜ë¡œ ì¡°ì • (ê°€ì¥ ê°€ê¹Œìš´ NavMesh ì§€ì  ì°¾ê¸°)
         NavMeshHit hit;
         if (NavMesh.SamplePosition(spawnPosition, out hit, 5f, NavMesh.AllAreas))
         {
-            // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯ »ç¿ë ¿©ºÎ¿¡ µû¶ó ´Ù¸£°Ô Ã³¸®
+            Vector3 navMeshPosition = hit.position;
+
+            if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
+            {
+                navMeshAgent.Warp(navMeshPosition);
+            }
+
+            // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬ ì‚¬ìš© ì—¬ë¶€ì— ë”°ë¼ ë‹¤ë¥´ê²Œ ì²˜ë¦¬
             if (isometricPosition != null)
             {
-                isometricPosition.SetPosition(hit.position);
+                isometricPosition.SetPosition(navMeshPosition);
             }
             else
             {
-                // ¼öµ¿À¸·Î z À§Ä¡ Á¶Á¤
-                Vector3 position = hit.position;
+                // ìˆ˜ë™ìœ¼ë¡œ z ìœ„ì¹˜ ì¡°ì •
+                Vector3 position = navMeshPosition;
                 position.z = position.y;
                 transform.position = position;
             }
         }
         else
         {
-            Debug.LogWarning("NavMesh ÁöÁ¡À» Ã£À» ¼ö ¾ø½À´Ï´Ù. ¿ø·¡ À§Ä¡¿¡ ½ºÆùµË´Ï´Ù.");
+            Debug.LogWarning("NavMesh ì§€ì ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. ì›ë˜ ìœ„ì¹˜ì— ìŠ¤í°ë©ë‹ˆë‹¤.");
 
-            // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯ »ç¿ë ¿©ºÎ¿¡ µû¶ó ´Ù¸£°Ô Ã³¸®
+            // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬ ì‚¬ìš© ì—¬ë¶€ì— ë”°ë¼ ë‹¤ë¥´ê²Œ ì²˜ë¦¬
             if (isometricPosition != null)
             {
                 isometricPosition.SetPosition(spawnPosition);
             }
             else
             {
-                // ¼öµ¿À¸·Î z À§Ä¡ Á¶Á¤
+                // ìˆ˜ë™ìœ¼ë¡œ z ìœ„ì¹˜ ì¡°ì •
                 spawnPosition.z = spawnPosition.y;
                 transform.position = spawnPosition;
             }
         }
     }
 
-    // Å¸°ÙÀÌ Ãß°¡µÇ¾úÀ» ¶§ È£ÃâµÇ´Â ÇÚµé·¯
+    // íƒ€ê²Ÿì´ ì¶”ê°€ë˜ì—ˆì„ ë•Œ í˜¸ì¶œë˜ëŠ” í•¸ë“¤ëŸ¬
     private void HandleTargetAdded(string tag, Transform newTarget)
     {
-        // ÇöÀç Å¸°ÙÀÌ ¾ø´Â °æ¿ì
+        // í˜„ì¬ íƒ€ê²Ÿì´ ì—†ëŠ” ê²½ìš°
         if (target == null)
         {
             SearchForNewTarget();
         }
-        // ÇöÀç Å¸°ÙÀÌ À¯È¿ÇÏÁö ¾Ê°í, Ãß°¡µÈ Å¸°ÙÀÇ ÅÂ±×°¡ ¿ì¼±¼øÀ§¿¡ ÀÖ´Â °æ¿ì
+        // í˜„ì¬ íƒ€ê²Ÿì´ ìœ íš¨í•˜ì§€ ì•Šê³ , ì¶”ê°€ëœ íƒ€ê²Ÿì˜ íƒœê·¸ê°€ ìš°ì„ ìˆœìœ„ì— ìˆëŠ” ê²½ìš°
         else if (!TargetManager.Instance.IsTargetValid(target))
         {
             string[] priorities = GetTargetTagPriority();
@@ -276,7 +280,7 @@ public class Enemy : MonoBehaviour
             {
                 if (priorities[i] == tag)
                 {
-                    // ÇöÀç ÅÂ±×º¸´Ù ³ôÀº ¿ì¼±¼øÀ§¸é Áï½Ã Å¸°Ù º¯°æ
+                    // í˜„ì¬ íƒœê·¸ë³´ë‹¤ ë†’ì€ ìš°ì„ ìˆœìœ„ë©´ ì¦‰ì‹œ íƒ€ê²Ÿ ë³€ê²½
                     if (i < System.Array.IndexOf(priorities, targetTag))
                     {
                         SearchForNewTarget();
@@ -287,48 +291,48 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Å¸°ÙÀÌ Á¦°ÅµÇ¾úÀ» ¶§ È£ÃâµÇ´Â ÇÚµé·¯
+    // íƒ€ê²Ÿì´ ì œê±°ë˜ì—ˆì„ ë•Œ í˜¸ì¶œë˜ëŠ” í•¸ë“¤ëŸ¬
     private void HandleTargetRemoved(string tag, Transform removedTarget)
     {
-        // ÇöÀç Å¸°ÙÀÌ Á¦°ÅµÈ Å¸°ÙÀÎ °æ¿ì »õ Å¸°Ù Ã£±â
+        // í˜„ì¬ íƒ€ê²Ÿì´ ì œê±°ëœ íƒ€ê²Ÿì¸ ê²½ìš° ìƒˆ íƒ€ê²Ÿ ì°¾ê¸°
         if (target == removedTarget)
         {
             SearchForNewTarget();
         }
-        // ¶Ç´Â ÇöÀç Å¸°ÙÀÇ ÅÂ±×¿Í °°Àº ÅÂ±×ÀÌ°í, ÇØ´ç ÅÂ±×ÀÇ ¿ÀºêÁ§Æ®°¡ ´õ ÀÌ»ó ¾ø´Â °æ¿ì
+        // ë˜ëŠ” í˜„ì¬ íƒ€ê²Ÿì˜ íƒœê·¸ì™€ ê°™ì€ íƒœê·¸ì´ê³ , í•´ë‹¹ íƒœê·¸ì˜ ì˜¤ë¸Œì íŠ¸ê°€ ë” ì´ìƒ ì—†ëŠ” ê²½ìš°
         else if (tag == targetTag && TargetManager.Instance.GetTargetCountForTag(tag) == 0)
         {
-            // ´ÙÀ½ ¿ì¼±¼øÀ§ ÅÂ±×·Î Å¸°Ù Ã£±â
+            // ë‹¤ìŒ ìš°ì„ ìˆœìœ„ íƒœê·¸ë¡œ íƒ€ê²Ÿ ì°¾ê¸°
             SearchForNewTarget();
         }
     }
 
-    // SearchForNewTarget ¸Ş¼­µå ¼öÁ¤
+    // SearchForNewTarget ë©”ì„œë“œ ìˆ˜ì •
     private void SearchForNewTarget()
     {
-        // Áßº¹ °Ë»ö ¹æÁö
+        // ì¤‘ë³µ ê²€ìƒ‰ ë°©ì§€
         if (isSearchingForTarget) return;
         isSearchingForTarget = true;
 
-        // ¸¶Áö¸· °Ë»ö ½Ã°£ °»½Å
+        // ë§ˆì§€ë§‰ ê²€ìƒ‰ ì‹œê°„ ê°±ì‹ 
         lastTargetSearchTime = Time.time;
 
         Transform newTarget = null;
 
-        // ±âº» °Ë»ö ¹üÀ§·Î ½Ãµµ
+        // ê¸°ë³¸ ê²€ìƒ‰ ë²”ìœ„ë¡œ ì‹œë„
         float searchRadius = targetSearchRadius;
 
-        // TargetManager¸¦ ÅëÇØ ¿ì¼±¼øÀ§º°·Î Å¸°Ù Ã£±â
+        // TargetManagerë¥¼ í†µí•´ ìš°ì„ ìˆœìœ„ë³„ë¡œ íƒ€ê²Ÿ ì°¾ê¸°
         if (TargetManager.Instance != null)
         {
-            // ÇÁ¸®ÆÕÀÇ ¼³Á¤µÈ Å¸°Ù ÅÂ±× ¿ì¼±¼øÀ§ »ç¿ë
+            // í”„ë¦¬íŒ¹ì˜ ì„¤ì •ëœ íƒ€ê²Ÿ íƒœê·¸ ìš°ì„ ìˆœìœ„ ì‚¬ìš©
             newTarget = TargetManager.Instance.FindTargetByPriority(
                 GetTargetTagPriority(),
                 transform.position,
                 searchRadius
             );
 
-            // Ã£Áö ¸øÇß´Ù¸é °Ë»ö ¹üÀ§¸¦ 2¹è·Î ´Ã·Á¼­ Àç½Ãµµ
+            // ì°¾ì§€ ëª»í–ˆë‹¤ë©´ ê²€ìƒ‰ ë²”ìœ„ë¥¼ 2ë°°ë¡œ ëŠ˜ë ¤ì„œ ì¬ì‹œë„
             if (newTarget == null)
             {
                 searchRadius *= 2;
@@ -339,7 +343,7 @@ public class Enemy : MonoBehaviour
                 );
             }
 
-            // ±×·¡µµ Ã£Áö ¸øÇß´Ù¸é ÀüÃ¼ ¾À¿¡¼­ °Ë»ö (Á¦ÇÑ ¾øÀ½)
+            // ê·¸ë˜ë„ ì°¾ì§€ ëª»í–ˆë‹¤ë©´ ì „ì²´ ì”¬ì—ì„œ ê²€ìƒ‰ (ì œí•œ ì—†ìŒ)
             if (newTarget == null)
             {
                 newTarget = TargetManager.Instance.FindTargetByPriority(
@@ -349,37 +353,37 @@ public class Enemy : MonoBehaviour
                 );
             }
 
-            // Ã£Àº Å¸°ÙÀÇ ÅÂ±× ÀúÀå (³ªÁß¿¡ ÂüÁ¶¿ë)
+            // ì°¾ì€ íƒ€ê²Ÿì˜ íƒœê·¸ ì €ì¥ (ë‚˜ì¤‘ì— ì°¸ì¡°ìš©)
             if (newTarget != null)
             {
                 targetTag = newTarget.tag;
             }
-            // ¿©ÀüÈ÷ Å¸°ÙÀ» Ã£Áö ¸øÇß´Ù¸é, ´ÙÀ½ °Ë»ö ½Ã°£À» ¾Õ´ç±è
+            // ì—¬ì „íˆ íƒ€ê²Ÿì„ ì°¾ì§€ ëª»í–ˆë‹¤ë©´, ë‹¤ìŒ ê²€ìƒ‰ ì‹œê°„ì„ ì•ë‹¹ê¹€
             else
             {
                 lastTargetSearchTime = Time.time - (targetUpdateInterval * 0.8f);
             }
         }
 
-        // Å¸°ÙÀ» Ã£¾ÒÀ¸¸é ¼³Á¤
+        // íƒ€ê²Ÿì„ ì°¾ì•˜ìœ¼ë©´ ì„¤ì •
         if (newTarget != null)
         {
             SetTarget(newTarget);
             if (debugMode)
             {
-                Debug.Log($"Àû {gameObject.name}ÀÌ(°¡) »õ Å¸°Ù Ã£À½: {newTarget.name} (ÅÂ±×: {newTarget.tag})");
+                Debug.Log($"ì  {gameObject.name}ì´(ê°€) ìƒˆ íƒ€ê²Ÿ ì°¾ìŒ: {newTarget.name} (íƒœê·¸: {newTarget.tag})");
             }
         }
         else if (debugMode)
         {
-            Debug.LogWarning($"Àû {gameObject.name}ÀÌ(°¡) Å¸°ÙÀ» Ã£Áö ¸øÇß½À´Ï´Ù! ´õ ºü¸£°Ô Àç°Ë»öÇÕ´Ï´Ù.");
+            Debug.LogWarning($"ì  {gameObject.name}ì´(ê°€) íƒ€ê²Ÿì„ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤! ë” ë¹ ë¥´ê²Œ ì¬ê²€ìƒ‰í•©ë‹ˆë‹¤.");
         }
 
         isSearchingForTarget = false;
     }
     private void OnDisable()
     {
-        // TargetManager ÀÌº¥Æ® ±¸µ¶ ÇØÁ¦
+        // TargetManager ì´ë²¤íŠ¸ êµ¬ë… í•´ì œ
         if (TargetManager.Instance != null)
         {
             TargetManager.Instance.OnTargetAdded -= HandleTargetAdded;
@@ -387,7 +391,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Enemy Å¬·¡½ºÀÇ OnMoveWithDirectionUpdate ÄÚ·çÆ¾ ¼öÁ¤
+    // Enemy í´ë˜ìŠ¤ì˜ OnMoveWithDirectionUpdate ì½”ë£¨í‹´ ìˆ˜ì •
     private IEnumerator OnMoveWithDirectionUpdate()
     {
         int stuckCounter = 0;
@@ -395,75 +399,64 @@ public class Enemy : MonoBehaviour
 
         while (true)
         {
-            // Å¸°ÙÀÌ ¾ø°Å³ª À¯È¿ÇÏÁö ¾ÊÀº °æ¿ì, ´õ Àû±ØÀûÀ¸·Î »õ Å¸°Ù Ã£±â
+            // íƒ€ê²Ÿì´ ì—†ê±°ë‚˜ ìœ íš¨í•˜ì§€ ì•Šì€ ê²½ìš°, ë” ì ê·¹ì ìœ¼ë¡œ ìƒˆ íƒ€ê²Ÿ ì°¾ê¸°
             if (target == null || (TargetManager.Instance != null && !TargetManager.Instance.IsTargetValid(target)))
             {
-                // Áï½Ã »õ Å¸°Ù Ã£±â ½Ãµµ
-                SearchForNewTarget(targetSearchRadius * 2); // ´õ ³ĞÀº ¹üÀ§·Î °Ë»ö
+                // ì¦‰ì‹œ ìƒˆ íƒ€ê²Ÿ ì°¾ê¸° ì‹œë„
+                SearchForNewTarget(targetSearchRadius * 2); // ë” ë„“ì€ ë²”ìœ„ë¡œ ê²€ìƒ‰
 
-                // ±×·¡µµ Å¸°ÙÀÌ ¾ø´Ù¸é
+                // ê·¸ë˜ë„ íƒ€ê²Ÿì´ ì—†ë‹¤ë©´
                 if (target == null)
                 {
-                    // ¹æÇâÀ» ·£´ıÇÏ°Ô º¯°æÇÏ¿© Á¦ÀÚ¸® ¸Éµ¹±â ¹æÁö
+                    // ë°©í–¥ì„ ëœë¤í•˜ê²Œ ë³€ê²½í•˜ì—¬ ì œìë¦¬ ë§´ëŒê¸° ë°©ì§€
                     Vector2 randomDirection = Random.insideUnitCircle.normalized;
                     Vector3 tempDestination = transform.position + new Vector3(randomDirection.x, randomDirection.y, 0) * 3f;
 
-                    if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
-                    {
-                        NavMeshHit hit;
-                        if (NavMesh.SamplePosition(tempDestination, out hit, 5f, NavMesh.AllAreas))
-                        {
-                            navMeshAgent.SetDestination(hit.position);
-                        }
-                    }
+                    TrySetDestination(tempDestination);
 
-                    Debug.Log("Å¸°ÙÀ» Ã£Áö ¸øÇØ ·£´ı ÀÌµ¿ÇÕ´Ï´Ù.");
+                    Debug.Log("íƒ€ê²Ÿì„ ì°¾ì§€ ëª»í•´ ëœë¤ ì´ë™í•©ë‹ˆë‹¤.");
                     yield return new WaitForSeconds(1f);
                     continue;
                 }
             }
 
-            // Å¸°ÙÀÌ ÀÖÀ¸¸é NavMeshAgent·Î ÀÌµ¿
+            // íƒ€ê²Ÿì´ ìˆìœ¼ë©´ NavMeshAgentë¡œ ì´ë™
             if (target != null && navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
             {
-                navMeshAgent.SetDestination(target.position);
+                TrySetDestination(target.position);
 
-                // ÀÌµ¿ ¹æÇâ¿¡ µû¶ó ½ºÇÁ¶óÀÌÆ® ¹æÇâ ÀüÈ¯
+                // ì´ë™ ë°©í–¥ì— ë”°ë¼ ìŠ¤í”„ë¼ì´íŠ¸ ë°©í–¥ ì „í™˜
                 if (directionFlipper != null)
                 {
                     Vector3 moveDirection = navMeshAgent.velocity;
                     if (moveDirection.sqrMagnitude > 0.01f)
                     {
-                        // ÀÌµ¿ ¹æÇâÀ» ±âÁØÀ¸·Î ¹æÇâ ÀüÈ¯
+                        // ì´ë™ ë°©í–¥ì„ ê¸°ì¤€ìœ¼ë¡œ ë°©í–¥ ì „í™˜
                         directionFlipper.SetFacingDirection(transform.position + moveDirection);
                     }
                 }
 
-                // Á¦ÀÚ¸®¿¡ °¤Çû´ÂÁö È®ÀÎ
+                // ì œìë¦¬ì— ê°‡í˜”ëŠ”ì§€ í™•ì¸
                 if (Vector3.Distance(transform.position, lastPosition) < 0.05f)
                 {
                     stuckCounter++;
 
-                    // ÀÏÁ¤ ½Ã°£µ¿¾È Á¦ÀÚ¸®¿¡ °¤ÇûÀ¸¸é
-                    if (stuckCounter > 30) // ¾à 1ÃÊ µ¿¾È Á¦ÀÚ¸®¿¡ ÀÖÀ¸¸é
+                    // ì¼ì • ì‹œê°„ë™ì•ˆ ì œìë¦¬ì— ê°‡í˜”ìœ¼ë©´
+                    if (stuckCounter > 30) // ì•½ 1ì´ˆ ë™ì•ˆ ì œìë¦¬ì— ìˆìœ¼ë©´
                     {
                         stuckCounter = 0;
-                        // »õ Å¸°Ù °Ë»ö °­Á¦ ½ÇÇà (´õ ³ĞÀº ¹üÀ§)
+                        // ìƒˆ íƒ€ê²Ÿ ê²€ìƒ‰ ê°•ì œ ì‹¤í–‰ (ë” ë„“ì€ ë²”ìœ„)
                         SearchForNewTarget(targetSearchRadius * 3);
 
-                        // ±×·¡µµ Å¸°ÙÀÌ ¾øÀ¸¸é ·£´ı ÀÌµ¿
+                        // ê·¸ë˜ë„ íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ ëœë¤ ì´ë™
                         if (target == null)
                         {
                             Vector2 randomDirection = Random.insideUnitCircle.normalized;
                             Vector3 tempDestination = transform.position + new Vector3(randomDirection.x, randomDirection.y, 0) * 5f;
 
-                            NavMeshHit hit;
-                            if (NavMesh.SamplePosition(tempDestination, out hit, 5f, NavMesh.AllAreas))
-                            {
-                                navMeshAgent.SetDestination(hit.position);
-                            }
+                            TrySetDestination(tempDestination);
 
-                            Debug.Log("Á¦ÀÚ¸®¿¡ °¤Çô ·£´ıÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.");
+                            Debug.Log("ì œìë¦¬ì— ê°‡í˜€ ëœë¤ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.");
                             yield return new WaitForSeconds(1f);
                         }
                     }
@@ -475,28 +468,30 @@ public class Enemy : MonoBehaviour
 
                 lastPosition = transform.position;
 
-                // ¸ñÇ¥¿¡ µµ´ŞÇß´ÂÁö È®ÀÎ
+                // ëª©í‘œì— ë„ë‹¬í–ˆëŠ”ì§€ í™•ì¸
                 float distanceToTarget = Vector3.Distance(transform.position, target.position);
                 if (distanceToTarget < 0.5f)
                 {
-                    // ResourceObjectÀÎ °æ¿ì
+                    // ResourceObjectì¸ ê²½ìš°
                     ResourceObject resource = target.GetComponent<ResourceObject>();
                     if (resource != null)
                     {
-                        // ¸®¼Ò½º ÆÄ±« ÈÄ Áï½Ã ´ÙÀ½ Å¸°Ù °Ë»ö (´õ ³ĞÀº ¹üÀ§)
-                        yield return new WaitForSeconds(0.5f); // Àá½Ã ´ë±â
+                        // ë¦¬ì†ŒìŠ¤ íŒŒê´´ í›„ ì¦‰ì‹œ ë‹¤ìŒ íƒ€ê²Ÿ ê²€ìƒ‰ (ë” ë„“ì€ ë²”ìœ„)
+                        yield return new WaitForSeconds(0.5f); // ì ì‹œ ëŒ€ê¸°
                         SearchForNewTarget(targetSearchRadius * 2);
                         continue;
                     }
                     else
                     {
-                    
-                        yield break;
+                        target = null;
+                        SearchForNewTarget(targetSearchRadius * 2);
+                        yield return new WaitForSeconds(0.25f);
+                        continue;
                     }
                 }
             }
 
-            // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯°¡ ¾ø´Â °æ¿ì ¼öµ¿À¸·Î Z À§Ä¡ Á¶Á¤
+            // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬ê°€ ì—†ëŠ” ê²½ìš° ìˆ˜ë™ìœ¼ë¡œ Z ìœ„ì¹˜ ì¡°ì •
             if (isometricPosition == null && useIsometricPosition)
             {
                 Vector3 position = transform.position;
@@ -508,57 +503,89 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // ¹üÀ§¸¦ ¸Å°³º¯¼ö·Î ¹Ş´Â »õ Å¸°Ù Ã£±â ¸Ş¼­µå
+    // ë²”ìœ„ë¥¼ ë§¤ê°œë³€ìˆ˜ë¡œ ë°›ëŠ” ìƒˆ íƒ€ê²Ÿ ì°¾ê¸° ë©”ì„œë“œ
     private void SearchForNewTarget(float searchRadius = -1)
     {
-        // Áßº¹ °Ë»ö ¹æÁö
+        // ì¤‘ë³µ ê²€ìƒ‰ ë°©ì§€
         if (isSearchingForTarget) return;
         isSearchingForTarget = true;
 
-        // ±âº» °Ë»ö ¹üÀ§ »ç¿ë ¿©ºÎ
+        // ê¸°ë³¸ ê²€ìƒ‰ ë²”ìœ„ ì‚¬ìš© ì—¬ë¶€
         float actualRadius = searchRadius > 0 ? searchRadius : targetSearchRadius;
 
-        // ¸¶Áö¸· °Ë»ö ½Ã°£ °»½Å
+        // ë§ˆì§€ë§‰ ê²€ìƒ‰ ì‹œê°„ ê°±ì‹ 
         lastTargetSearchTime = Time.time;
 
         Transform newTarget = null;
 
-        // TargetManager¸¦ ÅëÇØ ¿ì¼±¼øÀ§º°·Î Å¸°Ù Ã£±â
+        // TargetManagerë¥¼ í†µí•´ ìš°ì„ ìˆœìœ„ë³„ë¡œ íƒ€ê²Ÿ ì°¾ê¸°
         if (TargetManager.Instance != null)
         {
-            // ÇÁ¸®ÆÕÀÇ ¼³Á¤µÈ Å¸°Ù ÅÂ±× ¿ì¼±¼øÀ§ »ç¿ë
+            // í”„ë¦¬íŒ¹ì˜ ì„¤ì •ëœ íƒ€ê²Ÿ íƒœê·¸ ìš°ì„ ìˆœìœ„ ì‚¬ìš©
             newTarget = TargetManager.Instance.FindTargetByPriority(
                 GetTargetTagPriority(),
                 transform.position,
                 actualRadius
             );
 
-            // Ã£Àº Å¸°ÙÀÇ ÅÂ±× ÀúÀå (³ªÁß¿¡ ÂüÁ¶¿ë)
+            // ì°¾ì€ íƒ€ê²Ÿì˜ íƒœê·¸ ì €ì¥ (ë‚˜ì¤‘ì— ì°¸ì¡°ìš©)
             if (newTarget != null)
             {
                 targetTag = newTarget.tag;
-                Debug.Log($"»õ Å¸°Ù Ã£À½: {newTarget.name} (ÅÂ±×: {targetTag}, °Å¸®: {Vector3.Distance(transform.position, newTarget.position)})");
+                Debug.Log($"ìƒˆ íƒ€ê²Ÿ ì°¾ìŒ: {newTarget.name} (íƒœê·¸: {targetTag}, ê±°ë¦¬: {Vector3.Distance(transform.position, newTarget.position)})");
             }
             else
             {
-                Debug.LogWarning($"Å¸°ÙÀ» Ã£Áö ¸øÇß½À´Ï´Ù. °Ë»ö ¹üÀ§: {actualRadius}");
+                Debug.LogWarning($"íƒ€ê²Ÿì„ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ê²€ìƒ‰ ë²”ìœ„: {actualRadius}");
             }
         }
 
-        // Å¸°ÙÀ» Ã£¾ÒÀ¸¸é ¼³Á¤
+        // íƒ€ê²Ÿì„ ì°¾ì•˜ìœ¼ë©´ ì„¤ì •
         if (newTarget != null)
         {
             SetTarget(newTarget);
 
-            // NavMeshAgent ¸®¼Â Ãß°¡
+            // NavMeshAgent ë¦¬ì…‹ ì¶”ê°€
             if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
             {
-                navMeshAgent.ResetPath();
-                navMeshAgent.SetDestination(newTarget.position);
+                TrySetDestination(newTarget.position);
             }
         }
 
         isSearchingForTarget = false;
+    }
+
+    private bool TrySetDestination(Vector3 destination)
+    {
+        if (navMeshAgent == null || !navMeshAgent.isActiveAndEnabled)
+        {
+            return false;
+        }
+
+        if (!navMeshAgent.isOnNavMesh)
+        {
+            NavMeshHit currentHit;
+            if (!NavMesh.SamplePosition(transform.position, out currentHit, 5f, NavMesh.AllAreas))
+            {
+                if (debugMode)
+                {
+                    Debug.LogWarning($"{name}: NavMesh ìœ„ì— ìˆì§€ ì•Šì•„ ëª©ì ì§€ë¥¼ ì„¤ì •í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+                }
+                return false;
+            }
+
+            navMeshAgent.Warp(currentHit.position);
+        }
+
+        NavMeshHit destinationHit;
+        Vector3 finalDestination = destination;
+        if (NavMesh.SamplePosition(destination, out destinationHit, 3f, NavMesh.AllAreas))
+        {
+            finalDestination = destinationHit.position;
+        }
+
+        navMeshAgent.ResetPath();
+        return navMeshAgent.SetDestination(finalDestination);
     }
 
     public void OnDie(EnemyDestroyType type)
@@ -566,13 +593,13 @@ public class Enemy : MonoBehaviour
         if (enemySpawner == null)
         {
             Debug.LogError("EnemySpawner is not assigned! Check the Setup method.");
-            return; // NullReferenceException ¹æÁö
+            return; // NullReferenceException ë°©ì§€
         }
 
-        // ÇÃ·¹ÀÌ¾î °æÇèÄ¡ ÂüÁ¶ °¡Á®¿À±â
+        // í”Œë ˆì´ì–´ ê²½í—˜ì¹˜ ì°¸ì¡° ê°€ì ¸ì˜¤ê¸°
         PlayerExperience playerExperience = FindObjectOfType<PlayerExperience>();
 
-        // KILLÀÏ °æ¿ì °æÇèÄ¡ ºÎ¿©
+        // KILLì¼ ê²½ìš° ê²½í—˜ì¹˜ ë¶€ì—¬
         if (type == EnemyDestroyType.Kill && playerExperience != null)
         {
             playerExperience.AddExperienceForEnemy(type, expValue);

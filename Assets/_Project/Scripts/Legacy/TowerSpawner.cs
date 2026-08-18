@@ -6,60 +6,60 @@ using System.Collections;
 public class TowerSpawner : MonoBehaviour
 {
     [SerializeField]
-    private List<TowerTemplate> towerTemplates;// ¿©·¯ Á¾·ùÀÇ Å¸¿ö ÅÛÇÃ¸´
+    private List<TowerTemplate> towerTemplates;// ì—¬ëŸ¬ ì¢…ë¥˜ì˜ íƒ€ì›Œ í…œí”Œë¦¿
 
     [SerializeField]
-    private EnemySpawner enemySpawner; // ÇöÀç ¸Ê¿¡ Á¸ÀçÇÏ´Â Àû ¸®½ºÆ® Á¤º¸
+    private EnemySpawner enemySpawner; // í˜„ì¬ ë§µì— ì¡´ì¬í•˜ëŠ” ì  ë¦¬ìŠ¤íŠ¸ ì •ë³´
 
     [SerializeField]
-    private Grid grid; // Å¸ÀÏ¸ÊÀÌ ¼ÓÇÑ Grid ÄÄÆ÷³ÍÆ®
+    private Grid grid; // íƒ€ì¼ë§µì´ ì†í•œ Grid ì»´í¬ë„ŒíŠ¸
 
     [SerializeField]
-    private PlayerGold playerGold; // ÇÃ·¹ÀÌ¾î °ñµå/ÇÇ·Îµµ ÂüÁ¶
+    private PlayerGold playerGold; // í”Œë ˆì´ì–´ ê³¨ë“œ/í”¼ë¡œë„ ì°¸ì¡°
 
     [SerializeField]
-    private SystemTextViewer systemTextViewer; // ½Ã½ºÅÛ ¸Ş½ÃÁö ºä¾î
+    private SystemTextViewer systemTextViewer; // ì‹œìŠ¤í…œ ë©”ì‹œì§€ ë·°ì–´
 
     [SerializeField]
-    private Tilemap tilemap; // Å¸¿ö ¹èÄ¡ °¡´ÉÇÑ Å¸ÀÏ¸Ê
+    private Tilemap tilemap; // íƒ€ì›Œ ë°°ì¹˜ ê°€ëŠ¥í•œ íƒ€ì¼ë§µ
 
     [Header("Tower Placement Settings")]
     [SerializeField]
-    private float fatiguePerTower = 10f; // Å¸¿ö ´ç Áõ°¡ÇÏ´Â ÇÇ·Îµµ
+    private float fatiguePerTower = 10f; // íƒ€ì›Œ ë‹¹ ì¦ê°€í•˜ëŠ” í”¼ë¡œë„
     [SerializeField]
-    private KeyCode flipKey = KeyCode.Q; // ÁÂ¿ì¹İÀü Å°
+    private KeyCode flipKey = KeyCode.Q; // ì¢Œìš°ë°˜ì „ í‚¤
     [SerializeField]
-    private float flipAnimationDuration = 0.2f; // ÁÂ¿ì¹İÀü ¾Ö´Ï¸ŞÀÌ¼Ç ½Ã°£
+    private float flipAnimationDuration = 0.2f; // ì¢Œìš°ë°˜ì „ ì• ë‹ˆë©”ì´ì…˜ ì‹œê°„
     [SerializeField]
-    private AudioClip flipSound; // ÁÂ¿ì¹İÀü È¿°úÀ½
+    private AudioClip flipSound; // ì¢Œìš°ë°˜ì „ íš¨ê³¼ìŒ
 
     [Header("Tower Movement Settings")]
-    [SerializeField] private float fatiguePerTowerMovement = 2f; // Å¸¿ö ÀÌµ¿ ½Ã Áõ°¡ÇÏ´Â ÇÇ·Îµµ (±âº»°ª)
+    [SerializeField] private float fatiguePerTowerMovement = 2f; // íƒ€ì›Œ ì´ë™ ì‹œ ì¦ê°€í•˜ëŠ” í”¼ë¡œë„ (ê¸°ë³¸ê°’)
 
     [Header("Time Settings")]
-    [SerializeField] private bool tradeEnabled = true; // Å¸¿ö °Å·¡(±¸¸Å/ÆÇ¸Å) °¡´É ¿©ºÎ
+    [SerializeField] private bool tradeEnabled = true; // íƒ€ì›Œ ê±°ë˜(êµ¬ë§¤/íŒë§¤) ê°€ëŠ¥ ì—¬ë¶€
 
-    // ¹èÄ¡µÈ Å¸¿öµéÀ» ¿ùµå ÁÂÇ¥(¼¿ ÁÂÇ¥) ±âÁØÀ¸·Î °ü¸®
+    // ë°°ì¹˜ëœ íƒ€ì›Œë“¤ì„ ì›”ë“œ ì¢Œí‘œ(ì…€ ì¢Œí‘œ) ê¸°ì¤€ìœ¼ë¡œ ê´€ë¦¬
     private Dictionary<Vector3Int, GameObject> placedTowers = new Dictionary<Vector3Int, GameObject>();
 
-    // ÇöÀç ¼±ÅÃµÈ Å¸¿ö Á¾·ù ÀÎµ¦½º (Å¸¿ö ÅÛÇÃ¸´ ¸®½ºÆ® ³»ÀÇ ÀÎµ¦½º)
+    // í˜„ì¬ ì„ íƒëœ íƒ€ì›Œ ì¢…ë¥˜ ì¸ë±ìŠ¤ (íƒ€ì›Œ í…œí”Œë¦¿ ë¦¬ìŠ¤íŠ¸ ë‚´ì˜ ì¸ë±ìŠ¤)
     private int selectedTowerIndex = 0;
 
-    // Å¸¿ö ¹èÄ¡ ¸ğµå È°¼ºÈ­ ¿©ºÎ
+    // íƒ€ì›Œ ë°°ì¹˜ ëª¨ë“œ í™œì„±í™” ì—¬ë¶€
     private bool isOnTowerButton = false;
     private GameObject followTowerClone = null;
 
-    // ÁÂ¿ì¹İÀü »óÅÂ
+    // ì¢Œìš°ë°˜ì „ ìƒíƒœ
     private bool isFlipped = false;
     private bool isFlipping = false;
     private AudioSource audioSource;
 
-    // Å¸ÀÏ¸Ê °¡Á®¿À±â
+    // íƒ€ì¼ë§µ ê°€ì ¸ì˜¤ê¸°
     public Tilemap GetTilemap() => tilemap;
 
     private void Awake()
     {
-        // ¿Àµğ¿À ¼Ò½º ÄÄÆ÷³ÍÆ® °¡Á®¿À±â/Ãß°¡
+        // ì˜¤ë””ì˜¤ ì†ŒìŠ¤ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°/ì¶”ê°€
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null && flipSound != null)
         {
@@ -69,24 +69,27 @@ public class TowerSpawner : MonoBehaviour
 
     private void Start()
     {
-        // PlayerGold ÂüÁ¶ È®ÀÎ
+        // PlayerGold ì°¸ì¡° í™•ì¸
         if (playerGold == null)
         {
             playerGold = FindObjectOfType<PlayerGold>();
             if (playerGold == null)
             {
-                Debug.LogError("PlayerGold ÄÄÆ÷³ÍÆ®¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+                Debug.LogError("PlayerGold ì»´í¬ë„ŒíŠ¸ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             }
         }
     }
 
-    // ¼±ÅÃÇÑ Å¸¿ö Á¾·ù¸¦ ¼³Á¤ÇÏ°í ¹èÄ¡ ¸ğµå¿¡ µé¾î°¨
+    // ì„ íƒí•œ íƒ€ì›Œ ì¢…ë¥˜ë¥¼ ì„¤ì •í•˜ê³  ë°°ì¹˜ ëª¨ë“œì— ë“¤ì–´ê°
     public void SelectAndReadyTower(int index)
     {
-        // °Å·¡°¡ ºñÈ°¼ºÈ­µÇ¾î ÀÖÀ¸¸é Å¸¿ö ¼±ÅÃ ºÒ°¡
+        Debug.Log($"SelectAndReadyTower called with index: {index}");
+
+        // ê±°ë˜ê°€ ë¹„í™œì„±í™”ë˜ì–´ ìˆìœ¼ë©´ íƒ€ì›Œ ì„ íƒ ë¶ˆê°€
         if (!tradeEnabled)
         {
-            // ½Ã½ºÅÛ ¸Ş½ÃÁö Ãâ·Â
+
+            // ì‹œìŠ¤í…œ ë©”ì‹œì§€ ì¶œë ¥
             if (systemTextViewer != null)
             {
                 systemTextViewer.PrintText(SystemType.Build);
@@ -96,29 +99,29 @@ public class TowerSpawner : MonoBehaviour
 
         if (index < 0 || index >= towerTemplates.Count)
         {
-            Debug.LogError("Àß¸øµÈ Å¸¿ö ÀÎµ¦½º");
+            Debug.LogError("ì˜ëª»ëœ íƒ€ì›Œ ì¸ë±ìŠ¤");
             return;
         }
 
         selectedTowerIndex = index;
 
-        // ¹èÄ¡ ¸ğµå ÁøÀÔ Àü¿¡ °ñµå Ã¼Å©
+        // ë°°ì¹˜ ëª¨ë“œ ì§„ì… ì „ì— ê³¨ë“œ ì²´í¬
         if (towerTemplates[selectedTowerIndex].weapons[0].cost > playerGold.CurrentGold)
         {
             systemTextViewer.PrintText(SystemType.Money);
             return;
         }
 
-        // ±âÁ¸ ¹Ì¸®º¸±â Å¸¿ö Á¤¸®
+        // ê¸°ì¡´ ë¯¸ë¦¬ë³´ê¸° íƒ€ì›Œ ì •ë¦¬
         ClearFollowTower();
 
         isOnTowerButton = true;
-        isFlipped = false; // ÁÂ¿ì¹İÀü »óÅÂ ÃÊ±âÈ­
+        isFlipped = false; // ì¢Œìš°ë°˜ì „ ìƒíƒœ ì´ˆê¸°í™”
 
-        // ¼±ÅÃÇÑ Å¸¿öÀÇ followTowerPrefabÀ» »ı¼ºÇÏ¿© ¹Ì¸® ¹èÄ¡ ¹Ì¸®º¸±â ¿ªÇÒ
+        // ì„ íƒí•œ íƒ€ì›Œì˜ followTowerPrefabì„ ìƒì„±í•˜ì—¬ ë¯¸ë¦¬ ë°°ì¹˜ ë¯¸ë¦¬ë³´ê¸° ì—­í• 
         followTowerClone = Instantiate(towerTemplates[selectedTowerIndex].followTowerPrefab);
 
-        // ÇÊ¿äÇÏ´Ù¸é followTowerCloneÀÇ À§Ä¡ ¹× ±âÅ¸ ¼¼ÆÃÀ» ¿©±â¼­ ÁøÇà
+        // í•„ìš”í•˜ë‹¤ë©´ followTowerCloneì˜ ìœ„ì¹˜ ë° ê¸°íƒ€ ì„¸íŒ…ì„ ì—¬ê¸°ì„œ ì§„í–‰
         StartCoroutine(OnTowerCancelSystem());
     }
 
@@ -128,23 +131,23 @@ public class TowerSpawner : MonoBehaviour
         {
             return;
         }
-        // ÁÖ¼® Ã³¸®µÈ ÄÚµå...
+        // ì£¼ì„ ì²˜ë¦¬ëœ ì½”ë“œ...
     }
 
     void Update()
     {
         if (isOnTowerButton && followTowerClone != null)
         {
-            // ¸¶¿ì½º À§Ä¡ °¡Á®¿À±â
+            // ë§ˆìš°ìŠ¤ ìœ„ì¹˜ ê°€ì ¸ì˜¤ê¸°
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             followTowerClone.transform.position = new Vector3(mousePosition.x, mousePosition.y, 0);
 
-            // ÀÌ¼Ò¸ŞÆ®¸¯ ºä Áö¿ø
+            // ì´ì†Œë©”íŠ¸ë¦­ ë·° ì§€ì›
             Vector3 position = followTowerClone.transform.position;
             position.z = position.y;
             followTowerClone.transform.position = position;
 
-            // QÅ° ÀÔ·Â °Ë»ç (ÁÂ¿ì¹İÀü)
+            // Qí‚¤ ì…ë ¥ ê²€ì‚¬ (ì¢Œìš°ë°˜ì „)
             if (Input.GetKeyDown(flipKey) && !isFlipping)
             {
                 StartCoroutine(FlipPreviewTower());
@@ -152,51 +155,51 @@ public class TowerSpawner : MonoBehaviour
         }
     }
 
-    // ÁÂ¿ì¹İÀü ÄÚ·çÆ¾
+    // ì¢Œìš°ë°˜ì „ ì½”ë£¨í‹´
     private IEnumerator FlipPreviewTower()
     {
         if (followTowerClone == null) yield break;
 
         isFlipping = true;
 
-        // È¿°úÀ½ Àç»ı
+        // íš¨ê³¼ìŒ ì¬ìƒ
         if (flipSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(flipSound);
         }
 
-        // ÇöÀç x ½ºÄÉÀÏ °ª
+        // í˜„ì¬ x ìŠ¤ì¼€ì¼ ê°’
         float startScaleX = followTowerClone.transform.localScale.x;
-        float targetScaleX = -startScaleX; // ºÎÈ£ ¹İÀü
+        float targetScaleX = -startScaleX; // ë¶€í˜¸ ë°˜ì „
         float elapsedTime = 0f;
 
-        // ¹İÀü ¾Ö´Ï¸ŞÀÌ¼Ç
+        // ë°˜ì „ ì• ë‹ˆë©”ì´ì…˜
         while (elapsedTime < flipAnimationDuration)
         {
             elapsedTime += Time.deltaTime;
             float progress = elapsedTime / flipAnimationDuration;
 
-            // ½ºÄÉÀÏ º¸°£
+            // ìŠ¤ì¼€ì¼ ë³´ê°„
             float currentScaleX = Mathf.Lerp(startScaleX, targetScaleX, progress);
             followTowerClone.transform.localScale = new Vector3(currentScaleX, followTowerClone.transform.localScale.y, followTowerClone.transform.localScale.z);
 
             yield return null;
         }
 
-        // ÃÖÁ¾ ½ºÄÉÀÏ ¼³Á¤
+        // ìµœì¢… ìŠ¤ì¼€ì¼ ì„¤ì •
         followTowerClone.transform.localScale = new Vector3(targetScaleX, followTowerClone.transform.localScale.y, followTowerClone.transform.localScale.z);
 
-        // ¹İÀü »óÅÂ Åä±Û
+        // ë°˜ì „ ìƒíƒœ í† ê¸€
         isFlipped = !isFlipped;
         isFlipping = false;
     }
 
     public void SpawnTower(Vector3Int cellPosition)
     {
-        // °Å·¡°¡ ºñÈ°¼ºÈ­µÇ¾î ÀÖÀ¸¸é Å¸¿ö »ı¼º ºÒ°¡
+        // ê±°ë˜ê°€ ë¹„í™œì„±í™”ë˜ì–´ ìˆìœ¼ë©´ íƒ€ì›Œ ìƒì„± ë¶ˆê°€
         if (!tradeEnabled)
         {
-            // ½Ã½ºÅÛ ¸Ş½ÃÁö Ãâ·Â
+            // ì‹œìŠ¤í…œ ë©”ì‹œì§€ ì¶œë ¥
             if (systemTextViewer != null)
             {
                 systemTextViewer.PrintText(SystemType.Build);
@@ -208,7 +211,7 @@ public class TowerSpawner : MonoBehaviour
         {
             return;
         }
-        if (IsTileOccupied(cellPosition)) return; // ÀÌ¹Ì Å¸¿ö°¡ Á¸ÀçÇÏ¸é ½ÇÇà X
+        if (IsTileOccupied(cellPosition)) return; // ì´ë¯¸ íƒ€ì›Œê°€ ì¡´ì¬í•˜ë©´ ì‹¤í–‰ X
 
         TowerTemplate selectedTower = towerTemplates[selectedTowerIndex];
 
@@ -218,24 +221,24 @@ public class TowerSpawner : MonoBehaviour
             return;
         }
 
-        Vector3 towerPosition = tilemap.GetCellCenterWorld(cellPosition); // Å¸ÀÏ Áß½ÉÀÇ ¿ùµå ÁÂÇ¥
+        Vector3 towerPosition = tilemap.GetCellCenterWorld(cellPosition); // íƒ€ì¼ ì¤‘ì‹¬ì˜ ì›”ë“œ ì¢Œí‘œ
 
-        // Isometric ºä¸¦ À§ÇÑ z À§Ä¡ Á¶Á¤ (y¿Í µ¿ÀÏÇÏ°Ô)
+        // Isometric ë·°ë¥¼ ìœ„í•œ z ìœ„ì¹˜ ì¡°ì • (yì™€ ë™ì¼í•˜ê²Œ)
         towerPosition.z = towerPosition.y;
 
-        GameObject newTower = Instantiate(selectedTower.towerPrefab, towerPosition, Quaternion.identity); // Å¸¿ö »ı¼º
+        GameObject newTower = Instantiate(selectedTower.towerPrefab, towerPosition, Quaternion.identity); // íƒ€ì›Œ ìƒì„±
 
-        // ÁÂ¿ì¹İÀü »óÅÂ Àû¿ë
+        // ì¢Œìš°ë°˜ì „ ìƒíƒœ ì ìš©
         if (isFlipped)
         {
-            // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯ °¡Á®¿Í¼­ ÁÂ¿ì¹İÀü Àû¿ë
+            // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ ê°€ì ¸ì™€ì„œ ì¢Œìš°ë°˜ì „ ì ìš©
             SpriteRenderer[] renderers = newTower.GetComponentsInChildren<SpriteRenderer>();
             foreach (SpriteRenderer renderer in renderers)
             {
                 renderer.flipX = true;
             }
 
-            // ¶Ç´Â ½ºÄÉÀÏÀ» »ç¿ëÇÏ¿© ¹İÀü
+            // ë˜ëŠ” ìŠ¤ì¼€ì¼ì„ ì‚¬ìš©í•˜ì—¬ ë°˜ì „
             Vector3 scale = newTower.transform.localScale;
             scale.x = -Mathf.Abs(scale.x);
             newTower.transform.localScale = scale;
@@ -245,36 +248,35 @@ public class TowerSpawner : MonoBehaviour
 
         if (towerWeapon != null)
         {
-            towerWeapon.Setup(selectedTower, enemySpawner, playerGold, towerPosition); // Setup È£Ãâ
+            towerWeapon.Setup(selectedTower, enemySpawner, playerGold, this, towerPosition); // Setup í˜¸ì¶œ
 
-            // ÁÂ¿ì¹İÀü »óÅÂ Àü´Ş (TowerWeapon¿¡ °ü·Ã ±â´ÉÀÌ ÀÖ´Â °æ¿ì)
-            if (isFlipped && towerWeapon.GetType().GetMethod("SetFlipped") != null)
+            if (isFlipped)
             {
-                towerWeapon.GetType().GetMethod("SetFlipped").Invoke(towerWeapon, new object[] { true });
+                towerWeapon.SetFlipped(true);
             }
         }
 
         isOnTowerButton = false;
-        placedTowers[cellPosition] = newTower; // ¼¿ ÁÂÇ¥¿Í Å¸¿ö ¿¬°á
-        playerGold.CurrentGold -= selectedTower.weapons[0].cost; // °ñµå °¨¼Ò
+        placedTowers[cellPosition] = newTower; // ì…€ ì¢Œí‘œì™€ íƒ€ì›Œ ì—°ê²°
+        playerGold.CurrentGold -= selectedTower.weapons[0].cost; // ê³¨ë“œ ê°ì†Œ
 
-        // Å¸¿ö ¹èÄ¡¿¡ µû¸¥ ÇÇ·Îµµ Áõ°¡
-        playerGold.IncreaseFatigue(); // ÇÇ·Îµµ Áõ°¡ ¸Ş¼­µå È£Ãâ
+        // íƒ€ì›Œ ë°°ì¹˜ì— ë”°ë¥¸ í”¼ë¡œë„ ì¦ê°€
+        playerGold.IncreaseFatigue(); // í”¼ë¡œë„ ì¦ê°€ ë©”ì„œë“œ í˜¸ì¶œ
 
-        // ¹èÄ¡ ¸ğµå Á¾·á ¹× ¸®¼Ò½º Á¤¸®
+        // ë°°ì¹˜ ëª¨ë“œ ì¢…ë£Œ ë° ë¦¬ì†ŒìŠ¤ ì •ë¦¬
         EndPlacementMode();
 
         Debug.Log($"Tower placed at {cellPosition}");
     }
 
-    // Å¸¿ö ¹èÄ¡ ¸ğµå Á¾·á
+    // íƒ€ì›Œ ë°°ì¹˜ ëª¨ë“œ ì¢…ë£Œ
     private void EndPlacementMode()
     {
         StopCoroutine("OnTowerCancelSystem");
         ClearFollowTower();
     }
 
-    // ¹Ì¸®º¸±â Å¸¿ö Á¤¸®
+    // ë¯¸ë¦¬ë³´ê¸° íƒ€ì›Œ ì •ë¦¬
     private void ClearFollowTower()
     {
         if (followTowerClone != null)
@@ -286,10 +288,10 @@ public class TowerSpawner : MonoBehaviour
 
     public void RemoveTower(Vector3Int cellPosition)
     {
-        // °Å·¡°¡ ºñÈ°¼ºÈ­µÇ¾î ÀÖÀ¸¸é Å¸¿ö ÆÇ¸Å ºÒ°¡
+        // ê±°ë˜ê°€ ë¹„í™œì„±í™”ë˜ì–´ ìˆìœ¼ë©´ íƒ€ì›Œ íŒë§¤ ë¶ˆê°€
         if (!tradeEnabled)
         {
-            // ½Ã½ºÅÛ ¸Ş½ÃÁö Ãâ·Â
+            // ì‹œìŠ¤í…œ ë©”ì‹œì§€ ì¶œë ¥
             if (systemTextViewer != null)
             {
                 systemTextViewer.PrintText(SystemType.Build);
@@ -297,10 +299,10 @@ public class TowerSpawner : MonoBehaviour
             return;
         }
 
-        if (placedTowers.TryGetValue(cellPosition, out GameObject tower)) // Å¸¿ö Ã£±â
+        if (placedTowers.TryGetValue(cellPosition, out GameObject tower)) // íƒ€ì›Œ ì°¾ê¸°
         {
-            Destroy(tower); // Å¸¿ö ¿ÀºêÁ§Æ® Á¦°Å
-            placedTowers.Remove(cellPosition); // °ü¸® ¸ñ·Ï¿¡¼­ Á¦°Å
+            Destroy(tower); // íƒ€ì›Œ ì˜¤ë¸Œì íŠ¸ ì œê±°
+            placedTowers.Remove(cellPosition); // ê´€ë¦¬ ëª©ë¡ì—ì„œ ì œê±°
 
             Debug.Log($"Tower removed from {cellPosition}");
         }
@@ -329,12 +331,12 @@ public class TowerSpawner : MonoBehaviour
         return placedTowers.ContainsKey(cellPosition);
     }
 
-    // Å¸¿ö °Å·¡ È°¼ºÈ­/ºñÈ°¼ºÈ­ ¸Ş¼Òµå
+    // íƒ€ì›Œ ê±°ë˜ í™œì„±í™”/ë¹„í™œì„±í™” ë©”ì†Œë“œ
     public void SetTradeEnabled(bool enabled)
     {
         tradeEnabled = enabled;
 
-        // °Å·¡ ºñÈ°¼ºÈ­ ½Ã Å¸¿ö ¹èÄ¡ ¸ğµå Á¾·á
+        // ê±°ë˜ ë¹„í™œì„±í™” ì‹œ íƒ€ì›Œ ë°°ì¹˜ ëª¨ë“œ ì¢…ë£Œ
         if (!enabled)
         {
             isOnTowerButton = false;
@@ -343,42 +345,42 @@ public class TowerSpawner : MonoBehaviour
         }
     }
 
-    // Å¸¿ö¸¦ ÆÄ±«ÇÏÁö ¾Ê°í Dictionary¿¡¼­¸¸ Á¦°ÅÇÏ´Â ¸Ş¼Òµå
+    // íƒ€ì›Œë¥¼ íŒŒê´´í•˜ì§€ ì•Šê³  Dictionaryì—ì„œë§Œ ì œê±°í•˜ëŠ” ë©”ì†Œë“œ
     public void RemoveTowerWithoutDestroy(Vector3Int cellPosition)
     {
         if (placedTowers.TryGetValue(cellPosition, out GameObject tower))
         {
             placedTowers.Remove(cellPosition);
-            Debug.Log($"Å¸¿ö¸¦ Dictionary¿¡¼­ Á¦°Å: {cellPosition}");
+            Debug.Log($"íƒ€ì›Œë¥¼ Dictionaryì—ì„œ ì œê±°: {cellPosition}");
         }
         else
         {
-            Debug.Log($"ÁöÁ¤µÈ À§Ä¡ {cellPosition}¿¡ Å¸¿ö°¡ ¾ø½À´Ï´Ù.");
+            Debug.Log($"ì§€ì •ëœ ìœ„ì¹˜ {cellPosition}ì— íƒ€ì›Œê°€ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
-    // ±âÁ¸ Å¸¿ö¸¦ Dictionary¿¡ µî·ÏÇÏ´Â ¸Ş¼Òµå
+    // ê¸°ì¡´ íƒ€ì›Œë¥¼ Dictionaryì— ë“±ë¡í•˜ëŠ” ë©”ì†Œë“œ
     public void RegisterExistingTower(Vector3Int cellPosition, GameObject tower)
     {
         if (IsTileOccupied(cellPosition))
         {
-            Debug.LogWarning($"ÀÌ¹Ì Å¸¿ö°¡ ÀÖ´Â À§Ä¡ {cellPosition}¿¡ Å¸¿ö¸¦ µî·ÏÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning($"ì´ë¯¸ íƒ€ì›Œê°€ ìˆëŠ” ìœ„ì¹˜ {cellPosition}ì— íƒ€ì›Œë¥¼ ë“±ë¡í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // Dictionary¿¡ µî·Ï
+        // Dictionaryì— ë“±ë¡
         placedTowers[cellPosition] = tower;
-        Debug.Log($"±âÁ¸ Å¸¿ö¸¦ »õ À§Ä¡ {cellPosition}¿¡ µî·Ï");
+        Debug.Log($"ê¸°ì¡´ íƒ€ì›Œë¥¼ ìƒˆ ìœ„ì¹˜ {cellPosition}ì— ë“±ë¡");
     }
 
 
-    // Å¸¿ö ¹èÄ¡ ½Ã ±âº» ÇÇ·Îµµ °ª °¡Á®¿À±â
+    // íƒ€ì›Œ ë°°ì¹˜ ì‹œ ê¸°ë³¸ í”¼ë¡œë„ ê°’ ê°€ì ¸ì˜¤ê¸°
     public float GetBaseFatiguePerTower()
     {
         return fatiguePerTower;
     }
 
-    // Å¸¿ö ÀÌµ¿¿¡ ´ëÇÑ ÇÇ·Îµµ °ª °¡Á®¿À±â
+    // íƒ€ì›Œ ì´ë™ì— ëŒ€í•œ í”¼ë¡œë„ ê°’ ê°€ì ¸ì˜¤ê¸°
     public float GetMovementFatiguePerTower()
     {
         return fatiguePerTowerMovement;

@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Movement2D : MonoBehaviour
 {
@@ -9,30 +8,47 @@ public class Movement2D : MonoBehaviour
     [SerializeField]
     private Vector3 moveDirection = Vector3.zero;
 
-    private float originalMoveSpeed; // ¿ø·¡ ÀÌµ¿ ¼Óµµ ÀúÀå¿ë
-    private bool isSlowed = false;   // ÇöÀç °¨¼Ó »óÅÂÀÎÁö
-    private float slowTimer = 0f;    // °¨¼Ó Áö¼Ó ½Ã°£ Å¸ÀÌ¸Ó
-    private float currentSlowAmount = 0f; // ÇöÀç Àû¿ëµÈ °¨¼Ó ºñÀ²
+    private float originalMoveSpeed;
+    private bool isSlowed = false;
+    private float slowTimer = 0f;
+    private float currentSlowAmount = 0f;
+
+    // NavMeshAgent ì°¸ì¡° ì¶”ê°€
+    private NavMeshAgent navMeshAgent;
+    private bool useNavMesh = false;
 
     public float MoveSpeed => moveSpeed;
 
     private void Awake()
     {
-        // ÃÊ±â ÀÌµ¿ ¼Óµµ ÀúÀå
+        // ì´ˆê¸° ì´ë™ ì†ë„ ì €ì¥
         originalMoveSpeed = moveSpeed;
+
+        // NavMeshAgent í™•ì¸
+        navMeshAgent = GetComponent<NavMeshAgent>();
+        useNavMesh = navMeshAgent != null;
+
+        // NavMeshAgentê°€ ìˆìœ¼ë©´ ì´ˆê¸° ì†ë„ ë™ê¸°í™”
+        if (useNavMesh)
+        {
+            originalMoveSpeed = navMeshAgent.speed;
+            moveSpeed = originalMoveSpeed;
+        }
     }
 
-    // Update is called once per frame
     void Update()
     {
-        transform.position += moveDirection * moveSpeed * Time.deltaTime;
+        // NavMeshAgentê°€ ì—†ì„ ê²½ìš°ì—ë§Œ ì§ì ‘ ì´ë™
+        if (!useNavMesh)
+        {
+            transform.position += moveDirection * moveSpeed * Time.deltaTime;
+        }
 
-        // °¨¼Ó È¿°ú°¡ Àû¿ë ÁßÀÌ¶ó¸é Å¸ÀÌ¸Ó ¾÷µ¥ÀÌÆ®
+        // ê°ì† íš¨ê³¼ê°€ ì ìš© ì¤‘ì´ë¼ë©´ íƒ€ì´ë¨¸ ì—…ë°ì´íŠ¸
         if (isSlowed)
         {
             slowTimer -= Time.deltaTime;
-
-            // Å¸ÀÌ¸Ó°¡ ³¡³ª¸é ÀÌµ¿ ¼Óµµ º¹±¸
+            // íƒ€ì´ë¨¸ê°€ ëë‚˜ë©´ ì´ë™ ì†ë„ ë³µêµ¬
             if (slowTimer <= 0)
             {
                 ResetMoveSpeed();
@@ -45,31 +61,49 @@ public class Movement2D : MonoBehaviour
         moveDirection = direction;
     }
 
-    // ÀÌµ¿ ¼Óµµ °¨¼Ò È¿°ú Àû¿ë
+    // ì´ë™ ì†ë„ ê°ì†Œ íš¨ê³¼ ì ìš©
     public void ApplySlow(float slowAmount, float duration)
     {
-        // ÇöÀç Àû¿ëµÈ °¨¼Óº¸´Ù ´õ °­ÇÑ °¨¼ÓÀÌ°Å³ª, °¨¼Ó È¿°ú°¡ °ğ ³¡³¯ °æ¿ì¿¡¸¸ Àû¿ë
+        // í˜„ì¬ ì ìš©ëœ ê°ì†ë³´ë‹¤ ë” ê°•í•œ ê°ì†ì´ê±°ë‚˜, ê°ì† íš¨ê³¼ê°€ ê³§ ëë‚  ê²½ìš°ì—ë§Œ ì ìš©
         if (slowAmount > currentSlowAmount || slowTimer < 0.5f)
         {
-            // °¨¼Ó È¿°ú°¡ Ã³À½ Àû¿ëµÇ¸é ¿ø·¡ ¼Óµµ ÀúÀå
+            // ê°ì† íš¨ê³¼ê°€ ì²˜ìŒ ì ìš©ë˜ë©´ ì›ë˜ ì†ë„ ì €ì¥
             if (!isSlowed)
             {
-                originalMoveSpeed = moveSpeed;
+                originalMoveSpeed = useNavMesh ? navMeshAgent.speed : moveSpeed;
             }
 
-            // »õ·Î¿î °¨¼Ó È¿°ú Àû¿ë
+            // ìƒˆë¡œìš´ ê°ì† íš¨ê³¼ ì ìš©
             currentSlowAmount = slowAmount;
             moveSpeed = originalMoveSpeed * (1 - slowAmount);
+
+            // NavMeshAgentê°€ ìˆìœ¼ë©´ ì†ë„ ì ìš©
+            if (useNavMesh && navMeshAgent.isActiveAndEnabled)
+            {
+                navMeshAgent.speed = moveSpeed;
+            }
+
             slowTimer = duration;
             isSlowed = true;
+
+            Debug.Log($"{gameObject.name}ì˜ ì´ë™ ì†ë„ {slowAmount * 100}% ê°ì†Œ (ì§€ì†ì‹œê°„: {duration}ì´ˆ)");
         }
     }
 
-    // ÀÌµ¿ ¼Óµµ ¿ø·¡´ë·Î º¹±¸
+    // ì´ë™ ì†ë„ ì›ë˜ëŒ€ë¡œ ë³µêµ¬
     public void ResetMoveSpeed()
     {
         moveSpeed = originalMoveSpeed;
+
+        // NavMeshAgentê°€ ìˆìœ¼ë©´ ì†ë„ ë³µêµ¬
+        if (useNavMesh && navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
+        {
+            navMeshAgent.speed = originalMoveSpeed;
+        }
+
         isSlowed = false;
         currentSlowAmount = 0f;
+
+        Debug.Log($"{gameObject.name}ì˜ ì´ë™ ì†ë„ ë³µêµ¬");
     }
 }

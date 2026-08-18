@@ -3,33 +3,33 @@ using UnityEngine.Events;
 
 public class PlayerExperience : MonoBehaviour
 {
-    [SerializeField] private int currentExp = 0; // ÇöÀç °æÇèÄ¡
-    [SerializeField] private int[] expRequiredForLevel = { 0, 100, 250, 450, 700, 1000 }; // °¢ ·¹º§¿¡ ÇÊ¿äÇÑ °æÇèÄ¡ (0¹ø ÀÎµ¦½º´Â ¾²Áö ¾ÊÀ½)
-    [SerializeField] private float[] damageMultipliers = { 1.0f, 1.2f, 1.5f, 1.8f, 2.2f, 2.7f }; // °¢ ·¹º§º° °ø°İ·Â ¹è¼ö (0¹ø ÀÎµ¦½º´Â ¾²Áö ¾ÊÀ½)
+    [SerializeField] private int currentExp = 0; // í˜„ì¬ ê²½í—˜ì¹˜
+    [SerializeField] private int[] expRequiredForLevel = { 0, 100, 250, 450, 700, 1000 }; // ê° ë ˆë²¨ì— í•„ìš”í•œ ê²½í—˜ì¹˜ (0ë²ˆ ì¸ë±ìŠ¤ëŠ” ì“°ì§€ ì•ŠìŒ)
+    [SerializeField] private float[] damageMultipliers = { 1.0f, 1.2f, 1.5f, 1.8f, 2.2f, 2.7f }; // ê° ë ˆë²¨ë³„ ê³µê²©ë ¥ ë°°ìˆ˜ (0ë²ˆ ì¸ë±ìŠ¤ëŠ” ì“°ì§€ ì•ŠìŒ)
 
-    private PlayerGold playerGold; // ÇÃ·¹ÀÌ¾î °ñµå ÂüÁ¶
-    private int level = 1; // ÇöÀç ·¹º§
-    private int previousLevel = 1; // ÀÌÀü ·¹º§ ÃßÀû
-    private const int MAX_LEVEL = 6; // ÃÖ´ë ·¹º§
+    private PlayerGold playerGold; // í”Œë ˆì´ì–´ ê³¨ë“œ ì°¸ì¡°
+    private int level = 1; // í˜„ì¬ ë ˆë²¨
+    private int previousLevel = 1; // ì´ì „ ë ˆë²¨ ì¶”ì 
+    private const int MAX_LEVEL = 6; // ìµœëŒ€ ë ˆë²¨
 
-    // ·¹º§¾÷ ÀÌº¥Æ®
+    // ë ˆë²¨ì—… ì´ë²¤íŠ¸
     [System.Serializable]
     public class LevelUpEvent : UnityEvent<int> { }
     public LevelUpEvent onLevelUp = new LevelUpEvent();
 
-    // ·¹º§ ÇÁ·ÎÆÛÆ¼
+    // ë ˆë²¨ í”„ë¡œí¼í‹°
     public int Level => level;
 
-    // ÃÖ´ë ·¹º§ ÇÁ·ÎÆÛÆ¼
+    // ìµœëŒ€ ë ˆë²¨ í”„ë¡œí¼í‹°
     public int MaxLevel => MAX_LEVEL;
 
-    // ÇöÀç °æÇèÄ¡ ÇÁ·ÎÆÛÆ¼
+    // í˜„ì¬ ê²½í—˜ì¹˜ í”„ë¡œí¼í‹°
     public int CurrentExp => currentExp;
 
-    // ÇöÀç ·¹º§¿¡¼­ ÇÊ¿äÇÑ °æÇèÄ¡ ÇÁ·ÎÆÛÆ¼
+    // í˜„ì¬ ë ˆë²¨ì—ì„œ í•„ìš”í•œ ê²½í—˜ì¹˜ í”„ë¡œí¼í‹°
     public int ExpRequiredForCurrentLevel => level < MAX_LEVEL ? expRequiredForLevel[level] : 0;
 
-    // ÇöÀç °ø°İ·Â ¹è¼ö ÇÁ·ÎÆÛÆ¼
+    // í˜„ì¬ ê³µê²©ë ¥ ë°°ìˆ˜ í”„ë¡œí¼í‹°
     public float CurrentDamageMultiplier => damageMultipliers[level];
 
     private void Awake()
@@ -37,41 +37,41 @@ public class PlayerExperience : MonoBehaviour
         playerGold = GetComponent<PlayerGold>();
         if (playerGold == null)
         {
-            Debug.LogError("PlayerGold ÄÄÆ÷³ÍÆ®¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError("PlayerGold ì»´í¬ë„ŒíŠ¸ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
         }
-        // Ãß°¡ ÃÊ±âÈ­
+        // ì¶”ê°€ ì´ˆê¸°í™”
         previousLevel = level;
     }
 
     private void Update()
     {
-        // ·¹º§ÀÌ º¯°æµÇ¾ú´ÂÁö È®ÀÎ
+        // ë ˆë²¨ì´ ë³€ê²½ë˜ì—ˆëŠ”ì§€ í™•ì¸
         if (level > previousLevel)
         {
-            // ·¹º§¾÷ °¨Áö
+            // ë ˆë²¨ì—… ê°ì§€
             int levelsGained = level - previousLevel;
             HandleLevelUp(levelsGained);
             previousLevel = level;
         }
     }
 
-    // °æÇèÄ¡ È¹µæ ¸Ş¼Òµå
+    // ê²½í—˜ì¹˜ íšë“ ë©”ì†Œë“œ
     public void AddExperience(int expAmount)
     {
-        // ÀÌ¹Ì ÃÖ´ë ·¹º§ÀÌ¸é °æÇèÄ¡¸¦ ´õÇÏÁö ¾ÊÀ½
+        // ì´ë¯¸ ìµœëŒ€ ë ˆë²¨ì´ë©´ ê²½í—˜ì¹˜ë¥¼ ë”í•˜ì§€ ì•ŠìŒ
         if (level >= MAX_LEVEL) return;
 
-        // ÇöÀç ·¹º§ ÀúÀå
+        // í˜„ì¬ ë ˆë²¨ ì €ì¥
         int oldLevel = level;
 
-        // °æÇèÄ¡ Ãß°¡
+        // ê²½í—˜ì¹˜ ì¶”ê°€
         currentExp += expAmount;
-        Debug.Log($"°æÇèÄ¡ È¹µæ: {expAmount}, ÃÑ °æÇèÄ¡: {currentExp}");
+        Debug.Log($"ê²½í—˜ì¹˜ íšë“: {expAmount}, ì´ ê²½í—˜ì¹˜: {currentExp}");
 
-        // ·¹º§¾÷ Ã¼Å©
+        // ë ˆë²¨ì—… ì²´í¬
         CheckLevelUp();
 
-        // ·¹º§¾÷ °¨Áö (¿©·¯ ·¹º§ µ¿½Ã¿¡ ¿À¸¦ °æ¿ì ´ëºñ)
+        // ë ˆë²¨ì—… ê°ì§€ (ì—¬ëŸ¬ ë ˆë²¨ ë™ì‹œì— ì˜¤ë¥¼ ê²½ìš° ëŒ€ë¹„)
         if (level > oldLevel)
         {
             int levelsGained = level - oldLevel;
@@ -79,34 +79,34 @@ public class PlayerExperience : MonoBehaviour
         }
     }
 
-    // ¸ó½ºÅÍ Ã³Ä¡ ½Ã °æÇèÄ¡ È¹µæ
+    // ëª¬ìŠ¤í„° ì²˜ì¹˜ ì‹œ ê²½í—˜ì¹˜ íšë“
     public void AddExperienceForEnemy(EnemyDestroyType destroyType, int expValue)
     {
-        // ¸ó½ºÅÍ°¡ ¸ñÀûÁö¿¡ µµ´ŞÇÑ °æ¿ì °æÇèÄ¡ È¹µæ X
+        // ëª¬ìŠ¤í„°ê°€ ëª©ì ì§€ì— ë„ë‹¬í•œ ê²½ìš° ê²½í—˜ì¹˜ íšë“ X
         if (destroyType == EnemyDestroyType.Arrive) return;
 
-        // ÁöÁ¤µÈ °æÇèÄ¡ °ª »ç¿ë
+        // ì§€ì •ëœ ê²½í—˜ì¹˜ ê°’ ì‚¬ìš©
         int expAmount = expValue;
         AddExperience(expAmount);
     }
 
-    // ¿şÀÌºê Á¾·á ÈÄ °æÇèÄ¡ Á¤»ê
+    // ì›¨ì´ë¸Œ ì¢…ë£Œ í›„ ê²½í—˜ì¹˜ ì •ì‚°
     public void AddExperienceForWaveCompletion(int enemiesKilled)
     {
-        // Ã³Ä¡ÇÑ ÀûÀÇ ¼ö¿¡ ºñ·ÊÇÏ¿© º¸³Ê½º °æÇèÄ¡ ºÎ¿©
-        int expAmount = enemiesKilled * 5; // ¿¹: Àû 1¸¶¸®´ç Ãß°¡ 5 °æÇèÄ¡
+        // ì²˜ì¹˜í•œ ì ì˜ ìˆ˜ì— ë¹„ë¡€í•˜ì—¬ ë³´ë„ˆìŠ¤ ê²½í—˜ì¹˜ ë¶€ì—¬
+        int expAmount = enemiesKilled * 5; // ì˜ˆ: ì  1ë§ˆë¦¬ë‹¹ ì¶”ê°€ 5 ê²½í—˜ì¹˜
         AddExperience(expAmount);
-        Debug.Log($"¿şÀÌºê ¿Ï·á º¸³Ê½º °æÇèÄ¡: {expAmount} (Ã³Ä¡ÇÑ Àû: {enemiesKilled}¸¶¸®)");
+        Debug.Log($"ì›¨ì´ë¸Œ ì™„ë£Œ ë³´ë„ˆìŠ¤ ê²½í—˜ì¹˜: {expAmount} (ì²˜ì¹˜í•œ ì : {enemiesKilled}ë§ˆë¦¬)");
     }
 
-    // ·¹º§¾÷ Ã¼Å© ¸Ş¼Òµå
+    // ë ˆë²¨ì—… ì²´í¬ ë©”ì†Œë“œ
     private void CheckLevelUp()
     {
         while (level < MAX_LEVEL && currentExp >= expRequiredForLevel[level])
         {
             level++;
-            Debug.Log($"·¹º§ ¾÷! ÇöÀç ·¹º§: {level}, °ø°İ·Â ¹è¼ö: {CurrentDamageMultiplier}");
-            // ·¹º§¾÷ º¸»ó (¿¹: ¾à°£ÀÇ °ñµå Áö±Ş)
+            Debug.Log($"ë ˆë²¨ ì—…! í˜„ì¬ ë ˆë²¨: {level}, ê³µê²©ë ¥ ë°°ìˆ˜: {CurrentDamageMultiplier}");
+            // ë ˆë²¨ì—… ë³´ìƒ (ì˜ˆ: ì•½ê°„ì˜ ê³¨ë“œ ì§€ê¸‰)
             if (playerGold != null)
             {
                 playerGold.CurrentGold += level * 10;
@@ -114,32 +114,32 @@ public class PlayerExperience : MonoBehaviour
         }
     }
 
-    // ·¹º§¾÷ Ã³¸®
+    // ë ˆë²¨ì—… ì²˜ë¦¬
     private void HandleLevelUp(int levelsGained)
     {
-        Debug.Log($"·¹º§ ¾÷! ÇöÀç ·¹º§: {level} (+{levelsGained})");
+        Debug.Log($"ë ˆë²¨ ì—…! í˜„ì¬ ë ˆë²¨: {level} (+{levelsGained})");
 
-        // ·¹º§¾÷ ÀÌº¥Æ® ¹ß»ı
+        // ë ˆë²¨ì—… ì´ë²¤íŠ¸ ë°œìƒ
         onLevelUp.Invoke(level);
 
-        // ·¹º§¾÷ ¾Ë¸² Ç¥½Ã (UI)
+        // ë ˆë²¨ì—… ì•Œë¦¼ í‘œì‹œ (UI)
         ShowLevelUpNotification();
     }
 
-    // °ø°İ·Â °è»ê ¸Ş¼Òµå - È­»ì¿¡¼­ È£Ãâ
+    // ê³µê²©ë ¥ ê³„ì‚° ë©”ì†Œë“œ - í™”ì‚´ì—ì„œ í˜¸ì¶œ
     public float CalculateAttackDamage(float baseDamage)
     {
         return baseDamage * CurrentDamageMultiplier;
     }
 
-    // ·¹º§¾÷ ¾Ë¸² Ç¥½Ã
+    // ë ˆë²¨ì—… ì•Œë¦¼ í‘œì‹œ
     private void ShowLevelUpNotification()
     {
-        // ·¹º§¾÷ È¿°ú (¿¹: ÆÄÆ¼Å¬, »ç¿îµå µî)
+        // ë ˆë²¨ì—… íš¨ê³¼ (ì˜ˆ: íŒŒí‹°í´, ì‚¬ìš´ë“œ ë“±)
         AudioSource audioSource = GetComponent<AudioSource>();
         if (audioSource != null)
         {
-            // ·¹º§¾÷ »ç¿îµå Àç»ı (ÀÖ´Â °æ¿ì)
+            // ë ˆë²¨ì—… ì‚¬ìš´ë“œ ì¬ìƒ (ìˆëŠ” ê²½ìš°)
             AudioClip levelUpSound = Resources.Load<AudioClip>("Sounds/LevelUp");
             if (levelUpSound != null)
             {
@@ -147,17 +147,11 @@ public class PlayerExperience : MonoBehaviour
             }
         }
 
-        // ·¹º§¾÷ UI ¾Ë¸² - UI ¸Å´ÏÀú°¡ ÀÖ´Ù¸é ¸Ş½ÃÁö Àü´Ş
+        // ë ˆë²¨ì—… UI ì•Œë¦¼ - UI ë§¤ë‹ˆì €ê°€ ìˆë‹¤ë©´ ë©”ì‹œì§€ ì „ë‹¬
         TimeBasedUIManager uiManager = FindObjectOfType<TimeBasedUIManager>();
         if (uiManager != null)
         {
-            // UI ¸Å´ÏÀú¿¡ ·¹º§¾÷ ¾Ë¸² ¸Ş¼Òµå ÇÊ¿ä
-            System.Type type = uiManager.GetType();
-            System.Reflection.MethodInfo method = type.GetMethod("ShowLevelUpNotification");
-            if (method != null)
-            {
-                method.Invoke(uiManager, new object[] { level });
-            }
+            uiManager.ShowLevelUpNotification(level);
         }
     }
 }

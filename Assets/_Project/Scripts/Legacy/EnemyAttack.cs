@@ -8,89 +8,89 @@ public enum AttackType { None, Melee, Ranged }
 public class EnemyAttack : MonoBehaviour
 {
     [Header("Attack Settings")]
-    [SerializeField] private AttackType attackType = AttackType.Melee; // °ø°İ À¯Çü
-    [SerializeField] private float attackRange = 1.5f; // °ø°İ ¹üÀ§
-    [SerializeField] private float attackRate = 1.0f; // ÃÊ´ç °ø°İ È½¼ö
-    [SerializeField] private float attackDamage = 10f; // °ø°İ µ¥¹ÌÁö
-    [SerializeField] private LayerMask targetLayers; // ´ë»ó ·¹ÀÌ¾î
+    [SerializeField] private AttackType attackType = AttackType.Melee; // ê³µê²© ìœ í˜•
+    [SerializeField] private float attackRange = 1.5f; // ê³µê²© ë²”ìœ„
+    [SerializeField] private float attackRate = 1.0f; // ì´ˆë‹¹ ê³µê²© íšŸìˆ˜
+    [SerializeField] private float attackDamage = 10f; // ê³µê²© ë°ë¯¸ì§€
+    [SerializeField] private LayerMask targetLayers; // ëŒ€ìƒ ë ˆì´ì–´
 
     [Header("Ranged Attack Settings")]
-    [SerializeField] private GameObject projectilePrefab; // ¹ß»çÃ¼ ÇÁ¸®ÆÕ (¿ø°Å¸® °ø°İ¿ë)
-    [SerializeField] private Transform attackPoint; // ¹ß»ç À§Ä¡
+    [SerializeField] private GameObject projectilePrefab; // ë°œì‚¬ì²´ í”„ë¦¬íŒ¹ (ì›ê±°ë¦¬ ê³µê²©ìš©)
+    [SerializeField] private Transform attackPoint; // ë°œì‚¬ ìœ„ì¹˜
 
     [Header("Effects")]
-    [SerializeField] private GameObject attackEffect; // °ø°İ È¿°ú
-    [SerializeField] private AudioClip attackSound; // °ø°İ ¼Ò¸®
+    [SerializeField] private GameObject attackEffect; // ê³µê²© íš¨ê³¼
+    [SerializeField] private AudioClip attackSound; // ê³µê²© ì†Œë¦¬
 
     [Header("Isometric Settings")]
-    [SerializeField] private bool useIsometricPosition = true; // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ »ç¿ë ¿©ºÎ
+    [SerializeField] private bool useIsometricPosition = true; // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ ì‚¬ìš© ì—¬ë¶€
 
-    // °ø°İ ¼Óµµ °¨¼Ò È¿°ú °ü·Ã º¯¼ö
-    private float originalAttackRate; // ¿ø·¡ °ø°İ ¼Óµµ
-    private bool isAttackSlowed = false; // °ø°İ ¼Óµµ °¨¼Ò »óÅÂ
-    private float attackSlowTimer = 0f; // °ø°İ ¼Óµµ °¨¼Ò Å¸ÀÌ¸Ó
-    private float currentAttackSlowAmount = 0f; // ÇöÀç Àû¿ëµÈ °ø°İ ¼Óµµ °¨¼Ò ºñÀ²
+    // ê³µê²© ì†ë„ ê°ì†Œ íš¨ê³¼ ê´€ë ¨ ë³€ìˆ˜
+    private float originalAttackRate; // ì›ë˜ ê³µê²© ì†ë„
+    private bool isAttackSlowed = false; // ê³µê²© ì†ë„ ê°ì†Œ ìƒíƒœ
+    private float attackSlowTimer = 0f; // ê³µê²© ì†ë„ ê°ì†Œ íƒ€ì´ë¨¸
+    private float currentAttackSlowAmount = 0f; // í˜„ì¬ ì ìš©ëœ ê³µê²© ì†ë„ ê°ì†Œ ë¹„ìœ¨
 
-    private float attackTimer = 0f; // °ø°İ Å¸ÀÌ¸Ó
-    private Enemy enemy; // Enemy ÄÄÆ÷³ÍÆ® ÂüÁ¶
-    private Transform currentTarget; // ÇöÀç °ø°İ ´ë»ó
-    private AudioSource audioSource; // ¿Àµğ¿À ¼Ò½º
-    private IsometricPositionHandler isometricPosition; // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯
-    private bool isInitialized = false; // ÃÊ±âÈ­ ¿©ºÎ È®ÀÎ¿ë
+    private float attackTimer = 0f; // ê³µê²© íƒ€ì´ë¨¸
+    private Enemy enemy; // Enemy ì»´í¬ë„ŒíŠ¸ ì°¸ì¡°
+    private Transform currentTarget; // í˜„ì¬ ê³µê²© ëŒ€ìƒ
+    private AudioSource audioSource; // ì˜¤ë””ì˜¤ ì†ŒìŠ¤
+    private IsometricPositionHandler isometricPosition; // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬
+    private bool isInitialized = false; // ì´ˆê¸°í™” ì—¬ë¶€ í™•ì¸ìš©
 
-    // Awake: ÃÊ±âÈ­
+    // Awake: ì´ˆê¸°í™”
     private void Awake()
     {
         enemy = GetComponent<Enemy>();
 
-        // ¿Àµğ¿À ¼Ò½º °¡Á®¿À±â ¶Ç´Â ÇÊ¿ä½Ã »ı¼º
+        // ì˜¤ë””ì˜¤ ì†ŒìŠ¤ ê°€ì ¸ì˜¤ê¸° ë˜ëŠ” í•„ìš”ì‹œ ìƒì„±
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null && attackSound != null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        originalAttackRate = attackRate; // ¿ø·¡ °ø°İ ¼Óµµ ÀúÀå
+        originalAttackRate = attackRate; // ì›ë˜ ê³µê²© ì†ë„ ì €ì¥
 
-        // °ø°İ ÁöÁ¡ÀÌ ¾øÀ¸¸é ÀÚ½ÅÀÇ À§Ä¡ »ç¿ë
+        // ê³µê²© ì§€ì ì´ ì—†ìœ¼ë©´ ìì‹ ì˜ ìœ„ì¹˜ ì‚¬ìš©
         if (attackPoint == null)
         {
             attackPoint = transform;
         }
 
-        // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯ È®ÀÎ
+        // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬ í™•ì¸
         if (useIsometricPosition)
         {
             isometricPosition = GetComponent<IsometricPositionHandler>();
         }
     }
 
-    // Start: ÃÊ±âÈ­ ¹× Å¸°Ù ¼³Á¤
+    // Start: ì´ˆê¸°í™” ë° íƒ€ê²Ÿ ì„¤ì •
     private void Start()
     {
         isInitialized = true;
 
-        // Enemy ÄÄÆ÷³ÍÆ®¿¡¼­ ÇöÀç Å¸°ÙÀ» °¡Á®¿À±â ½Ãµµ
+        // Enemy ì»´í¬ë„ŒíŠ¸ì—ì„œ í˜„ì¬ íƒ€ê²Ÿì„ ê°€ì ¸ì˜¤ê¸° ì‹œë„
         if (enemy != null && enemy.CurrentTarget != null)
         {
             currentTarget = enemy.CurrentTarget;
         }
     }
 
-    // Update: °ø°İ ·ÎÁ÷ Ã³¸®
+    // Update: ê³µê²© ë¡œì§ ì²˜ë¦¬
     private void Update()
     {
         if (!isInitialized) return;
 
-        // Å¸°Ù È®ÀÎ ¹× °ø°İ ½Ãµµ
+        // íƒ€ê²Ÿ í™•ì¸ ë° ê³µê²© ì‹œë„
         CheckTargetAndAttack();
 
-        // °ø°İ ¼Óµµ °¨¼Ò È¿°ú Å¸ÀÌ¸Ó ¾÷µ¥ÀÌÆ®
+        // ê³µê²© ì†ë„ ê°ì†Œ íš¨ê³¼ íƒ€ì´ë¨¸ ì—…ë°ì´íŠ¸
         if (isAttackSlowed)
         {
             attackSlowTimer -= Time.deltaTime;
 
-            // Å¸ÀÌ¸Ó°¡ ³¡³ª¸é °ø°İ ¼Óµµ º¹±¸
+            // íƒ€ì´ë¨¸ê°€ ëë‚˜ë©´ ê³µê²© ì†ë„ ë³µêµ¬
             if (attackSlowTimer <= 0)
             {
                 ResetAttackRate();
@@ -98,41 +98,41 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    // Å¸°Ù È®ÀÎ ¹× °ø°İ ½Ãµµ
+    // íƒ€ê²Ÿ í™•ì¸ ë° ê³µê²© ì‹œë„
     private void CheckTargetAndAttack()
     {
-        // Enemy ½ºÅ©¸³Æ®ÀÇ ÇöÀç Å¸°Ù »ç¿ë (Ç×»ó Enemy¿¡¼­ Å¸°ÙÀ» °ü¸®)
+        // Enemy ìŠ¤í¬ë¦½íŠ¸ì˜ í˜„ì¬ íƒ€ê²Ÿ ì‚¬ìš© (í•­ìƒ Enemyì—ì„œ íƒ€ê²Ÿì„ ê´€ë¦¬)
         if (enemy != null && enemy.CurrentTarget != null)
         {
             currentTarget = enemy.CurrentTarget;
         }
 
-        // Å¸°ÙÀÌ ¾ø°Å³ª À¯È¿ÇÏÁö ¾ÊÀºÁö È®ÀÎ
+        // íƒ€ê²Ÿì´ ì—†ê±°ë‚˜ ìœ íš¨í•˜ì§€ ì•Šì€ì§€ í™•ì¸
         if (currentTarget == null || (TargetManager.Instance != null && !TargetManager.Instance.IsTargetValid(currentTarget)))
         {
-            return; // À¯È¿ÇÑ Å¸°ÙÀÌ ¾øÀ¸¸é Á¾·á
+            return; // ìœ íš¨í•œ íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ ì¢…ë£Œ
         }
 
-        // Å¸°Ù°úÀÇ °Å¸® °è»ê
+        // íƒ€ê²Ÿê³¼ì˜ ê±°ë¦¬ ê³„ì‚°
         float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
 
-        // °ø°İ ¹üÀ§ ³»¿¡ ÀÖÀ¸¸é °ø°İ
+        // ê³µê²© ë²”ìœ„ ë‚´ì— ìˆìœ¼ë©´ ê³µê²©
         if (distanceToTarget <= attackRange)
         {
-            // °ø°İ Å¸ÀÌ¸Ó ¾÷µ¥ÀÌÆ®
+            // ê³µê²© íƒ€ì´ë¨¸ ì—…ë°ì´íŠ¸
             attackTimer += Time.deltaTime;
 
-            // °ø°İ ÁÖ±â¿¡ µµ´ŞÇÏ¸é °ø°İ
+            // ê³µê²© ì£¼ê¸°ì— ë„ë‹¬í•˜ë©´ ê³µê²©
             if (attackTimer >= 1f / attackRate)
             {
-                // °ø°İ ½ÇÇà
+                // ê³µê²© ì‹¤í–‰
                 Attack(currentTarget);
                 attackTimer = 0f;
             }
         }
     }
 
-    // °ø°İ ½ÇÇà
+    // ê³µê²© ì‹¤í–‰
     private void Attack(Transform target)
     {
         if (target == null) return;
@@ -152,20 +152,20 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    // ±ÙÁ¢ °ø°İ
+    // ê·¼ì ‘ ê³µê²©
     private void MeleeAttack(Transform target)
     {
         if (target == null) return;
 
-        // °ø°İ È¿°ú Àç»ı
+        // ê³µê²© íš¨ê³¼ ì¬ìƒ
         if (attackEffect != null)
         {
             Vector3 effectPosition = attackPoint.position;
 
-            // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ Á¶Á¤
+            // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ ì¡°ì •
             if (isometricPosition != null)
             {
-                // ÀÌÆåÆ® »ı¼º ½Ã IsometricPositionHandler Ãß°¡
+                // ì´í™íŠ¸ ìƒì„± ì‹œ IsometricPositionHandler ì¶”ê°€
                 GameObject effect = Instantiate(attackEffect, effectPosition, Quaternion.identity);
                 if (effect.GetComponent<IsometricPositionHandler>() == null)
                 {
@@ -174,7 +174,7 @@ public class EnemyAttack : MonoBehaviour
             }
             else if (useIsometricPosition)
             {
-                // ¼öµ¿À¸·Î z À§Ä¡ Á¶Á¤
+                // ìˆ˜ë™ìœ¼ë¡œ z ìœ„ì¹˜ ì¡°ì •
                 effectPosition.z = effectPosition.y;
                 Instantiate(attackEffect, effectPosition, Quaternion.identity);
             }
@@ -184,130 +184,139 @@ public class EnemyAttack : MonoBehaviour
             }
         }
 
-        // °ø°İ ¼Ò¸® Àç»ı
+        // ê³µê²© ì†Œë¦¬ ì¬ìƒ
         if (attackSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(attackSound);
         }
 
-        // µ¥¹ÌÁö Àû¿ë ½Ãµµ (´Ù¾çÇÑ Å¸°Ù ´ëÀÀ)
+        // ë°ë¯¸ì§€ ì ìš© ì‹œë„ (ë‹¤ì–‘í•œ íƒ€ê²Ÿ ëŒ€ì‘)
         bool damageApplied = false;
 
-        // ResourceObject ÄÄÆ÷³ÍÆ® È®ÀÎ
+        // ResourceObject ì»´í¬ë„ŒíŠ¸ í™•ì¸
         ResourceObject resource = target.GetComponent<ResourceObject>();
         if (resource != null)
         {
             resource.TakeDamage(attackDamage);
-            Debug.Log($"{gameObject.name}ÀÌ(°¡) {resource.ResourceName}¿¡ {attackDamage}ÀÇ µ¥¹ÌÁö¸¦ ÀÔÈû");
+            Debug.Log($"{gameObject.name}ì´(ê°€) {resource.ResourceName}ì— {attackDamage}ì˜ ë°ë¯¸ì§€ë¥¼ ì…í˜");
             damageApplied = true;
         }
 
-        // EnemyHP ÄÄÆ÷³ÍÆ® È®ÀÎ
+        // EnemyHP ì»´í¬ë„ŒíŠ¸ í™•ì¸
         if (!damageApplied)
         {
             EnemyHP enemyHP = target.GetComponent<EnemyHP>();
             if (enemyHP != null)
             {
                 enemyHP.TakeDamage(attackDamage);
-                Debug.Log($"{gameObject.name}ÀÌ(°¡) {target.name}¿¡ {attackDamage}ÀÇ µ¥¹ÌÁö¸¦ ÀÔÈû (EnemyHP)");
+                Debug.Log($"{gameObject.name}ì´(ê°€) {target.name}ì— {attackDamage}ì˜ ë°ë¯¸ì§€ë¥¼ ì…í˜ (EnemyHP)");
                 damageApplied = true;
             }
         }
 
-        // IDamageable ÀÎÅÍÆäÀÌ½º È®ÀÎ (´Ù¸¥ Å¸ÀÔÀÇ ´ë»ó)
+        // IDamageable ì¸í„°í˜ì´ìŠ¤ í™•ì¸ (ë‹¤ë¥¸ íƒ€ì…ì˜ ëŒ€ìƒ)
         if (!damageApplied)
         {
             var damageable = target.GetComponent<IDamageable>();
             if (damageable != null)
             {
                 damageable.TakeDamage((int)attackDamage);
-                Debug.Log($"{gameObject.name}ÀÌ(°¡) {target.name}¿¡ {attackDamage}ÀÇ µ¥¹ÌÁö¸¦ ÀÔÈû (IDamageable)");
+                Debug.Log($"{gameObject.name}ì´(ê°€) {target.name}ì— {attackDamage}ì˜ ë°ë¯¸ì§€ë¥¼ ì…í˜ (IDamageable)");
                 damageApplied = true;
             }
         }
 
         if (!damageApplied)
         {
-            Debug.LogWarning($"{target.name}¿¡´Â µ¥¹ÌÁö¸¦ ¹ŞÀ» ¼ö ÀÖ´Â ÄÄÆ÷³ÍÆ®°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning($"{target.name}ì—ëŠ” ë°ë¯¸ì§€ë¥¼ ë°›ì„ ìˆ˜ ìˆëŠ” ì»´í¬ë„ŒíŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
-    // ¿ø°Å¸® °ø°İ
+    // ì›ê±°ë¦¬ ê³µê²©
     private void RangedAttack(Transform target)
     {
         if (target == null) return;
 
-        // ¹ß»çÃ¼ ÇÁ¸®ÆÕÀÌ ¾øÀ¸¸é ¸®ÅÏ
+        // ë°œì‚¬ì²´ í”„ë¦¬íŒ¹ì´ ì—†ìœ¼ë©´ ë¦¬í„´
         if (projectilePrefab == null)
         {
-            Debug.LogWarning("¹ß»çÃ¼ ÇÁ¸®ÆÕÀÌ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("ë°œì‚¬ì²´ í”„ë¦¬íŒ¹ì´ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // °ø°İ ¼Ò¸® Àç»ı
+        // ê³µê²© ì†Œë¦¬ ì¬ìƒ
         if (attackSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(attackSound);
         }
 
-        // ¹ß»ç À§Ä¡ °è»ê
+        // ë°œì‚¬ ìœ„ì¹˜ ê³„ì‚°
         Vector3 spawnPosition = attackPoint.position;
         if (useIsometricPosition && isometricPosition == null)
         {
             spawnPosition.z = spawnPosition.y;
         }
 
-        // ¹ß»çÃ¼ »ı¼º
+        // ë°œì‚¬ì²´ ìƒì„±
         GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
 
-        // ¹ß»çÃ¼°¡ ProjectileBase¸¦ »ó¼Ó¹Ş¾Ò´ÂÁö È®ÀÎ
+        ProjectileEnemy enemyProjectile = projectile.GetComponent<ProjectileEnemy>();
+        if (enemyProjectile != null)
+        {
+            enemyProjectile.Setup(target, attackDamage);
+            return;
+        }
+
         ProjectileBase projectileBase = projectile.GetComponent<ProjectileBase>();
         if (projectileBase != null)
         {
-            // ¹ß»çÃ¼ ÃÊ±âÈ­ (´ë»ó, µ¥¹ÌÁö)
             projectileBase.Setup(target, attackDamage);
+            return;
         }
-        else
+
+        ProjectileBook projectileBook = projectile.GetComponent<ProjectileBook>();
+        if (projectileBook != null)
         {
-            // ´Ù¸¥ Å¸ÀÔÀÇ ¹ß»çÃ¼ Ã³¸® (ÇÊ¿ä½Ã ±¸Çö)
-            Debug.LogWarning("¹ß»çÃ¼¿¡ ProjectileBase ÄÄÆ÷³ÍÆ®°¡ ¾ø½À´Ï´Ù.");
-            Destroy(projectile);
+            projectileBook.Setup(target, attackDamage);
+            return;
         }
+
+        Debug.LogWarning($"{projectilePrefab.name}ì— ì§€ì›ë˜ëŠ” projectile Setup ì»´í¬ë„ŒíŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤.");
     }
 
-    // °ø°İ ¼Óµµ °¨¼Ò È¿°ú Àû¿ë
+    // ê³µê²© ì†ë„ ê°ì†Œ íš¨ê³¼ ì ìš©
     public void ApplyAttackSlow(float slowAmount, float duration)
     {
-        // ÇöÀç Àû¿ëµÈ °¨¼Óº¸´Ù ´õ °­ÇÑ °¨¼ÓÀÌ°Å³ª, °¨¼Ó È¿°ú°¡ °ğ ³¡³¯ °æ¿ì¿¡¸¸ Àû¿ë
+        // í˜„ì¬ ì ìš©ëœ ê°ì†ë³´ë‹¤ ë” ê°•í•œ ê°ì†ì´ê±°ë‚˜, ê°ì† íš¨ê³¼ê°€ ê³§ ëë‚  ê²½ìš°ì—ë§Œ ì ìš©
         if (slowAmount > currentAttackSlowAmount || attackSlowTimer < 0.5f)
         {
-            // °¨¼Ó È¿°ú°¡ Ã³À½ Àû¿ëµÇ¸é ¿ø·¡ ¼Óµµ ÀúÀå
+            // ê°ì† íš¨ê³¼ê°€ ì²˜ìŒ ì ìš©ë˜ë©´ ì›ë˜ ì†ë„ ì €ì¥
             if (!isAttackSlowed)
             {
                 originalAttackRate = attackRate;
             }
 
-            // »õ·Î¿î °¨¼Ó È¿°ú Àû¿ë (°ø°İ ¼Óµµ °¨¼Ò = °ø°İ ÁÖ±â Áõ°¡)
+            // ìƒˆë¡œìš´ ê°ì† íš¨ê³¼ ì ìš© (ê³µê²© ì†ë„ ê°ì†Œ = ê³µê²© ì£¼ê¸° ì¦ê°€)
             currentAttackSlowAmount = slowAmount;
             attackRate = originalAttackRate * (1 - slowAmount);
             attackSlowTimer = duration;
             isAttackSlowed = true;
 
-            Debug.Log($"{gameObject.name}ÀÇ °ø°İ ¼Óµµ {slowAmount * 100}% °¨¼Ò (Áö¼Ó½Ã°£: {duration}ÃÊ)");
+            Debug.Log($"{gameObject.name}ì˜ ê³µê²© ì†ë„ {slowAmount * 100}% ê°ì†Œ (ì§€ì†ì‹œê°„: {duration}ì´ˆ)");
         }
     }
 
-    // °ø°İ ¼Óµµ ¿ø·¡´ë·Î º¹±¸
+    // ê³µê²© ì†ë„ ì›ë˜ëŒ€ë¡œ ë³µêµ¬
     public void ResetAttackRate()
     {
         attackRate = originalAttackRate;
         isAttackSlowed = false;
         currentAttackSlowAmount = 0f;
 
-        Debug.Log($"{gameObject.name}ÀÇ °ø°İ ¼Óµµ º¹±¸");
+        Debug.Log($"{gameObject.name}ì˜ ê³µê²© ì†ë„ ë³µêµ¬");
     }
 
-    // ¿¡µğÅÍ¿¡¼­ °ø°İ ¹üÀ§ ½Ã°¢È­
+    // ì—ë””í„°ì—ì„œ ê³µê²© ë²”ìœ„ ì‹œê°í™”
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

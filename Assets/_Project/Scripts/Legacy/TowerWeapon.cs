@@ -2,17 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum WeaponState { SearchTarget = 0, AttackToTarget } //°ø°İ ´ë»ó Å½»ö ¿©ºÎ
+public enum WeaponState { SearchTarget = 0, AttackToTarget } //ê³µê²© ëŒ€ìƒ íƒìƒ‰ ì—¬ë¶€
 
 public class TowerWeapon : MonoBehaviour
 {
     [SerializeField]
-    private GameObject projectilePrefab; // ´ÜÀÏ ¹ß»çÃ¼ ÇÁ¸®ÆÕ
+    private GameObject projectilePrefab; // ë‹¨ì¼ ë°œì‚¬ì²´ í”„ë¦¬íŒ¹
     [SerializeField]
     private Transform spawnPoint;
 
     [Header("Time Settings")]
-    [SerializeField] private bool attackEnabled = true; // °ø°İ °¡´É ¿©ºÎ
+    [SerializeField] private bool attackEnabled = true; // ê³µê²© ê°€ëŠ¥ ì—¬ë¶€
 
     private TowerTemplate towerTemplate;
     private int level = 0;
@@ -21,21 +21,23 @@ public class TowerWeapon : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private PlayerGold playerGold;
     private EnemySpawner enemySpawner;
+    private TowerSpawner towerSpawner;
     private Tile ownerTile;
     private IsometricPositionHandler isometricPosition;
+    private Coroutine stateRoutine;
 
-    // ÁÂ¿ì¹İÀü »óÅÂ °ü·Ã º¯¼ö
+    // ì¢Œìš°ë°˜ì „ ìƒíƒœ ê´€ë ¨ ë³€ìˆ˜
     private bool isFlipped = false;
     private SpriteRenderer[] childRenderers;
 
-    public Sprite TowerSprite => towerTemplate.weapons[level].sprite;
-    public float Damage => towerTemplate.weapons[level].damage;
-    public float Rate => towerTemplate.weapons[level].rate;
-    public float Range => towerTemplate.weapons[level].range;
+    public Sprite TowerSprite => HasValidWeaponData() ? towerTemplate.weapons[level].sprite : null;
+    public float Damage => HasValidWeaponData() ? towerTemplate.weapons[level].damage : 0f;
+    public float Rate => HasValidWeaponData() ? towerTemplate.weapons[level].rate : 0f;
+    public float Range => HasValidWeaponData() ? towerTemplate.weapons[level].range : 0f;
     public int Level => level + 1;
-    public int MaxLevel => towerTemplate.weapons.Count;
+    public int MaxLevel => towerTemplate != null && towerTemplate.weapons != null ? towerTemplate.weapons.Count : 0;
 
-    // ÁÂ¿ì¹İÀü »óÅÂ ÇÁ·ÎÆÛÆ¼
+    // ì¢Œìš°ë°˜ì „ ìƒíƒœ í”„ë¡œí¼í‹°
     public bool IsFlipped => isFlipped;
 
     private void Awake()
@@ -44,7 +46,7 @@ public class TowerWeapon : MonoBehaviour
         childRenderers = GetComponentsInChildren<SpriteRenderer>();
         isometricPosition = GetComponent<IsometricPositionHandler>();
 
-        // IsometricPositionHandler°¡ ¾øÀ¸¸é Ãß°¡
+        // IsometricPositionHandlerê°€ ì—†ìœ¼ë©´ ì¶”ê°€
         if (isometricPosition == null)
         {
             isometricPosition = gameObject.AddComponent<IsometricPositionHandler>();
@@ -53,8 +55,14 @@ public class TowerWeapon : MonoBehaviour
 
     private void SpawnProjectile()
     {
-        // °ø°İÀÌ ºñÈ°¼ºÈ­µÇ¾î ÀÖÀ¸¸é ¹ß»çÃ¼ »ı¼º ºÒ°¡
+        // ê³µê²©ì´ ë¹„í™œì„±í™”ë˜ì–´ ìˆìœ¼ë©´ ë°œì‚¬ì²´ ìƒì„± ë¶ˆê°€
         if (!attackEnabled) return;
+        if (!HasValidWeaponData()) return;
+        if (!IsTargetAttackable())
+        {
+            attackTarget = null;
+            return;
+        }
 
         if (projectilePrefab == null)
         {
@@ -62,22 +70,28 @@ public class TowerWeapon : MonoBehaviour
             return;
         }
 
+        if (spawnPoint == null)
+        {
+            Debug.LogError($"TowerWeapon: {name}ì— spawnPointê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+            return;
+        }
+
         Debug.Log($"Spawning projectile at {spawnPoint.position}");
 
-        // ¹ß»ç À§Ä¡ÀÇ z À§Ä¡ Á¶Á¤ (ÀÌ¼Ò¸ŞÆ®¸¯ ºä)
+        // ë°œì‚¬ ìœ„ì¹˜ì˜ z ìœ„ì¹˜ ì¡°ì • (ì´ì†Œë©”íŠ¸ë¦­ ë·°)
         Vector3 spawnPos = spawnPoint.position;
         spawnPos.z = spawnPos.y;
 
         GameObject projectileObj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
 
-        // ¹ß»çÃ¼¿¡ IsometricPositionHandler Ãß°¡ (¾ø´Â °æ¿ì)
+        // ë°œì‚¬ì²´ì— IsometricPositionHandler ì¶”ê°€ (ì—†ëŠ” ê²½ìš°)
         IsometricPositionHandler projectileIsometric = projectileObj.GetComponent<IsometricPositionHandler>();
         if (projectileIsometric == null)
         {
             projectileIsometric = projectileObj.AddComponent<IsometricPositionHandler>();
         }
 
-        // ProjectileBase ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+        // ProjectileBase ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
         ProjectileBase projectileScript = projectileObj.GetComponent<ProjectileBase>();
 
         if (projectileScript == null)
@@ -87,7 +101,7 @@ public class TowerWeapon : MonoBehaviour
             return;
         }
 
-        // ÁÂ¿ì¹İÀü »óÅÂ Àû¿ë
+        // ì¢Œìš°ë°˜ì „ ìƒíƒœ ì ìš©
         if (isFlipped)
         {
             SpriteRenderer projRenderer = projectileObj.GetComponent<SpriteRenderer>();
@@ -97,79 +111,90 @@ public class TowerWeapon : MonoBehaviour
             }
             else
             {
-                // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯°¡ ¾øÀ¸¸é ½ºÄÉÀÏ·Î ¹İÀü
+                // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ê°€ ì—†ìœ¼ë©´ ìŠ¤ì¼€ì¼ë¡œ ë°˜ì „
                 Vector3 scale = projectileObj.transform.localScale;
                 scale.x = -Mathf.Abs(scale.x);
                 projectileObj.transform.localScale = scale;
             }
 
-            // ¹ß»ç ¹æÇâ ¹İÀü (ÇÊ¿ä½Ã)
+            // ë°œì‚¬ ë°©í–¥ ë°˜ì „ (í•„ìš”ì‹œ)
             ProjectileStraight straightProjectile = projectileObj.GetComponent<ProjectileStraight>();
             if (straightProjectile != null)
             {
-                // SetFlipDirection ¸Ş¼Òµå°¡ ÀÖ´ÂÁö È®ÀÎÇÏ°í È£Ãâ
-                System.Reflection.MethodInfo methodInfo = straightProjectile.GetType().GetMethod("SetFlipDirection");
-                if (methodInfo != null)
-                {
-                    methodInfo.Invoke(straightProjectile, new object[] { true });
-                }
+                straightProjectile.SetFlipDirection(isFlipped);
             }
         }
 
-        // ¹ß»çÃ¼ ¼³Á¤
+        // ë°œì‚¬ì²´ ì„¤ì •
         projectileScript.Setup(attackTarget, towerTemplate.weapons[level].damage);
     }
 
-    public void Setup(TowerTemplate template, EnemySpawner enemySpawner, PlayerGold playerGold, Vector3 worldPosition)
+    public void Setup(TowerTemplate template, EnemySpawner enemySpawner, PlayerGold playerGold, TowerSpawner towerSpawner, Vector3 worldPosition)
     {
         towerTemplate = template;
         Debug.Log("TowerWeapon Setup called!");
         this.enemySpawner = enemySpawner;
         this.playerGold = playerGold;
+        this.towerSpawner = towerSpawner;
 
-        // ÀÌ¼Ò¸ŞÆ®¸¯ ºä¿¡ ¸Â°Ô z À§Ä¡ Á¶Á¤
+        if (!HasValidWeaponData())
+        {
+            Debug.LogError($"TowerWeapon: {name}ì— ìœ íš¨í•œ TowerTemplate/Weapon ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
+            return;
+        }
+
+        // ì´ì†Œë©”íŠ¸ë¦­ ë·°ì— ë§ê²Œ z ìœ„ì¹˜ ì¡°ì •
         worldPosition.z = worldPosition.y;
         transform.position = worldPosition;
 
-        spriteRenderer.sprite = towerTemplate.weapons[level].sprite;
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sprite = towerTemplate.weapons[level].sprite;
+        }
+
         ChangeState(WeaponState.SearchTarget);
     }
 
-    // ÁÂ¿ì¹İÀü ¼³Á¤ ¸Ş¼Òµå (¿ÜºÎ¿¡¼­ È£Ãâ °¡´É)
+    public void Setup(TowerTemplate template, EnemySpawner enemySpawner, PlayerGold playerGold, Vector3 worldPosition)
+    {
+        Setup(template, enemySpawner, playerGold, null, worldPosition);
+    }
+
+    // ì¢Œìš°ë°˜ì „ ì„¤ì • ë©”ì†Œë“œ (ì™¸ë¶€ì—ì„œ í˜¸ì¶œ ê°€ëŠ¥)
     public void SetFlipped(bool flipped)
     {
         isFlipped = flipped;
 
-        // ¸ğµç ½ºÇÁ¶óÀÌÆ® ·»´õ·¯ ¹İÀü Àû¿ë
+        // ëª¨ë“  ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ ë°˜ì „ ì ìš©
         UpdateFlipState();
     }
 
-    // ÁÂ¿ì¹İÀü »óÅÂ Åä±Û
+    // ì¢Œìš°ë°˜ì „ ìƒíƒœ í† ê¸€
     public void ToggleFlip()
     {
         isFlipped = !isFlipped;
         UpdateFlipState();
     }
 
-    // ÁÂ¿ì¹İÀü »óÅÂ ¾÷µ¥ÀÌÆ®
+    // ì¢Œìš°ë°˜ì „ ìƒíƒœ ì—…ë°ì´íŠ¸
     private void UpdateFlipState()
     {
-        // ±âº» ½ºÇÁ¶óÀÌÆ® ·»´õ·¯°¡ ÀÖÀ¸¸é ¹İÀü
+        // ê¸°ë³¸ ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ê°€ ìˆìœ¼ë©´ ë°˜ì „
         if (spriteRenderer != null)
         {
             spriteRenderer.flipX = isFlipped;
         }
 
-        // ¸ğµç ÀÚ½Ä ½ºÇÁ¶óÀÌÆ® ·»´õ·¯µµ ¹İÀü
+        // ëª¨ë“  ìì‹ ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ë„ ë°˜ì „
         foreach (SpriteRenderer renderer in childRenderers)
         {
-            if (renderer != null && renderer != spriteRenderer) // Áßº¹ ¹æÁö
+            if (renderer != null && renderer != spriteRenderer) // ì¤‘ë³µ ë°©ì§€
             {
                 renderer.flipX = isFlipped;
             }
         }
 
-        // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯°¡ ¾ø°Å³ª Ãß°¡ ¹İÀüÀÌ ÇÊ¿äÇÑ °æ¿ì ½ºÄÉÀÏµµ Á¶Á¤
+        // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ê°€ ì—†ê±°ë‚˜ ì¶”ê°€ ë°˜ì „ì´ í•„ìš”í•œ ê²½ìš° ìŠ¤ì¼€ì¼ë„ ì¡°ì •
         if (spriteRenderer == null || !spriteRenderer.flipX)
         {
             Vector3 scale = transform.localScale;
@@ -177,11 +202,11 @@ public class TowerWeapon : MonoBehaviour
             transform.localScale = scale;
         }
 
-        // ½ºÆù Æ÷ÀÎÆ® À§Ä¡ Á¶Á¤ (ÇÊ¿ä½Ã)
+        // ìŠ¤í° í¬ì¸íŠ¸ ìœ„ì¹˜ ì¡°ì • (í•„ìš”ì‹œ)
         if (spawnPoint != null)
         {
-            // ½ºÆù Æ÷ÀÎÆ®°¡ ·ÎÄÃ À§Ä¡¿¡ ÀÖ´Â °æ¿ì, x ¹İÀüÀÌ ÇÊ¿äÇÒ ¼ö ÀÖÀ½
-            // »óÈ²¿¡ µû¶ó ´ÙÀ½ ÄÚµå È°¼ºÈ­
+            // ìŠ¤í° í¬ì¸íŠ¸ê°€ ë¡œì»¬ ìœ„ì¹˜ì— ìˆëŠ” ê²½ìš°, x ë°˜ì „ì´ í•„ìš”í•  ìˆ˜ ìˆìŒ
+            // ìƒí™©ì— ë”°ë¼ ë‹¤ìŒ ì½”ë“œ í™œì„±í™”
             /*
             Vector3 localPos = spawnPoint.localPosition;
             localPos.x = isFlipped ? -Mathf.Abs(localPos.x) : Mathf.Abs(localPos.x);
@@ -193,9 +218,23 @@ public class TowerWeapon : MonoBehaviour
     public void ChangeState(WeaponState newstate)
     {
         Debug.Log($"Changing state to {newstate}");
-        StopCoroutine(weaponState.ToString());
+        StopStateRoutine();
         weaponState = newstate;
-        StartCoroutine(weaponState.ToString());
+
+        if (!isActiveAndEnabled)
+        {
+            return;
+        }
+
+        switch (weaponState)
+        {
+            case WeaponState.SearchTarget:
+                stateRoutine = StartCoroutine(SearchTarget());
+                break;
+            case WeaponState.AttackToTarget:
+                stateRoutine = StartCoroutine(AttackToTarget());
+                break;
+        }
     }
 
     // Update is called once per frame
@@ -203,58 +242,58 @@ public class TowerWeapon : MonoBehaviour
     {
         if (attackTarget != null)
         {
-            // RotateToTarget(); // ±âÁ¸ ÄÚµå
-            FlipToTarget(); // »õ ÄÚµå - È¸Àü ´ë½Å ÁÂ¿ì¹İÀü
+            // RotateToTarget(); // ê¸°ì¡´ ì½”ë“œ
+            FlipToTarget(); // ìƒˆ ì½”ë“œ - íšŒì „ ëŒ€ì‹  ì¢Œìš°ë°˜ì „
         }
 
-        // ÀÌ¼Ò¸ŞÆ®¸¯ ºä¿¡ ¸Â°Ô z À§Ä¡ Á¶Á¤ (¸Å ÇÁ·¹ÀÓ)
+        // ì´ì†Œë©”íŠ¸ë¦­ ë·°ì— ë§ê²Œ z ìœ„ì¹˜ ì¡°ì • (ë§¤ í”„ë ˆì„)
         Vector3 position = transform.position;
         position.z = position.y;
         transform.position = position;
     }
 
-    // ±âÁ¸ RotateToTarget ¸Ş¼­µå¸¦ FlipToTargetÀ¸·Î ´ëÃ¼
+    // ê¸°ì¡´ RotateToTarget ë©”ì„œë“œë¥¼ FlipToTargetìœ¼ë¡œ ëŒ€ì²´
     private void FlipToTarget()
     {
         if (attackTarget == null) return;
 
-        // ÀûÀÇ À§Ä¡¿Í Å¸¿öÀÇ À§Ä¡¸¦ ºñ±³ÇÏ¿© ¹æÇâ °áÁ¤
+        // ì ì˜ ìœ„ì¹˜ì™€ íƒ€ì›Œì˜ ìœ„ì¹˜ë¥¼ ë¹„êµí•˜ì—¬ ë°©í–¥ ê²°ì •
         float dx = attackTarget.position.x - transform.position.x;
 
-        // dx°¡ À½¼ö¸é ÀûÀÌ ¿ŞÂÊ¿¡ ÀÖ°í, ¾ç¼ö¸é ¿À¸¥ÂÊ¿¡ ÀÖÀ½
+        // dxê°€ ìŒìˆ˜ë©´ ì ì´ ì™¼ìª½ì— ìˆê³ , ì–‘ìˆ˜ë©´ ì˜¤ë¥¸ìª½ì— ìˆìŒ
         bool shouldFaceLeft = dx < 0;
 
-        // ÇöÀç Å¸¿ö°¡ ¿ŞÂÊÀ» º¸°í ÀÖ´ÂÁö È®ÀÎ (flipX°¡ true¸é ¿ŞÂÊ)
+        // í˜„ì¬ íƒ€ì›Œê°€ ì™¼ìª½ì„ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸ (flipXê°€ trueë©´ ì™¼ìª½)
         bool isCurrentlyFacingLeft = false;
 
-        // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯·Î È®ÀÎ
+        // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ë¡œ í™•ì¸
         if (spriteRenderer != null)
         {
             isCurrentlyFacingLeft = spriteRenderer.flipX;
         }
         else
         {
-            // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯°¡ ¾øÀ» °æ¿ì localScale.x·Î È®ÀÎ
+            // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ê°€ ì—†ì„ ê²½ìš° localScale.xë¡œ í™•ì¸
             isCurrentlyFacingLeft = transform.localScale.x < 0;
         }
 
-        // ¹æÇâÀÌ ´Ù¸£¸é ¹İÀü
+        // ë°©í–¥ì´ ë‹¤ë¥´ë©´ ë°˜ì „
         if (shouldFaceLeft != isCurrentlyFacingLeft)
         {
-            // ÁÂ¿ì¹İÀü Àû¿ë
+            // ì¢Œìš°ë°˜ì „ ì ìš©
             if (spriteRenderer != null)
             {
                 spriteRenderer.flipX = shouldFaceLeft;
             }
             else
             {
-                // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯°¡ ¾ø´Â °æ¿ì ½ºÄÉÀÏ »ç¿ë
+                // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ê°€ ì—†ëŠ” ê²½ìš° ìŠ¤ì¼€ì¼ ì‚¬ìš©
                 Vector3 scale = transform.localScale;
                 scale.x = shouldFaceLeft ? -Mathf.Abs(scale.x) : Mathf.Abs(scale.x);
                 transform.localScale = scale;
             }
 
-            // ÀÚ½Ä ½ºÇÁ¶óÀÌÆ® ·»´õ·¯µµ ¹İÀü
+            // ìì‹ ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬ë„ ë°˜ì „
             foreach (SpriteRenderer renderer in childRenderers)
             {
                 if (renderer != null && renderer != spriteRenderer)
@@ -263,11 +302,11 @@ public class TowerWeapon : MonoBehaviour
                 }
             }
 
-            // isFlipped º¯¼ö ¾÷µ¥ÀÌÆ®
+            // isFlipped ë³€ìˆ˜ ì—…ë°ì´íŠ¸
             isFlipped = shouldFaceLeft;
         }
 
-        // È¸ÀüÀº ¼öÇàÇÏÁö ¾ÊÀ½ - ±âÁ¸ ÄÚµå Á¦°Å
+        // íšŒì „ì€ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ - ê¸°ì¡´ ì½”ë“œ ì œê±°
         // transform.rotation = Quaternion.Euler(0, 0, degree);
     }
 
@@ -275,27 +314,46 @@ public class TowerWeapon : MonoBehaviour
     {
         while (true)
         {
-            // °ø°İÀÌ ºñÈ°¼ºÈ­ µÇ¾î ÀÖÀ¸¸é Å½»ö¸¸ ÇÏ°í °ø°İÇÏÁö ¾ÊÀ½
+            // ê³µê²©ì´ ë¹„í™œì„±í™” ë˜ì–´ ìˆìœ¼ë©´ íƒìƒ‰ë§Œ í•˜ê³  ê³µê²©í•˜ì§€ ì•ŠìŒ
             if (!attackEnabled)
             {
                 yield return new WaitForSeconds(0.5f);
                 continue;
             }
 
-            float closetDistSqr = Mathf.Infinity;
-            for (int i = 0; i < enemySpawner.EnemyList.Count; i++) //¸ğµç Àû °Ë»ç
+            if (!HasValidWeaponData() || enemySpawner == null)
             {
-                float distance = Vector3.Distance(enemySpawner.EnemyList[i].transform.position, transform.position);
-                if (distance <= towerTemplate.weapons[level].range && distance <= closetDistSqr)
+                attackTarget = null;
+                yield return new WaitForSeconds(0.25f);
+                continue;
+            }
+
+            attackTarget = null;
+            float closestDistSqr = Mathf.Infinity;
+            float range = towerTemplate.weapons[level].range;
+            float rangeSqr = range * range;
+            List<Enemy> enemies = enemySpawner.EnemyList;
+
+            for (int i = 0; i < enemies.Count; i++) //ëª¨ë“  ì  ê²€ì‚¬
+            {
+                Enemy enemy = enemies[i];
+                if (enemy == null)
                 {
-                    closetDistSqr = distance;
-                    attackTarget = enemySpawner.EnemyList[i].transform;
+                    continue;
+                }
+
+                float distanceSqr = (enemy.transform.position - transform.position).sqrMagnitude;
+                if (distanceSqr <= rangeSqr && distanceSqr <= closestDistSqr)
+                {
+                    closestDistSqr = distanceSqr;
+                    attackTarget = enemy.transform;
                 }
             }
+
             if (attackTarget != null && attackEnabled)
             {
                 Debug.Log($"Target found: {attackTarget.name}");
-                ChangeState(WeaponState.AttackToTarget); // ÇØ´ç Å¸°Ù °ø°İ
+                ChangeState(WeaponState.AttackToTarget); // í•´ë‹¹ íƒ€ê²Ÿ ê³µê²©
             }
 
             yield return null;
@@ -306,44 +364,50 @@ public class TowerWeapon : MonoBehaviour
     {
         while (true)
         {
-            // °ø°İÀÌ ºñÈ°¼ºÈ­µÇ¾î ÀÖÀ¸¸é Å½»ö »óÅÂ·Î µ¹¾Æ°¨
+            // ê³µê²©ì´ ë¹„í™œì„±í™”ë˜ì–´ ìˆìœ¼ë©´ íƒìƒ‰ ìƒíƒœë¡œ ëŒì•„ê°
             if (!attackEnabled)
             {
                 ChangeState(WeaponState.SearchTarget);
                 break;
             }
 
-            if (attackTarget == null) // target ÀÖ´ÂÁö È®ÀÎ
-            {
-                ChangeState(WeaponState.SearchTarget);
-                break;
-            }
-
-            float distance = Vector3.Distance(attackTarget.position, transform.position);
-            if (distance > towerTemplate.weapons[level].range) //targetÀÌ °ø°İ ¹üÀ§º¸´Ù ¸Ö °æ¿ì »õ·Î¿î Àû Å½»ö
+            if (!HasValidWeaponData() || !IsTargetAttackable()) // target ìˆëŠ”ì§€ í™•ì¸
             {
                 attackTarget = null;
                 ChangeState(WeaponState.SearchTarget);
                 break;
             }
 
-            yield return new WaitForSeconds(towerTemplate.weapons[level].rate);
+            yield return new WaitForSeconds(Mathf.Max(0.05f, towerTemplate.weapons[level].rate));
 
-            SpawnProjectile(); // ¹ß»çÃ¼ »ı¼º
+            if (!attackEnabled || !IsTargetAttackable())
+            {
+                attackTarget = null;
+                ChangeState(WeaponState.SearchTarget);
+                break;
+            }
+
+            SpawnProjectile(); // ë°œì‚¬ì²´ ìƒì„±
         }
     }
 
     public bool Upgrade()
     {
-        if (level + 1 >= towerTemplate.weapons.Count || playerGold.CurrentGold < towerTemplate.weapons[level + 1].cost)
+        if (towerTemplate == null || towerTemplate.weapons == null ||
+            level + 1 >= towerTemplate.weapons.Count ||
+            playerGold == null ||
+            playerGold.CurrentGold < towerTemplate.weapons[level + 1].cost)
         {
             return false;
         }
         level++;
-        spriteRenderer.sprite = towerTemplate.weapons[level].sprite;
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sprite = towerTemplate.weapons[level].sprite;
+        }
         playerGold.CurrentGold -= towerTemplate.weapons[level].cost;
 
-        // ¾÷±×·¹ÀÌµå ÈÄ ÁÂ¿ì¹İÀü »óÅÂ À¯Áö
+        // ì—…ê·¸ë ˆì´ë“œ í›„ ì¢Œìš°ë°˜ì „ ìƒíƒœ ìœ ì§€
         if (isFlipped)
         {
             UpdateFlipState();
@@ -354,28 +418,71 @@ public class TowerWeapon : MonoBehaviour
 
     public void Sell()
     {
-        playerGold.CurrentGold += towerTemplate.weapons[level].sell;
+        if (playerGold != null && HasValidWeaponData())
+        {
+            playerGold.CurrentGold += towerTemplate.weapons[level].sell;
+        }
 
-        Vector3Int cellposition = FindObjectOfType<Grid>().WorldToCell(transform.position);
-        FindObjectOfType<TowerSpawner>().RemoveTower(cellposition);
+        if (towerSpawner != null && towerSpawner.GetTilemap() != null)
+        {
+            Vector3Int cellposition = towerSpawner.GetTilemap().WorldToCell(transform.position);
+            towerSpawner.RemoveTower(cellposition);
+            return;
+        }
 
+        Debug.LogWarning("TowerWeapon: TowerSpawner ì°¸ì¡°ê°€ ì—†ì–´ íƒ€ì›Œ ì˜¤ë¸Œì íŠ¸ë§Œ ì œê±°í•©ë‹ˆë‹¤.");
         Destroy(gameObject);
     }
 
-    // °ø°İ È°¼ºÈ­/ºñÈ°¼ºÈ­ ¸Ş¼Òµå
+    // ê³µê²© í™œì„±í™”/ë¹„í™œì„±í™” ë©”ì†Œë“œ
     public void SetAttackEnabled(bool enabled)
     {
         attackEnabled = enabled;
 
         if (enabled)
         {
-            // °ø°İ È°¼ºÈ­½Ã Å¸°Ù Å½»ö ½ÃÀÛ
+            // ê³µê²© í™œì„±í™”ì‹œ íƒ€ê²Ÿ íƒìƒ‰ ì‹œì‘
             ChangeState(WeaponState.SearchTarget);
         }
         else
         {
-            // °ø°İ ºñÈ°¼ºÈ­½Ã ¸ğµç ÄÚ·çÆ¾ ÁßÁö
-            StopAllCoroutines();
+            attackTarget = null;
+            StopStateRoutine();
         }
+    }
+
+    private bool HasValidWeaponData()
+    {
+        return towerTemplate != null &&
+               towerTemplate.weapons != null &&
+               level >= 0 &&
+               level < towerTemplate.weapons.Count;
+    }
+
+    private bool IsTargetAttackable()
+    {
+        if (attackTarget == null || !HasValidWeaponData())
+        {
+            return false;
+        }
+
+        float range = towerTemplate.weapons[level].range;
+        return (attackTarget.position - transform.position).sqrMagnitude <= range * range;
+    }
+
+    private void StopStateRoutine()
+    {
+        if (stateRoutine == null)
+        {
+            return;
+        }
+
+        StopCoroutine(stateRoutine);
+        stateRoutine = null;
+    }
+
+    private void OnDisable()
+    {
+        StopStateRoutine();
     }
 }

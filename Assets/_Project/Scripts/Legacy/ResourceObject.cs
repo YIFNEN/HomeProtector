@@ -5,46 +5,51 @@ using UnityEngine.Events;
 
 public class ResourceObject : MonoBehaviour
 {
-    [SerializeField] private float maxHP = 100f; // ÃÖ´ë Ã¼·Â
-    [SerializeField] private string resourceName = "Goods"; // ÀçÈ­ ¿ÀºêÁ§Æ® ÀÌ¸§
-    [SerializeField] private GameObject destroyEffect; // ÆÄ±« ½Ã ÀÌÆåÆ®
-    [SerializeField] private bool isInvincible = false; // ¹«Àû ¿©ºÎ (¼±ÅÃÀû)
+    [SerializeField] private float maxHP = 100f; // ìµœëŒ€ ì²´ë ¥
+    [SerializeField] private string resourceName = "Goods"; // ì¬í™” ì˜¤ë¸Œì íŠ¸ ì´ë¦„
+    [SerializeField] private GameObject destroyEffect; // íŒŒê´´ ì‹œ ì´í™íŠ¸
+    [SerializeField] private bool isInvincible = false; // ë¬´ì  ì—¬ë¶€ (ì„ íƒì )
 
     [Header("Isometric Settings")]
-    [SerializeField] private bool updateZPosition = true; // ÀÌ¼Ò¸ŞÆ®¸¯ Z À§Ä¡ ¾÷µ¥ÀÌÆ® ¿©ºÎ
+    [SerializeField] private bool updateZPosition = true; // ì´ì†Œë©”íŠ¸ë¦­ Z ìœ„ì¹˜ ì—…ë°ì´íŠ¸ ì—¬ë¶€
 
     [Header("Events")]
-    public UnityEvent onDamaged; // µ¥¹ÌÁö ¹ŞÀ» ¶§ ÀÌº¥Æ®
-    public UnityEvent onDestroyed; // ÆÄ±«µÉ ¶§ ÀÌº¥Æ®
+    public UnityEvent onDamaged; // ë°ë¯¸ì§€ ë°›ì„ ë•Œ ì´ë²¤íŠ¸
+    public UnityEvent onDestroyed; // íŒŒê´´ë  ë•Œ ì´ë²¤íŠ¸
 
-    private float currentHP; // ÇöÀç Ã¼·Â
-    private SpriteRenderer spriteRenderer; // ½ºÇÁ¶óÀÌÆ® ·»´õ·¯
-    private PlayerGold playerGold; // ÇÃ·¹ÀÌ¾î °ñµå ÂüÁ¶
-    private IsometricPositionHandler isometricPosition; // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯
+    private float currentHP; // í˜„ì¬ ì²´ë ¥
+    private SpriteRenderer spriteRenderer; // ìŠ¤í”„ë¼ì´íŠ¸ ë Œë”ëŸ¬
+    private PlayerGold playerGold; // í”Œë ˆì´ì–´ ê³¨ë“œ ì°¸ì¡°
+    private IsometricPositionHandler isometricPosition; // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬
 
-    // ÃÖ´ë Ã¼·Â ÇÁ·ÎÆÛÆ¼
+    // ìµœëŒ€ ì²´ë ¥ í”„ë¡œí¼í‹°
     public float MaxHP => maxHP;
 
-    // ÇöÀç Ã¼·Â ÇÁ·ÎÆÛÆ¼
+    // í˜„ì¬ ì²´ë ¥ í”„ë¡œí¼í‹°
     public float CurrentHP => currentHP;
 
-    // Ã¼·Â ºñÀ² ÇÁ·ÎÆÛÆ¼ (0~1)
+    // ì²´ë ¥ ë¹„ìœ¨ í”„ë¡œí¼í‹° (0~1)
     public float HealthRatio => currentHP / maxHP;
 
-    // ÀÌ¸§ ÇÁ·ÎÆÛÆ¼
+    // ì´ë¦„ í”„ë¡œí¼í‹°
     public string ResourceName => resourceName;
 
-    // Awake: ÃÊ±âÈ­
+    public void SetResourceName(string newResourceName)
+    {
+        resourceName = string.IsNullOrWhiteSpace(newResourceName) ? "Goods" : newResourceName;
+    }
+
+    // Awake: ì´ˆê¸°í™”
     private void Awake()
     {
         currentHP = maxHP;
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        // ÇÃ·¹ÀÌ¾î °ñµå ¹× HP ÂüÁ¶ Ã£±â
+        // í”Œë ˆì´ì–´ ê³¨ë“œ ë° HP ì°¸ì¡° ì°¾ê¸°
         playerGold = FindObjectOfType<PlayerGold>();
 
 
-        // ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯ °¡Á®¿À°Å³ª »ı¼º
+        // ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬ ê°€ì ¸ì˜¤ê±°ë‚˜ ìƒì„±
         isometricPosition = GetComponent<IsometricPositionHandler>();
         if (isometricPosition == null && updateZPosition)
         {
@@ -52,28 +57,28 @@ public class ResourceObject : MonoBehaviour
         }
     }
 
-    // Start: Ãß°¡ ÃÊ±âÈ­
+    // Start: ì¶”ê°€ ì´ˆê¸°í™”
     private void Start()
     {
-        // »óÅÂ Ç¥½Ã UI ÃÊ±âÈ­ µî ÇÊ¿ä½Ã ¿©±â¿¡ Ãß°¡
+        // ìƒíƒœ í‘œì‹œ UI ì´ˆê¸°í™” ë“± í•„ìš”ì‹œ ì—¬ê¸°ì— ì¶”ê°€
         if (updateZPosition && isometricPosition == null)
         {
-            // Z À§Ä¡ ¼öµ¿ Á¶Á¤
+            // Z ìœ„ì¹˜ ìˆ˜ë™ ì¡°ì •
             UpdateZPosition();
         }
     }
 
-    // Update: Z À§Ä¡ ¾÷µ¥ÀÌÆ®
+    // Update: Z ìœ„ì¹˜ ì—…ë°ì´íŠ¸
     private void Update()
     {
         if (updateZPosition && isometricPosition == null)
         {
-            // Z À§Ä¡ ¼öµ¿ Á¶Á¤
+            // Z ìœ„ì¹˜ ìˆ˜ë™ ì¡°ì •
             UpdateZPosition();
         }
     }
 
-    // Z À§Ä¡ ¼öµ¿ ¾÷µ¥ÀÌÆ® (ÀÌ¼Ò¸ŞÆ®¸¯ ºä)
+    // Z ìœ„ì¹˜ ìˆ˜ë™ ì—…ë°ì´íŠ¸ (ì´ì†Œë©”íŠ¸ë¦­ ë·°)
     private void UpdateZPosition()
     {
         Vector3 position = transform.position;
@@ -81,100 +86,100 @@ public class ResourceObject : MonoBehaviour
         transform.position = position;
     }
 
-    // µ¥¹ÌÁö Ã³¸® ¸Ş¼Òµå
+    // ë°ë¯¸ì§€ ì²˜ë¦¬ ë©”ì†Œë“œ
     public void TakeDamage(float damage)
     {
-        // ¹«Àû »óÅÂ¸é µ¥¹ÌÁö ¹«½Ã
+        // ë¬´ì  ìƒíƒœë©´ ë°ë¯¸ì§€ ë¬´ì‹œ
         if (isInvincible) return;
 
-        // µ¥¹ÌÁö Àû¿ë
+        // ë°ë¯¸ì§€ ì ìš©
         currentHP = Mathf.Max(0, currentHP - damage);
 
-        // µ¥¹ÌÁö ¹Ş¾ÒÀ» ¶§ ÀÌº¥Æ® ¹ß»ı
+        // ë°ë¯¸ì§€ ë°›ì•˜ì„ ë•Œ ì´ë²¤íŠ¸ ë°œìƒ
         onDamaged?.Invoke();
 
-        // µ¥¹ÌÁö È¿°ú Ç¥½Ã
+        // ë°ë¯¸ì§€ íš¨ê³¼ í‘œì‹œ
         StartCoroutine(DamageEffect());
 
-        Debug.Log($"{resourceName}ÀÌ(°¡) {damage}ÀÇ µ¥¹ÌÁö¸¦ ¹ŞÀ½. ³²Àº Ã¼·Â: {currentHP}/{maxHP}");
+        Debug.Log($"{resourceName}ì´(ê°€) {damage}ì˜ ë°ë¯¸ì§€ë¥¼ ë°›ìŒ. ë‚¨ì€ ì²´ë ¥: {currentHP}/{maxHP}");
 
-        // Ã¼·ÂÀÌ 0ÀÌ µÇ¸é ÆÄ±«
+        // ì²´ë ¥ì´ 0ì´ ë˜ë©´ íŒŒê´´
         if (currentHP <= 0)
         {
             DestroyResource();
         }
     }
 
-    // µ¥¹ÌÁö È¿°ú ÄÚ·çÆ¾ (±ôºıÀÓ È¿°ú)
+    // ë°ë¯¸ì§€ íš¨ê³¼ ì½”ë£¨í‹´ (ê¹œë¹¡ì„ íš¨ê³¼)
     private IEnumerator DamageEffect()
     {
         if (spriteRenderer == null) yield break;
 
-        // ¿ø·¡ »ö»ó ÀúÀå
+        // ì›ë˜ ìƒ‰ìƒ ì €ì¥
         Color originalColor = spriteRenderer.color;
 
-        // »¡°£»öÀ¸·Î º¯°æ
+        // ë¹¨ê°„ìƒ‰ìœ¼ë¡œ ë³€ê²½
         spriteRenderer.color = Color.red;
 
-        // Àá½Ã ´ë±â
+        // ì ì‹œ ëŒ€ê¸°
         yield return new WaitForSeconds(0.1f);
 
-        // ¿ø·¡ »ö»óÀ¸·Î º¹±¸
+        // ì›ë˜ ìƒ‰ìƒìœ¼ë¡œ ë³µêµ¬
         spriteRenderer.color = originalColor;
     }
 
-    // ÀçÈ­ ¿ÀºêÁ§Æ® ÆÄ±« ¸Ş¼Òµå
+    // ì¬í™” ì˜¤ë¸Œì íŠ¸ íŒŒê´´ ë©”ì†Œë“œ
     private void DestroyResource()
     {
-        // ÆÄ±« ÀÌº¥Æ® ¹ß»ı
+        // íŒŒê´´ ì´ë²¤íŠ¸ ë°œìƒ
         onDestroyed?.Invoke();
 
-        // ÆÄ±« ÀÌÆåÆ® »ı¼º
+        // íŒŒê´´ ì´í™íŠ¸ ìƒì„±
         if (destroyEffect != null)
         {
-            // ÀÌÆåÆ® »ı¼º ½Ã Z À§Ä¡ Á¶Á¤
+            // ì´í™íŠ¸ ìƒì„± ì‹œ Z ìœ„ì¹˜ ì¡°ì •
             Vector3 effectPosition = transform.position;
             GameObject effect = Instantiate(destroyEffect, effectPosition, Quaternion.identity);
 
-            // ÀÌÆåÆ®¿¡ ÀÌ¼Ò¸ŞÆ®¸¯ À§Ä¡ ÇÚµé·¯ Ãß°¡
+            // ì´í™íŠ¸ì— ì´ì†Œë©”íŠ¸ë¦­ ìœ„ì¹˜ í•¸ë“¤ëŸ¬ ì¶”ê°€
             if (effect.GetComponent<IsometricPositionHandler>() == null)
             {
                 effect.AddComponent<IsometricPositionHandler>();
             }
         }
 
-        // ¿ÀºêÁ§Æ® ÆÄ±«
+        // ì˜¤ë¸Œì íŠ¸ íŒŒê´´
         Destroy(gameObject);
     }
 
-    // Ä¡·á ¸Ş¼Òµå (ÇÊ¿ä½Ã)
+    // ì¹˜ë£Œ ë©”ì†Œë“œ (í•„ìš”ì‹œ)
     public void Heal(float amount)
     {
         currentHP = Mathf.Min(maxHP, currentHP + amount);
-        Debug.Log($"{resourceName}ÀÌ(°¡) {amount}¸¸Å­ È¸º¹µÊ. ÇöÀç Ã¼·Â: {currentHP}/{maxHP}");
+        Debug.Log($"{resourceName}ì´(ê°€) {amount}ë§Œí¼ íšŒë³µë¨. í˜„ì¬ ì²´ë ¥: {currentHP}/{maxHP}");
     }
 
-    // Ã¼·Â ¼³Á¤ ¸Ş¼Òµå
+    // ì²´ë ¥ ì„¤ì • ë©”ì†Œë“œ
     public void SetHealth(float health)
     {
         currentHP = Mathf.Clamp(health, 0, maxHP);
 
-        // Ã¼·ÂÀÌ 0ÀÌ¸é ÆÄ±«
+        // ì²´ë ¥ì´ 0ì´ë©´ íŒŒê´´
         if (currentHP <= 0)
         {
             DestroyResource();
         }
     }
 
-    // ÃÖ´ë Ã¼·Â ¼³Á¤ ¸Ş¼Òµå
+    // ìµœëŒ€ ì²´ë ¥ ì„¤ì • ë©”ì†Œë“œ
     public void SetMaxHealth(float newMaxHP)
     {
-        float ratio = currentHP / maxHP; // ÇöÀç Ã¼·Â ºñÀ² À¯Áö
+        float ratio = currentHP / maxHP; // í˜„ì¬ ì²´ë ¥ ë¹„ìœ¨ ìœ ì§€
         maxHP = newMaxHP;
         currentHP = maxHP * ratio;
     }
 
-    // À§Ä¡ ¼³Á¤ ¸Ş¼Òµå (ÀÌ¼Ò¸ŞÆ®¸¯ Z ÀÚµ¿ Á¶Á¤)
+    // ìœ„ì¹˜ ì„¤ì • ë©”ì†Œë“œ (ì´ì†Œë©”íŠ¸ë¦­ Z ìë™ ì¡°ì •)
     public void SetPosition(Vector3 newPosition)
     {
         if (isometricPosition != null)

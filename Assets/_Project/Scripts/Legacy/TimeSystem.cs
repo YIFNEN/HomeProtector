@@ -11,65 +11,65 @@ public class TimeSystem : MonoBehaviour
 {
     [Header("Time Settings")]
     [SerializeField] private TimeOfDay currentTimeOfDay = TimeOfDay.Morning;
-    [SerializeField] private float morningTransitionDuration = 1.5f; // ¾ÆÄ§ ÀüÈ¯ È¿°ú Áö¼Ó½Ã°£
-    [SerializeField] private float eveningTransitionDuration = 1.5f; // Àú³á ÀüÈ¯ È¿°ú Áö¼Ó½Ã°£
+    [SerializeField] private float morningTransitionDuration = 1.5f; // ì•„ì¹¨ ì „í™˜ íš¨ê³¼ ì§€ì†ì‹œê°„
+    [SerializeField] private float eveningTransitionDuration = 1.5f; // ì €ë… ì „í™˜ íš¨ê³¼ ì§€ì†ì‹œê°„
 
     [Header("Visual Effects")]
-    [SerializeField] private GameObject morningVisualEffect; // ¾ÆÄ§ ÀüÈ¯ ½Ã°¢È¿°ú
-    [SerializeField] private GameObject eveningVisualEffect; // Àú³á ÀüÈ¯ ½Ã°¢È¿°ú
+    [SerializeField] private GameObject morningVisualEffect; // ì•„ì¹¨ ì „í™˜ ì‹œê°íš¨ê³¼
+    [SerializeField] private GameObject eveningVisualEffect; // ì €ë… ì „í™˜ ì‹œê°íš¨ê³¼
 
     [Header("Color Settings")]
-    [SerializeField] private bool useColorTransition = true; // »ö»ó ÀüÈ¯ »ç¿ë ¿©ºÎ
-    [SerializeField] private Color morningBackgroundColor = Color.cyan; // ¾ÆÄ§ ¹è°æ»ö
-    [SerializeField] private Color eveningBackgroundColor = Color.black; // Àú³á ¹è°æ»ö
-    [SerializeField] private Color morningTilemapColor = Color.white; // ¾ÆÄ§ Å¸ÀÏ¸Ê »ö»ó
-    [SerializeField] private Color eveningTilemapColor = new Color(0.5f, 0.5f, 0.5f, 1f); // Àú³á Å¸ÀÏ¸Ê »ö»ó
-    [SerializeField] private List<Tilemap> tilemaps = new List<Tilemap>(); // »ö»óÀ» º¯°æÇÒ Å¸ÀÏ¸Ê ¸®½ºÆ®
-    [SerializeField] private float colorTransitionSpeed = 1.0f; // »ö»ó ÀüÈ¯ ¼Óµµ
+    [SerializeField] private bool useColorTransition = true; // ìƒ‰ìƒ ì „í™˜ ì‚¬ìš© ì—¬ë¶€
+    [SerializeField] private Color morningBackgroundColor = Color.cyan; // ì•„ì¹¨ ë°°ê²½ìƒ‰
+    [SerializeField] private Color eveningBackgroundColor = Color.black; // ì €ë… ë°°ê²½ìƒ‰
+    [SerializeField] private Color morningTilemapColor = Color.white; // ì•„ì¹¨ íƒ€ì¼ë§µ ìƒ‰ìƒ
+    [SerializeField] private Color eveningTilemapColor = new Color(0.5f, 0.5f, 0.5f, 1f); // ì €ë… íƒ€ì¼ë§µ ìƒ‰ìƒ
+    [SerializeField] private List<Tilemap> tilemaps = new List<Tilemap>(); // ìƒ‰ìƒì„ ë³€ê²½í•  íƒ€ì¼ë§µ ë¦¬ìŠ¤íŠ¸
+    [SerializeField] private float colorTransitionSpeed = 1.0f; // ìƒ‰ìƒ ì „í™˜ ì†ë„
 
     [Header("UI References")]
-    [SerializeField] private GameObject morningOnlyUI; // ¾ÆÄ§¿¡¸¸ Ç¥½ÃµÇ´Â UI
-    [SerializeField] private GameObject eveningOnlyUI; // Àú³á¿¡¸¸ Ç¥½ÃµÇ´Â UI
-    [SerializeField] private GameObject panelStage; // ¿şÀÌºê Á¾·á ÈÄ Ç¥½ÃµÉ ½ºÅ×ÀÌÁö ÆĞ³Î
+    [SerializeField] private GameObject morningOnlyUI; // ì•„ì¹¨ì—ë§Œ í‘œì‹œë˜ëŠ” UI
+    [SerializeField] private GameObject eveningOnlyUI; // ì €ë…ì—ë§Œ í‘œì‹œë˜ëŠ” UI
+    [SerializeField] private GameObject panelStage; // ì›¨ì´ë¸Œ ì¢…ë£Œ í›„ í‘œì‹œë  ìŠ¤í…Œì´ì§€ íŒ¨ë„
 
     [Header("System References")]
-    [SerializeField] private WaveSystem waveSystem; // ¿şÀÌºê ½Ã½ºÅÛ ÂüÁ¶
-    [SerializeField] private PlayerGold playerGold; // ÇÃ·¹ÀÌ¾î °ñµå ÂüÁ¶
-    [SerializeField] private PlayerExperience playerExperience; // ÇÃ·¹ÀÌ¾î °æÇèÄ¡ ÂüÁ¶
-    [SerializeField] private MicrophoneSystem microphoneSystem; // ÅëÇÕµÈ ¸¶ÀÌÅ© ½Ã½ºÅÛ
-    [SerializeField] private DayCounterSystem dayCounterSystem; // ÀÏ¼ö °ü¸® ½Ã½ºÅÛ ÂüÁ¶
-    [SerializeField] private WaveResultSystem waveResultSystem; // ¿şÀÌºê °á°ú ½Ã½ºÅÛ ÂüÁ¶
+    [SerializeField] private WaveSystem waveSystem; // ì›¨ì´ë¸Œ ì‹œìŠ¤í…œ ì°¸ì¡°
+    [SerializeField] private PlayerGold playerGold; // í”Œë ˆì´ì–´ ê³¨ë“œ ì°¸ì¡°
+    [SerializeField] private PlayerExperience playerExperience; // í”Œë ˆì´ì–´ ê²½í—˜ì¹˜ ì°¸ì¡°
+    [SerializeField] private MicrophoneSystem microphoneSystem; // í†µí•©ëœ ë§ˆì´í¬ ì‹œìŠ¤í…œ
+    [SerializeField] private DayCounterSystem dayCounterSystem; // ì¼ìˆ˜ ê´€ë¦¬ ì‹œìŠ¤í…œ ì°¸ì¡°
+    [SerializeField] private WaveResultSystem waveResultSystem; // ì›¨ì´ë¸Œ ê²°ê³¼ ì‹œìŠ¤í…œ ì°¸ì¡°
 
     [Header("Layer Settings")]
-    [SerializeField] private bool useLayerBasedActivation = true; // ·¹ÀÌ¾î ±â¹İ È°¼ºÈ­/ºñÈ°¼ºÈ­ »ç¿ë ¿©ºÎ
-    [SerializeField] private string morningOnlyLayerName = "MorningOnly"; // ¾ÆÄ§ Àü¿ë ·¹ÀÌ¾î ÀÌ¸§
-    [SerializeField] private string eveningOnlyLayerName = "EveningOnly"; // Àú³á Àü¿ë ·¹ÀÌ¾î ÀÌ¸§
-    [SerializeField] private string resourceLayerName = "Resource"; // ÀÚ¿ø ·¹ÀÌ¾î ÀÌ¸§
-    [SerializeField] private string towerLayerName = "Tower"; // Å¸¿ö ·¹ÀÌ¾î ÀÌ¸§
+    [SerializeField] private bool useLayerBasedActivation = true; // ë ˆì´ì–´ ê¸°ë°˜ í™œì„±í™”/ë¹„í™œì„±í™” ì‚¬ìš© ì—¬ë¶€
+    [SerializeField] private string morningOnlyLayerName = "MorningOnly"; // ì•„ì¹¨ ì „ìš© ë ˆì´ì–´ ì´ë¦„
+    [SerializeField] private string eveningOnlyLayerName = "EveningOnly"; // ì €ë… ì „ìš© ë ˆì´ì–´ ì´ë¦„
+    [SerializeField] private string resourceLayerName = "Resource"; // ìì› ë ˆì´ì–´ ì´ë¦„
+    [SerializeField] private string towerLayerName = "Tower"; // íƒ€ì›Œ ë ˆì´ì–´ ì´ë¦„
 
     // Events
     public UnityEvent onMorningStart;
     public UnityEvent onEveningStart;
 
-    // ÇöÀç ½Ã°£ ÇÁ·ÎÆÛÆ¼
+    // í˜„ì¬ ì‹œê°„ í”„ë¡œí¼í‹°
     public TimeOfDay CurrentTime => currentTimeOfDay;
 
-    // ½Ã°£ ÀüÈ¯ ÁßÀÎÁö ¿©ºÎ
+    // ì‹œê°„ ì „í™˜ ì¤‘ì¸ì§€ ì—¬ë¶€
     private bool isTransitioning = false;
 
-    // ·¹ÀÌ¾î ÀÎµ¦½º Ä³½Ì
+    // ë ˆì´ì–´ ì¸ë±ìŠ¤ ìºì‹±
     private int morningLayer;
     private int eveningLayer;
     private int resourceLayer;
     private int towerLayer;
 
-    // »ö»ó ÀüÈ¯ ÄÚ·çÆ¾ ÂüÁ¶
+    // ìƒ‰ìƒ ì „í™˜ ì½”ë£¨í‹´ ì°¸ì¡°
     private Coroutine colorTransitionCoroutine;
     private Camera mainCameraCache;
 
     private void Awake()
     {
-        // ½Ã½ºÅÛ ÄÄÆ÷³ÍÆ® Ã£±â
+        // ì‹œìŠ¤í…œ ì»´í¬ë„ŒíŠ¸ ì°¾ê¸°
         if (waveSystem == null) waveSystem = FindObjectOfType<WaveSystem>();
         if (playerGold == null) playerGold = FindObjectOfType<PlayerGold>();
         if (playerExperience == null) playerExperience = FindObjectOfType<PlayerExperience>();
@@ -77,43 +77,43 @@ public class TimeSystem : MonoBehaviour
         if (dayCounterSystem == null) dayCounterSystem = FindObjectOfType<DayCounterSystem>();
         if (waveResultSystem == null) waveResultSystem = FindObjectOfType<WaveResultSystem>();
 
-        // ¸ŞÀÎ Ä«¸Ş¶ó Ä³½Ì
+        // ë©”ì¸ ì¹´ë©”ë¼ ìºì‹±
         mainCameraCache = Camera.main;
 
-        // Å¸ÀÏ¸Ê ÀÚµ¿ Ã£±â (¸®½ºÆ®°¡ ºñ¾îÀÖ´Â °æ¿ì)
+        // íƒ€ì¼ë§µ ìë™ ì°¾ê¸° (ë¦¬ìŠ¤íŠ¸ê°€ ë¹„ì–´ìˆëŠ” ê²½ìš°)
         if (tilemaps.Count == 0)
         {
             Tilemap[] foundTilemaps = FindObjectsOfType<Tilemap>();
             if (foundTilemaps.Length > 0)
             {
                 tilemaps.AddRange(foundTilemaps);
-                Debug.Log($"{foundTilemaps.Length}°³ÀÇ Å¸ÀÏ¸ÊÀ» ÀÚµ¿À¸·Î Ã£¾Ò½À´Ï´Ù.");
+                Debug.Log($"{foundTilemaps.Length}ê°œì˜ íƒ€ì¼ë§µì„ ìë™ìœ¼ë¡œ ì°¾ì•˜ìŠµë‹ˆë‹¤.");
             }
         }
 
-        // ·¹ÀÌ¾î ÀÎµ¦½º Ä³½Ì
+        // ë ˆì´ì–´ ì¸ë±ìŠ¤ ìºì‹±
         morningLayer = LayerMask.NameToLayer(morningOnlyLayerName);
         eveningLayer = LayerMask.NameToLayer(eveningOnlyLayerName);
         resourceLayer = LayerMask.NameToLayer(resourceLayerName);
         towerLayer = LayerMask.NameToLayer(towerLayerName);
 
-        // ·¹ÀÌ¾î°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+        // ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
         if (morningLayer == -1)
-            Debug.LogError($"{morningOnlyLayerName} ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù. Unity¿¡¼­ ·¹ÀÌ¾î¸¦ »ı¼ºÇØÁÖ¼¼¿ä.");
+            Debug.LogError($"{morningOnlyLayerName} ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. Unityì—ì„œ ë ˆì´ì–´ë¥¼ ìƒì„±í•´ì£¼ì„¸ìš”.");
 
         if (eveningLayer == -1)
-            Debug.LogError($"{eveningOnlyLayerName} ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù. Unity¿¡¼­ ·¹ÀÌ¾î¸¦ »ı¼ºÇØÁÖ¼¼¿ä.");
+            Debug.LogError($"{eveningOnlyLayerName} ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. Unityì—ì„œ ë ˆì´ì–´ë¥¼ ìƒì„±í•´ì£¼ì„¸ìš”.");
 
         if (resourceLayer == -1)
-            Debug.LogError($"{resourceLayerName} ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù. Unity¿¡¼­ ·¹ÀÌ¾î¸¦ »ı¼ºÇØÁÖ¼¼¿ä.");
+            Debug.LogError($"{resourceLayerName} ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. Unityì—ì„œ ë ˆì´ì–´ë¥¼ ìƒì„±í•´ì£¼ì„¸ìš”.");
 
         if (towerLayer == -1)
-            Debug.LogError($"{towerLayerName} ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù. Unity¿¡¼­ ·¹ÀÌ¾î¸¦ »ı¼ºÇØÁÖ¼¼¿ä.");
+            Debug.LogError($"{towerLayerName} ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. Unityì—ì„œ ë ˆì´ì–´ë¥¼ ìƒì„±í•´ì£¼ì„¸ìš”.");
 
-        // ÃÊ±â ½Ã°£ ¼³Á¤¿¡ µû¸¥ UI ¼³Á¤
+        // ì´ˆê¸° ì‹œê°„ ì„¤ì •ì— ë”°ë¥¸ UI ì„¤ì •
         UpdateUIBasedOnTime(currentTimeOfDay);
 
-        // ÃÊ±â »ö»ó ¼³Á¤
+        // ì´ˆê¸° ìƒ‰ìƒ ì„¤ì •
         if (useColorTransition)
         {
             ApplyTimeBasedColors(currentTimeOfDay);
@@ -122,7 +122,7 @@ public class TimeSystem : MonoBehaviour
 
     private void Start()
     {
-        // ¿şÀÌºê ½Ã½ºÅÛ ÀÌº¥Æ® ±¸µ¶
+        // ì›¨ì´ë¸Œ ì‹œìŠ¤í…œ ì´ë²¤íŠ¸ êµ¬ë…
         if (waveSystem != null)
         {
             waveSystem.OnWaveStart += HandleWaveStart;
@@ -130,7 +130,7 @@ public class TimeSystem : MonoBehaviour
             waveSystem.OnAllWavesCompleted += HandleAllWavesCompleted;
         }
 
-        // ÃÊ±â ½Ã°£ÀÌ Àú³áÀÌ¸é °ÔÀÓ ½ÃÀÛ ½Ã Àú³á ¸ğµå·Î ¼³Á¤
+        // ì´ˆê¸° ì‹œê°„ì´ ì €ë…ì´ë©´ ê²Œì„ ì‹œì‘ ì‹œ ì €ë… ëª¨ë“œë¡œ ì„¤ì •
         if (currentTimeOfDay == TimeOfDay.Evening)
         {
             SetEveningMode(false);
@@ -143,7 +143,7 @@ public class TimeSystem : MonoBehaviour
 
     private void OnDestroy()
     {
-        // ÀÌº¥Æ® ±¸µ¶ ÇØÁ¦
+        // ì´ë²¤íŠ¸ êµ¬ë… í•´ì œ
         if (waveSystem != null)
         {
             waveSystem.OnWaveStart -= HandleWaveStart;
@@ -151,213 +151,213 @@ public class TimeSystem : MonoBehaviour
             waveSystem.OnAllWavesCompleted -= HandleAllWavesCompleted;
         }
 
-        // ÄÚ·çÆ¾ ÁßÁö
+        // ì½”ë£¨í‹´ ì¤‘ì§€
         if (colorTransitionCoroutine != null)
         {
             StopCoroutine(colorTransitionCoroutine);
         }
     }
 
-    #region ¿şÀÌºê ÀÌº¥Æ® ÇÚµé·¯
+    #region ì›¨ì´ë¸Œ ì´ë²¤íŠ¸ í•¸ë“¤ëŸ¬
 
-    // ¿şÀÌºê ½ÃÀÛ Ã³¸®
+    // ì›¨ì´ë¸Œ ì‹œì‘ ì²˜ë¦¬
     private void HandleWaveStart(int waveNumber, string waveName)
     {
-        // Àú³áÀ¸·Î ÀüÈ¯
+        // ì €ë…ìœ¼ë¡œ ì „í™˜
         StartCoroutine(TransitionToEvening());
     }
 
-    // ¿şÀÌºê Á¾·á Ã³¸®
+    // ì›¨ì´ë¸Œ ì¢…ë£Œ ì²˜ë¦¬
     private void HandleWaveEnd(int waveNumber, string waveName)
     {
-        // ¾ÆÄ§À¸·Î ÀüÈ¯
+        // ì•„ì¹¨ìœ¼ë¡œ ì „í™˜
         StartCoroutine(TransitionToMorning());
 
-        // ¿şÀÌºê Á¾·á ÆĞ³Î Ç¥½Ã
+        // ì›¨ì´ë¸Œ ì¢…ë£Œ íŒ¨ë„ í‘œì‹œ
         if (panelStage != null)
         {
             panelStage.SetActive(true);
         }
 
-        // ¿şÀÌºê ½Â¸®/ÆĞ¹è È®ÀÎ ÈÄ ÀÏ¼ö Áõ°¡ Ã³¸®
+        // ì›¨ì´ë¸Œ ìŠ¹ë¦¬/íŒ¨ë°° í™•ì¸ í›„ ì¼ìˆ˜ ì¦ê°€ ì²˜ë¦¬
         StartCoroutine(HandleDayCounterAfterWaveResult());
     }
 
-    // ¿şÀÌºê °á°ú È®ÀÎ ÈÄ ÀÏ¼ö Áõ°¡ Ã³¸® ÄÚ·çÆ¾
+    // ì›¨ì´ë¸Œ ê²°ê³¼ í™•ì¸ í›„ ì¼ìˆ˜ ì¦ê°€ ì²˜ë¦¬ ì½”ë£¨í‹´
     private IEnumerator HandleDayCounterAfterWaveResult()
     {
-        // ¿şÀÌºê °á°ú Ã³¸® ´ë±â (½Â¸®/ÆĞ¹è ÆÇÁ¤¿¡ ½Ã°£ÀÌ ÇÊ¿äÇÒ ¼ö ÀÖÀ½)
+        // ì›¨ì´ë¸Œ ê²°ê³¼ ì²˜ë¦¬ ëŒ€ê¸° (ìŠ¹ë¦¬/íŒ¨ë°° íŒì •ì— ì‹œê°„ì´ í•„ìš”í•  ìˆ˜ ìˆìŒ)
         yield return new WaitForSeconds(1f);
 
-        // ÀÏ¼ö Áõ°¡ Ã³¸® (Ã¹ ¹øÂ° ¿şÀÌºê°¡ ¾Æ´Ñ °æ¿ì)
+        // ì¼ìˆ˜ ì¦ê°€ ì²˜ë¦¬ (ì²« ë²ˆì§¸ ì›¨ì´ë¸Œê°€ ì•„ë‹Œ ê²½ìš°)
         if (waveSystem != null && waveSystem.CurrentWave > 1 && dayCounterSystem != null)
         {
-            // ÀÏ¼ö Áõ°¡
+            // ì¼ìˆ˜ ì¦ê°€
             dayCounterSystem.IncrementDay();
         }
     }
 
-    // ¸ğµç ¿şÀÌºê ¿Ï·á Ã³¸®
+    // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ ì²˜ë¦¬
     private void HandleAllWavesCompleted()
     {
-        // ¸ğµç ¿şÀÌºê ¿Ï·á ½Ã Æ¯º° Ã³¸®
-        // ex) °ÔÀÓ Å¬¸®¾î È­¸é ¶Ç´Â ´ÙÀ½ ½ºÅ×ÀÌÁö µî
-        Debug.Log("¸ğµç ¿şÀÌºê ¿Ï·áµÊ! °ÔÀÓ Å¬¸®¾î ¶Ç´Â ´ÙÀ½ ½ºÅ×ÀÌÁö·Î ÁøÇà");
+        // ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œ ì‹œ íŠ¹ë³„ ì²˜ë¦¬
+        // ex) ê²Œì„ í´ë¦¬ì–´ í™”ë©´ ë˜ëŠ” ë‹¤ìŒ ìŠ¤í…Œì´ì§€ ë“±
+        Debug.Log("ëª¨ë“  ì›¨ì´ë¸Œ ì™„ë£Œë¨! ê²Œì„ í´ë¦¬ì–´ ë˜ëŠ” ë‹¤ìŒ ìŠ¤í…Œì´ì§€ë¡œ ì§„í–‰");
     }
 
     #endregion
 
-    #region ½Ã°£ ÀüÈ¯ °ü¸®
+    #region ì‹œê°„ ì „í™˜ ê´€ë¦¬
 
-    // Àú³áÀ¸·Î ÀüÈ¯ÇÏ´Â ÄÚ·çÆ¾
+    // ì €ë…ìœ¼ë¡œ ì „í™˜í•˜ëŠ” ì½”ë£¨í‹´
     public IEnumerator TransitionToEvening()
     {
         if (isTransitioning || currentTimeOfDay == TimeOfDay.Evening) yield break;
 
         isTransitioning = true;
 
-        // ÀüÈ¯ È¿°ú Ç¥½Ã
+        // ì „í™˜ íš¨ê³¼ í‘œì‹œ
         if (eveningVisualEffect != null)
         {
             eveningVisualEffect.SetActive(true);
         }
 
-        // »ö»ó ÀüÈ¯ ½ÃÀÛ (¹è°æ»ö°ú Å¸ÀÏ¸Ê »ö»ó)
+        // ìƒ‰ìƒ ì „í™˜ ì‹œì‘ (ë°°ê²½ìƒ‰ê³¼ íƒ€ì¼ë§µ ìƒ‰ìƒ)
         if (useColorTransition)
         {
             StartColorTransition(TimeOfDay.Evening);
         }
 
-        // ÀüÈ¯ Áö¿¬
+        // ì „í™˜ ì§€ì—°
         yield return new WaitForSeconds(eveningTransitionDuration);
 
-        // ÀüÈ¯ È¿°ú Á¾·á
+        // ì „í™˜ íš¨ê³¼ ì¢…ë£Œ
         if (eveningVisualEffect != null)
         {
             eveningVisualEffect.SetActive(false);
         }
 
-        // Àú³á ¸ğµå ¼³Á¤
+        // ì €ë… ëª¨ë“œ ì„¤ì •
         SetEveningMode();
 
         isTransitioning = false;
     }
 
-    // ¾ÆÄ§À¸·Î ÀüÈ¯ÇÏ´Â ÄÚ·çÆ¾
+    // ì•„ì¹¨ìœ¼ë¡œ ì „í™˜í•˜ëŠ” ì½”ë£¨í‹´
     public IEnumerator TransitionToMorning()
     {
         if (isTransitioning || currentTimeOfDay == TimeOfDay.Morning) yield break;
 
         isTransitioning = true;
 
-        // ÀüÈ¯ È¿°ú Ç¥½Ã
+        // ì „í™˜ íš¨ê³¼ í‘œì‹œ
         if (morningVisualEffect != null)
         {
             morningVisualEffect.SetActive(true);
         }
 
-        // »ö»ó ÀüÈ¯ ½ÃÀÛ (¹è°æ»ö°ú Å¸ÀÏ¸Ê »ö»ó)
+        // ìƒ‰ìƒ ì „í™˜ ì‹œì‘ (ë°°ê²½ìƒ‰ê³¼ íƒ€ì¼ë§µ ìƒ‰ìƒ)
         if (useColorTransition)
         {
             StartColorTransition(TimeOfDay.Morning);
         }
 
-        // ÀüÈ¯ Áö¿¬
+        // ì „í™˜ ì§€ì—°
         yield return new WaitForSeconds(morningTransitionDuration);
 
-        // ÀüÈ¯ È¿°ú Á¾·á
+        // ì „í™˜ íš¨ê³¼ ì¢…ë£Œ
         if (morningVisualEffect != null)
         {
             morningVisualEffect.SetActive(false);
         }
 
-        // ¾ÆÄ§ ¸ğµå ¼³Á¤
+        // ì•„ì¹¨ ëª¨ë“œ ì„¤ì •
         SetMorningMode();
 
         isTransitioning = false;
     }
 
-    // Àú³á ¸ğµå ¼³Á¤
+    // ì €ë… ëª¨ë“œ ì„¤ì •
     public void SetEveningMode(bool withEvents = true)
     {
         currentTimeOfDay = TimeOfDay.Evening;
 
-        // UI ¾÷µ¥ÀÌÆ®
+        // UI ì—…ë°ì´íŠ¸
         UpdateUIBasedOnTime(TimeOfDay.Evening);
 
-        // ·¹ÀÌ¾î ±â¹İ È°¼ºÈ­/ºñÈ°¼ºÈ­ ¾÷µ¥ÀÌÆ®
+        // ë ˆì´ì–´ ê¸°ë°˜ í™œì„±í™”/ë¹„í™œì„±í™” ì—…ë°ì´íŠ¸
         if (useLayerBasedActivation)
         {
             UpdateLayersBasedOnTime(TimeOfDay.Evening);
         }
 
-        // °ÔÀÓÇÃ·¹ÀÌ ¿ä¼Ò ¾÷µ¥ÀÌÆ®
+        // ê²Œì„í”Œë ˆì´ ìš”ì†Œ ì—…ë°ì´íŠ¸
         UpdateGameplayForEvening();
 
-        // ¾Ö´Ï¸ŞÀÌ¼Ç ¾øÀÌ ¹Ù·Î »ö»ó Àû¿ë
+        // ì• ë‹ˆë©”ì´ì…˜ ì—†ì´ ë°”ë¡œ ìƒ‰ìƒ ì ìš©
         if (useColorTransition && !isTransitioning)
         {
             ApplyTimeBasedColors(TimeOfDay.Evening);
         }
 
-        // ÀÌº¥Æ® ¹ß»ı
+        // ì´ë²¤íŠ¸ ë°œìƒ
         if (withEvents)
         {
             onEveningStart?.Invoke();
         }
 
-        Debug.Log("Àú³áÀ¸·Î ÀüÈ¯µÊ: ÀüÅõ ½ÃÀÛ");
+        Debug.Log("ì €ë…ìœ¼ë¡œ ì „í™˜ë¨: ì „íˆ¬ ì‹œì‘");
     }
 
-    // ¾ÆÄ§ ¸ğµå ¼³Á¤
+    // ì•„ì¹¨ ëª¨ë“œ ì„¤ì •
     public void SetMorningMode(bool withEvents = true)
     {
         currentTimeOfDay = TimeOfDay.Morning;
 
-        // UI ¾÷µ¥ÀÌÆ®
+        // UI ì—…ë°ì´íŠ¸
         UpdateUIBasedOnTime(TimeOfDay.Morning);
 
-        // ·¹ÀÌ¾î ±â¹İ È°¼ºÈ­/ºñÈ°¼ºÈ­ ¾÷µ¥ÀÌÆ®
+        // ë ˆì´ì–´ ê¸°ë°˜ í™œì„±í™”/ë¹„í™œì„±í™” ì—…ë°ì´íŠ¸
         if (useLayerBasedActivation)
         {
             UpdateLayersBasedOnTime(TimeOfDay.Morning);
         }
 
-        // °ÔÀÓÇÃ·¹ÀÌ ¿ä¼Ò ¾÷µ¥ÀÌÆ®
+        // ê²Œì„í”Œë ˆì´ ìš”ì†Œ ì—…ë°ì´íŠ¸
         UpdateGameplayForMorning();
 
-        // ¾Ö´Ï¸ŞÀÌ¼Ç ¾øÀÌ ¹Ù·Î »ö»ó Àû¿ë
+        // ì• ë‹ˆë©”ì´ì…˜ ì—†ì´ ë°”ë¡œ ìƒ‰ìƒ ì ìš©
         if (useColorTransition && !isTransitioning)
         {
             ApplyTimeBasedColors(TimeOfDay.Morning);
         }
 
-        // ÀÌº¥Æ® ¹ß»ı
+        // ì´ë²¤íŠ¸ ë°œìƒ
         if (withEvents)
         {
             onMorningStart?.Invoke();
         }
 
-        Debug.Log("¾ÆÄ§À¸·Î ÀüÈ¯µÊ: ÁØºñ ´Ü°è");
+        Debug.Log("ì•„ì¹¨ìœ¼ë¡œ ì „í™˜ë¨: ì¤€ë¹„ ë‹¨ê³„");
     }
 
     #endregion
 
-    #region »ö»ó ÀüÈ¯ °ü¸®
+    #region ìƒ‰ìƒ ì „í™˜ ê´€ë¦¬
 
-    // »ö»ó ÀüÈ¯ ½ÃÀÛ
+    // ìƒ‰ìƒ ì „í™˜ ì‹œì‘
     private void StartColorTransition(TimeOfDay targetTime)
     {
         if (mainCameraCache == null) mainCameraCache = Camera.main;
         if (mainCameraCache == null) return;
 
-        // ±âÁ¸ ÄÚ·çÆ¾ ÁßÁö
+        // ê¸°ì¡´ ì½”ë£¨í‹´ ì¤‘ì§€
         if (colorTransitionCoroutine != null)
         {
             StopCoroutine(colorTransitionCoroutine);
         }
 
-        // »õ ÄÚ·çÆ¾ ½ÃÀÛ
+        // ìƒˆ ì½”ë£¨í‹´ ì‹œì‘
         colorTransitionCoroutine = StartCoroutine(
             SwapColor(
                 targetTime == TimeOfDay.Morning ? eveningBackgroundColor : morningBackgroundColor,
@@ -368,7 +368,7 @@ public class TimeSystem : MonoBehaviour
         );
     }
 
-    // »ö»ó ÀüÈ¯ ÄÚ·çÆ¾ (¹è°æ ¹× Å¸ÀÏ¸Ê)
+    // ìƒ‰ìƒ ì „í™˜ ì½”ë£¨í‹´ (ë°°ê²½ ë° íƒ€ì¼ë§µ)
     private IEnumerator SwapColor(Color startBg, Color endBg, Color startTile, Color endTile)
     {
         float t = 0;
@@ -378,13 +378,13 @@ public class TimeSystem : MonoBehaviour
         {
             t += Time.deltaTime / (duration * colorTransitionSpeed);
 
-            // ¹è°æ»ö º¯°æ
+            // ë°°ê²½ìƒ‰ ë³€ê²½
             if (mainCameraCache != null)
             {
                 mainCameraCache.backgroundColor = Color.Lerp(startBg, endBg, t);
             }
 
-            // ¸ğµç Å¸ÀÏ¸ÊÀÇ »ö»ó º¯°æ
+            // ëª¨ë“  íƒ€ì¼ë§µì˜ ìƒ‰ìƒ ë³€ê²½
             foreach (var tilemap in tilemaps)
             {
                 if (tilemap != null)
@@ -396,7 +396,7 @@ public class TimeSystem : MonoBehaviour
             yield return null;
         }
 
-        // ÃÖÁ¾ »ö»ó Àû¿ë
+        // ìµœì¢… ìƒ‰ìƒ ì ìš©
         if (mainCameraCache != null)
         {
             mainCameraCache.backgroundColor = endBg;
@@ -413,19 +413,19 @@ public class TimeSystem : MonoBehaviour
         colorTransitionCoroutine = null;
     }
 
-    // ½Ã°£¿¡ µû¸¥ »ö»ó Áï½Ã Àû¿ë (¾Ö´Ï¸ŞÀÌ¼Ç ¾øÀÌ)
+    // ì‹œê°„ì— ë”°ë¥¸ ìƒ‰ìƒ ì¦‰ì‹œ ì ìš© (ì• ë‹ˆë©”ì´ì…˜ ì—†ì´)
     private void ApplyTimeBasedColors(TimeOfDay time)
     {
         if (mainCameraCache == null) mainCameraCache = Camera.main;
         if (mainCameraCache == null) return;
 
-        // ¹è°æ»ö ¼³Á¤
+        // ë°°ê²½ìƒ‰ ì„¤ì •
         if (mainCameraCache != null)
         {
             mainCameraCache.backgroundColor = time == TimeOfDay.Morning ? morningBackgroundColor : eveningBackgroundColor;
         }
 
-        // Å¸ÀÏ¸Ê »ö»ó ¼³Á¤
+        // íƒ€ì¼ë§µ ìƒ‰ìƒ ì„¤ì •
         Color tileColor = time == TimeOfDay.Morning ? morningTilemapColor : eveningTilemapColor;
         foreach (var tilemap in tilemaps)
         {
@@ -438,12 +438,12 @@ public class TimeSystem : MonoBehaviour
 
     #endregion
 
-    #region UI ¹× °ÔÀÓÇÃ·¹ÀÌ ¾÷µ¥ÀÌÆ®
+    #region UI ë° ê²Œì„í”Œë ˆì´ ì—…ë°ì´íŠ¸
 
-    // ½Ã°£¿¡ µû¸¥ UI ¾÷µ¥ÀÌÆ®
+    // ì‹œê°„ì— ë”°ë¥¸ UI ì—…ë°ì´íŠ¸
     private void UpdateUIBasedOnTime(TimeOfDay time)
     {
-        // ½Ã°£¿¡ µû¸¥ UI Ç¥½Ã/¼û±è
+        // ì‹œê°„ì— ë”°ë¥¸ UI í‘œì‹œ/ìˆ¨ê¹€
         if (morningOnlyUI != null)
         {
             morningOnlyUI.SetActive(time == TimeOfDay.Morning);
@@ -455,12 +455,12 @@ public class TimeSystem : MonoBehaviour
         }
     }
 
-    // ·¹ÀÌ¾î ±â¹İ ¿ÀºêÁ§Æ® È°¼ºÈ­/ºñÈ°¼ºÈ­ ¾÷µ¥ÀÌÆ®
+    // ë ˆì´ì–´ ê¸°ë°˜ ì˜¤ë¸Œì íŠ¸ í™œì„±í™”/ë¹„í™œì„±í™” ì—…ë°ì´íŠ¸
     private void UpdateLayersBasedOnTime(TimeOfDay time)
     {
         if (morningLayer < 0 || eveningLayer < 0)
         {
-            Debug.LogWarning("MorningOnly ¶Ç´Â EveningOnly ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.");
+            Debug.LogWarning("MorningOnly ë˜ëŠ” EveningOnly ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -476,87 +476,87 @@ public class TimeSystem : MonoBehaviour
         }
     }
 
-    // ¾ÆÄ§ ¸ğµåÀÇ °ÔÀÓÇÃ·¹ÀÌ ¾÷µ¥ÀÌÆ®
+    // ì•„ì¹¨ ëª¨ë“œì˜ ê²Œì„í”Œë ˆì´ ì—…ë°ì´íŠ¸
     private void UpdateGameplayForMorning()
     {
-        // ·¹ÀÌ¾î ±â¹İ ÀÚ¿ø ¿ÀºêÁ§Æ® µå·¡±× ¹× È¸Àü È°¼ºÈ­
+        // ë ˆì´ì–´ ê¸°ë°˜ ìì› ì˜¤ë¸Œì íŠ¸ ë“œë˜ê·¸ ë° íšŒì „ í™œì„±í™”
         SetResourceObjectsByLayerDraggable(true);
 
-        // ·¹ÀÌ¾î ±â¹İ Å¸¿ö °ø°İ ºñÈ°¼ºÈ­
+        // ë ˆì´ì–´ ê¸°ë°˜ íƒ€ì›Œ ê³µê²© ë¹„í™œì„±í™”
         SetTowerAttackEnabledByLayer(false);
 
-        // Å¸¿ö ±¸¸Å/ÆÇ¸Å ±â´É È°¼ºÈ­
+        // íƒ€ì›Œ êµ¬ë§¤/íŒë§¤ ê¸°ëŠ¥ í™œì„±í™”
         SetTowerTradeEnabled(true);
 
-        // Å¸¿ö ¾÷±×·¹ÀÌµå È°¼ºÈ­
+        // íƒ€ì›Œ ì—…ê·¸ë ˆì´ë“œ í™œì„±í™”
         SetTowerUpgradeEnabledByLayer(true);
 
-        // ÇÃ·¹ÀÌ¾î °ü·Ã ¼³Á¤ (MicrophoneSystem »ç¿ë)
+        // í”Œë ˆì´ì–´ ê´€ë ¨ ì„¤ì • (MicrophoneSystem ì‚¬ìš©)
         HandlePlayerSettings(true, false);
 
-        // ¸¶ÀÌÅ© ½Ã½ºÅÛ È°¼ºÈ­ »óÅÂ ¼³Á¤
+        // ë§ˆì´í¬ ì‹œìŠ¤í…œ í™œì„±í™” ìƒíƒœ ì„¤ì •
         if (microphoneSystem != null)
         {
-            // ¸¶ÀÌÅ© ½Ã½ºÅÛ ÀÚÃ¼´Â ÀÌº¥Æ®¸¦ ÅëÇØ Ã³¸®µÊ (OnMorningStart¿¡¼­)
+            // ë§ˆì´í¬ ì‹œìŠ¤í…œ ìì²´ëŠ” ì´ë²¤íŠ¸ë¥¼ í†µí•´ ì²˜ë¦¬ë¨ (OnMorningStartì—ì„œ)
             microphoneSystem.SetPlayerActivationEnabled(false);
         }
 
-        // ÇÇ·Îµµ ¸®¼Â (¿şÀÌºê Á¾·á ÈÄ)
+        // í”¼ë¡œë„ ë¦¬ì…‹ (ì›¨ì´ë¸Œ ì¢…ë£Œ í›„)
         if (playerGold != null)
         {
             playerGold.ResetFatigue();
         }
     }
 
-    // Àú³á ¸ğµåÀÇ °ÔÀÓÇÃ·¹ÀÌ ¾÷µ¥ÀÌÆ®
+    // ì €ë… ëª¨ë“œì˜ ê²Œì„í”Œë ˆì´ ì—…ë°ì´íŠ¸
     private void UpdateGameplayForEvening()
     {
-        // ·¹ÀÌ¾î ±â¹İ ÀÚ¿ø ¿ÀºêÁ§Æ® µå·¡±× ¹× È¸Àü ºñÈ°¼ºÈ­
+        // ë ˆì´ì–´ ê¸°ë°˜ ìì› ì˜¤ë¸Œì íŠ¸ ë“œë˜ê·¸ ë° íšŒì „ ë¹„í™œì„±í™”
         SetResourceObjectsByLayerDraggable(false);
 
-        // ·¹ÀÌ¾î ±â¹İ Å¸¿ö °ø°İ È°¼ºÈ­
+        // ë ˆì´ì–´ ê¸°ë°˜ íƒ€ì›Œ ê³µê²© í™œì„±í™”
         SetTowerAttackEnabledByLayer(true);
 
-        // Å¸¿ö ±¸¸Å/ÆÇ¸Å ±â´É ºñÈ°¼ºÈ­
+        // íƒ€ì›Œ êµ¬ë§¤/íŒë§¤ ê¸°ëŠ¥ ë¹„í™œì„±í™”
         SetTowerTradeEnabled(false);
 
-        // Å¸¿ö ¾÷±×·¹ÀÌµå È°¼ºÈ­
+        // íƒ€ì›Œ ì—…ê·¸ë ˆì´ë“œ í™œì„±í™”
         SetTowerUpgradeEnabledByLayer(true);
 
-        // ÇÃ·¹ÀÌ¾î °ü·Ã ¼³Á¤ (MicrophoneSystem »ç¿ë)
+        // í”Œë ˆì´ì–´ ê´€ë ¨ ì„¤ì • (MicrophoneSystem ì‚¬ìš©)
         HandlePlayerSettings(false, true);
 
-        // ¸¶ÀÌÅ© ½Ã½ºÅÛ È°¼ºÈ­ »óÅÂ ¼³Á¤
+        // ë§ˆì´í¬ ì‹œìŠ¤í…œ í™œì„±í™” ìƒíƒœ ì„¤ì •
         if (microphoneSystem != null)
         {
-            // ¸¶ÀÌÅ© ½Ã½ºÅÛ ÀÚÃ¼´Â ÀÌº¥Æ®¸¦ ÅëÇØ Ã³¸®µÊ (OnEveningStart¿¡¼­)
+            // ë§ˆì´í¬ ì‹œìŠ¤í…œ ìì²´ëŠ” ì´ë²¤íŠ¸ë¥¼ í†µí•´ ì²˜ë¦¬ë¨ (OnEveningStartì—ì„œ)
             microphoneSystem.SetPlayerActivationEnabled(true);
         }
     }
 
     #endregion
 
-    #region °ÔÀÓ ¿ÀºêÁ§Æ® ¹× ÄÄÆ÷³ÍÆ® °ü¸®
+    #region ê²Œì„ ì˜¤ë¸Œì íŠ¸ ë° ì»´í¬ë„ŒíŠ¸ ê´€ë¦¬
 
-    // ½Ã°£¿¡ µû¸¥ ·¹ÀÌ¾î ±â¹İ ¿ÀºêÁ§Æ® È°¼ºÈ­/ºñÈ°¼ºÈ­
+    // ì‹œê°„ì— ë”°ë¥¸ ë ˆì´ì–´ ê¸°ë°˜ ì˜¤ë¸Œì íŠ¸ í™œì„±í™”/ë¹„í™œì„±í™”
     private void ActivateLayerObjects(int layerToActivate, int layerToDeactivate)
     {
         if (!useLayerBasedActivation) return;
 
-        // Ã£±â Àü¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+        // ì°¾ê¸° ì „ì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
         if (layerToActivate < 0 || layerToDeactivate < 0)
         {
-            Debug.LogWarning("ÁöÁ¤µÈ ·¹ÀÌ¾î Áß ÇÏ³ª ÀÌ»óÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.");
+            Debug.LogWarning("ì§€ì •ëœ ë ˆì´ì–´ ì¤‘ í•˜ë‚˜ ì´ìƒì´ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // È°¼ºÈ­ÇÒ ·¹ÀÌ¾îÀÇ ¿ÀºêÁ§Æ® Ã£±â
+        // í™œì„±í™”í•  ë ˆì´ì–´ì˜ ì˜¤ë¸Œì íŠ¸ ì°¾ê¸°
         GameObject[] objectsToActivate = FindObjectsOfType<GameObject>().Where(obj => obj.layer == layerToActivate).ToArray();
 
-        // ºñÈ°¼ºÈ­ÇÒ ·¹ÀÌ¾îÀÇ ¿ÀºêÁ§Æ® Ã£±â
+        // ë¹„í™œì„±í™”í•  ë ˆì´ì–´ì˜ ì˜¤ë¸Œì íŠ¸ ì°¾ê¸°
         GameObject[] objectsToDeactivate = FindObjectsOfType<GameObject>().Where(obj => obj.layer == layerToDeactivate).ToArray();
 
-        // È°¼ºÈ­/ºñÈ°¼ºÈ­ Ã³¸®
+        // í™œì„±í™”/ë¹„í™œì„±í™” ì²˜ë¦¬
         foreach (GameObject obj in objectsToActivate)
         {
             obj.SetActive(true);
@@ -567,47 +567,47 @@ public class TimeSystem : MonoBehaviour
             obj.SetActive(false);
         }
 
-        Debug.Log($"·¹ÀÌ¾î {LayerMask.LayerToName(layerToActivate)} È°¼ºÈ­, ·¹ÀÌ¾î {LayerMask.LayerToName(layerToDeactivate)} ºñÈ°¼ºÈ­ ¿Ï·á");
+        Debug.Log($"ë ˆì´ì–´ {LayerMask.LayerToName(layerToActivate)} í™œì„±í™”, ë ˆì´ì–´ {LayerMask.LayerToName(layerToDeactivate)} ë¹„í™œì„±í™” ì™„ë£Œ");
     }
 
-    // Ä«¸Ş¶ó ¼³Á¤ ¾÷µ¥ÀÌÆ®
+    // ì¹´ë©”ë¼ ì„¤ì • ì—…ë°ì´íŠ¸
     private void UpdateCameraSettings(TimeOfDay timeOfDay)
     {
         Camera mainCamera = Camera.main;
         if (mainCamera == null) return;
 
-        // ±âº» ÄÃ¸µ ¸¶½ºÅ© (¸ğµç ·¹ÀÌ¾î)
+        // ê¸°ë³¸ ì»¬ë§ ë§ˆìŠ¤í¬ (ëª¨ë“  ë ˆì´ì–´)
         int defaultCullingMask = -1;
 
         if (morningLayer < 0 || eveningLayer < 0) return;
 
-        // ½Ã°£¿¡ µû¶ó ÀûÀıÇÑ ·¹ÀÌ¾î ¼³Á¤
+        // ì‹œê°„ì— ë”°ë¼ ì ì ˆí•œ ë ˆì´ì–´ ì„¤ì •
         if (timeOfDay == TimeOfDay.Morning)
         {
-            // ¾ÆÄ§: MorningOnly ·¹ÀÌ¾î´Â Ç¥½Ã, EveningOnly ·¹ÀÌ¾î´Â ¼û±è
+            // ì•„ì¹¨: MorningOnly ë ˆì´ì–´ëŠ” í‘œì‹œ, EveningOnly ë ˆì´ì–´ëŠ” ìˆ¨ê¹€
             mainCamera.cullingMask = defaultCullingMask;
             mainCamera.cullingMask |= (1 << morningLayer);
             mainCamera.cullingMask &= ~(1 << eveningLayer);
         }
         else
         {
-            // Àú³á: EveningOnly ·¹ÀÌ¾î´Â Ç¥½Ã, MorningOnly ·¹ÀÌ¾î´Â ¼û±è
+            // ì €ë…: EveningOnly ë ˆì´ì–´ëŠ” í‘œì‹œ, MorningOnly ë ˆì´ì–´ëŠ” ìˆ¨ê¹€
             mainCamera.cullingMask = defaultCullingMask;
             mainCamera.cullingMask |= (1 << eveningLayer);
             mainCamera.cullingMask &= ~(1 << morningLayer);
         }
     }
 
-    // ·¹ÀÌ¾î ±â¹İ ÀÚ¿ø ¿ÀºêÁ§Æ® µå·¡±× °¡´É ¿©ºÎ ¼³Á¤
+    // ë ˆì´ì–´ ê¸°ë°˜ ìì› ì˜¤ë¸Œì íŠ¸ ë“œë˜ê·¸ ê°€ëŠ¥ ì—¬ë¶€ ì„¤ì •
     private void SetResourceObjectsByLayerDraggable(bool draggable)
     {
         if (resourceLayer < 0)
         {
-            Debug.LogWarning($"{resourceLayerName} ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.");
+            Debug.LogWarning($"{resourceLayerName} ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // Resource ·¹ÀÌ¾î¿¡ ÀÖ´Â ¿ÀºêÁ§Æ® Ã£±â
+        // Resource ë ˆì´ì–´ì— ìˆëŠ” ì˜¤ë¸Œì íŠ¸ ì°¾ê¸°
         GameObject[] resourceObjects = FindObjectsOfType<GameObject>().Where(obj => obj.layer == resourceLayer).ToArray();
         int count = 0;
 
@@ -621,25 +621,25 @@ public class TimeSystem : MonoBehaviour
             }
         }
 
-        Debug.Log($"·¹ÀÌ¾î '{resourceLayerName}'¿¡ ÀÖ´Â µå·¡±× °¡´É ¿ÀºêÁ§Æ® {count}°³¸¦ {(draggable ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}Çß½À´Ï´Ù.");
+        Debug.Log($"ë ˆì´ì–´ '{resourceLayerName}'ì— ìˆëŠ” ë“œë˜ê·¸ ê°€ëŠ¥ ì˜¤ë¸Œì íŠ¸ {count}ê°œë¥¼ {(draggable ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}í–ˆìŠµë‹ˆë‹¤.");
     }
 
-    // ·¹ÀÌ¾î ±â¹İ Å¸¿ö °ø°İ È°¼ºÈ­/ºñÈ°¼ºÈ­
+    // ë ˆì´ì–´ ê¸°ë°˜ íƒ€ì›Œ ê³µê²© í™œì„±í™”/ë¹„í™œì„±í™”
     private void SetTowerAttackEnabledByLayer(bool enabled)
     {
         if (towerLayer < 0)
         {
-            Debug.LogWarning($"{towerLayerName} ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.");
+            Debug.LogWarning($"{towerLayerName} ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // Tower ·¹ÀÌ¾î¿¡ ÀÖ´Â ¿ÀºêÁ§Æ® Ã£±â
+        // Tower ë ˆì´ì–´ì— ìˆëŠ” ì˜¤ë¸Œì íŠ¸ ì°¾ê¸°
         GameObject[] towerObjects = FindObjectsOfType<GameObject>().Where(obj => obj.layer == towerLayer).ToArray();
         int count = 0;
 
         if (enabled)
         {
-            // È°¼ºÈ­´Â SearchTarget »óÅÂ·Î ÀüÈ¯ÇÏ´Â Æ¯º° ·ÎÁ÷ÀÌ ÇÊ¿äÇÏ¹Ç·Î Á÷Á¢ Ã³¸®
+            // í™œì„±í™”ëŠ” SearchTarget ìƒíƒœë¡œ ì „í™˜í•˜ëŠ” íŠ¹ë³„ ë¡œì§ì´ í•„ìš”í•˜ë¯€ë¡œ ì§ì ‘ ì²˜ë¦¬
             foreach (GameObject obj in towerObjects)
             {
                 TowerWeapon tower = obj.GetComponent<TowerWeapon>();
@@ -652,7 +652,7 @@ public class TimeSystem : MonoBehaviour
         }
         else
         {
-            // ºñÈ°¼ºÈ­´Â ÄÚ·çÆ¾ ÁßÁö·Î Ã³¸®
+            // ë¹„í™œì„±í™”ëŠ” ì½”ë£¨í‹´ ì¤‘ì§€ë¡œ ì²˜ë¦¬
             foreach (GameObject obj in towerObjects)
             {
                 TowerWeapon tower = obj.GetComponent<TowerWeapon>();
@@ -664,19 +664,19 @@ public class TimeSystem : MonoBehaviour
             }
         }
 
-        Debug.Log($"·¹ÀÌ¾î '{towerLayerName}'¿¡ ÀÖ´Â Å¸¿ö °ø°İ ±â´É {count}°³¸¦ {(enabled ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}Çß½À´Ï´Ù.");
+        Debug.Log($"ë ˆì´ì–´ '{towerLayerName}'ì— ìˆëŠ” íƒ€ì›Œ ê³µê²© ê¸°ëŠ¥ {count}ê°œë¥¼ {(enabled ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}í–ˆìŠµë‹ˆë‹¤.");
     }
 
-    // ·¹ÀÌ¾î ±â¹İ Å¸¿ö ¾÷±×·¹ÀÌµå ±â´É È°¼ºÈ­/ºñÈ°¼ºÈ­
+    // ë ˆì´ì–´ ê¸°ë°˜ íƒ€ì›Œ ì—…ê·¸ë ˆì´ë“œ ê¸°ëŠ¥ í™œì„±í™”/ë¹„í™œì„±í™”
     private void SetTowerUpgradeEnabledByLayer(bool enabled)
     {
         if (towerLayer < 0)
         {
-            Debug.LogWarning($"{towerLayerName} ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.");
+            Debug.LogWarning($"{towerLayerName} ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // Tower ·¹ÀÌ¾î¿¡ ÀÖ´Â ¿ÀºêÁ§Æ® Ã£±â
+        // Tower ë ˆì´ì–´ì— ìˆëŠ” ì˜¤ë¸Œì íŠ¸ ì°¾ê¸°
         GameObject[] towerObjects = FindObjectsOfType<GameObject>().Where(obj => obj.layer == towerLayer).ToArray();
         int count = 0;
 
@@ -690,19 +690,19 @@ public class TimeSystem : MonoBehaviour
             }
         }
 
-        Debug.Log($"·¹ÀÌ¾î '{towerLayerName}'¿¡ ÀÖ´Â Å¸¿ö ¾÷±×·¹ÀÌµå ±â´É {count}°³¸¦ {(enabled ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}Çß½À´Ï´Ù.");
+        Debug.Log($"ë ˆì´ì–´ '{towerLayerName}'ì— ìˆëŠ” íƒ€ì›Œ ì—…ê·¸ë ˆì´ë“œ ê¸°ëŠ¥ {count}ê°œë¥¼ {(enabled ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}í–ˆìŠµë‹ˆë‹¤.");
     }
 
-    // ·¹ÀÌ¾î ±â¹İ ÄÄÆ÷³ÍÆ® È°¼ºÈ­/ºñÈ°¼ºÈ­
+    // ë ˆì´ì–´ ê¸°ë°˜ ì»´í¬ë„ŒíŠ¸ í™œì„±í™”/ë¹„í™œì„±í™”
     private void SetComponentsEnabledByLayer<T>(int layer, bool enabled) where T : MonoBehaviour
     {
         if (layer < 0)
         {
-            Debug.LogWarning($"ÁöÁ¤µÈ ·¹ÀÌ¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.");
+            Debug.LogWarning($"ì§€ì •ëœ ë ˆì´ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // Æ¯Á¤ ·¹ÀÌ¾î¿¡ ÀÖ´Â ¸ğµç °ÔÀÓ ¿ÀºêÁ§Æ® Ã£±â
+        // íŠ¹ì • ë ˆì´ì–´ì— ìˆëŠ” ëª¨ë“  ê²Œì„ ì˜¤ë¸Œì íŠ¸ ì°¾ê¸°
         GameObject[] layerObjects = FindObjectsOfType<GameObject>().Where(obj => obj.layer == layer).ToArray();
 
         int count = 0;
@@ -716,56 +716,56 @@ public class TimeSystem : MonoBehaviour
             }
         }
 
-        Debug.Log($"·¹ÀÌ¾î '{LayerMask.LayerToName(layer)}'¿¡ ÀÖ´Â {typeof(T).Name} ÄÄÆ÷³ÍÆ® {count}°³¸¦ {(enabled ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}Çß½À´Ï´Ù.");
+        Debug.Log($"ë ˆì´ì–´ '{LayerMask.LayerToName(layer)}'ì— ìˆëŠ” {typeof(T).Name} ì»´í¬ë„ŒíŠ¸ {count}ê°œë¥¼ {(enabled ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}í–ˆìŠµë‹ˆë‹¤.");
     }
 
-    // Å¸¿ö ±¸¸Å/ÆÇ¸Å ±â´É È°¼ºÈ­/ºñÈ°¼ºÈ­
+    // íƒ€ì›Œ êµ¬ë§¤/íŒë§¤ ê¸°ëŠ¥ í™œì„±í™”/ë¹„í™œì„±í™”
     private void SetTowerTradeEnabled(bool enabled)
     {
         TowerSpawner[] towerSpawners = FindObjectsOfType<TowerSpawner>();
         foreach (TowerSpawner spawner in towerSpawners)
         {
-            // TowerSpawner¿¡ SetTradeEnabled ¸Ş¼­µå°¡ ÀÖ´Â °æ¿ì
+            // TowerSpawnerì— SetTradeEnabled ë©”ì„œë“œê°€ ìˆëŠ” ê²½ìš°
             try
             {
-                // ¸®ÇÃ·º¼ÇÀÌ³ª public ¸Ş¼­µå¸¦ ÅëÇØ È£ÃâÇÒ ¼ö ÀÖÀ½
+                // ë¦¬í”Œë ‰ì…˜ì´ë‚˜ public ë©”ì„œë“œë¥¼ í†µí•´ í˜¸ì¶œí•  ìˆ˜ ìˆìŒ
                 spawner.SetTradeEnabled(enabled);
             }
             catch
             {
-                // ¸Ş¼­µå°¡ ¾ø´Ù¸é È°¼ºÈ­/ºñÈ°¼ºÈ­·Î Ã³¸®
+                // ë©”ì„œë“œê°€ ì—†ë‹¤ë©´ í™œì„±í™”/ë¹„í™œì„±í™”ë¡œ ì²˜ë¦¬
                 spawner.enabled = enabled;
             }
         }
 
-        // ¿ÀºêÁ§Æ® µğÅØÅÍ(Å¸¿ö Å¬¸¯ Ã³¸®) È°¼ºÈ­/ºñÈ°¼ºÈ­
+        // ì˜¤ë¸Œì íŠ¸ ë””í…í„°(íƒ€ì›Œ í´ë¦­ ì²˜ë¦¬) í™œì„±í™”/ë¹„í™œì„±í™”
         ObjectDetector[] detectors = FindObjectsOfType<ObjectDetector>();
         foreach (ObjectDetector detector in detectors)
         {
             detector.enabled = enabled;
         }
 
-        Debug.Log($"Å¸¿ö °Å·¡ ±â´ÉÀÌ {(enabled ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}µÇ¾ú½À´Ï´Ù.");
+        Debug.Log($"íƒ€ì›Œ ê±°ë˜ ê¸°ëŠ¥ì´ {(enabled ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}ë˜ì—ˆìŠµë‹ˆë‹¤.");
     }
 
-    // ÇÃ·¹ÀÌ¾î ¼³Á¤ Ã³¸® (MicrophoneSystem »ç¿ë)
+    // í”Œë ˆì´ì–´ ì„¤ì • ì²˜ë¦¬ (MicrophoneSystem ì‚¬ìš©)
     private void HandlePlayerSettings(bool activatePlayer, bool enableAttack)
     {
-        // ¸¶ÀÌÅ© ½Ã½ºÅÛÀÌ ÀÖÀ¸¸é ±×°ÍÀ» »ç¿ëÇÏ¿© ÇÃ·¹ÀÌ¾î °ü¸®
+        // ë§ˆì´í¬ ì‹œìŠ¤í…œì´ ìˆìœ¼ë©´ ê·¸ê²ƒì„ ì‚¬ìš©í•˜ì—¬ í”Œë ˆì´ì–´ ê´€ë¦¬
         if (microphoneSystem != null)
         {
             if (activatePlayer)
             {
-                // ¾ÆÄ§ ¸ğµå: ±âº» À§Ä¡ (0,0,0)¿¡ ÇÃ·¹ÀÌ¾î È°¼ºÈ­
+                // ì•„ì¹¨ ëª¨ë“œ: ê¸°ë³¸ ìœ„ì¹˜ (0,0,0)ì— í”Œë ˆì´ì–´ í™œì„±í™”
                 microphoneSystem.ActivatePlayer(Vector3.zero);
             }
             else
             {
-                // Àú³á ¸ğµå: ÇÃ·¹ÀÌ¾î ºñÈ°¼ºÈ­ (¸¶ÀÌÅ© ÀÔ·ÂÀ¸·Î È°¼ºÈ­ ´ë±â)
+                // ì €ë… ëª¨ë“œ: í”Œë ˆì´ì–´ ë¹„í™œì„±í™” (ë§ˆì´í¬ ì…ë ¥ìœ¼ë¡œ í™œì„±í™” ëŒ€ê¸°)
                 microphoneSystem.DeactivatePlayer();
             }
 
-            // ÇÃ·¹ÀÌ¾î °ø°İ ±â´É ¼³Á¤
+            // í”Œë ˆì´ì–´ ê³µê²© ê¸°ëŠ¥ ì„¤ì •
             if (microphoneSystem.PlayerObject != null)
             {
                 PlayerMovement playerMovement = microphoneSystem.PlayerObject.GetComponent<PlayerMovement>();
@@ -775,87 +775,40 @@ public class TimeSystem : MonoBehaviour
                 }
             }
 
-            Debug.Log($"¸¶ÀÌÅ© ½Ã½ºÅÛÀ» ÅëÇØ ÇÃ·¹ÀÌ¾î {(activatePlayer ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}, °ø°İ {(enableAttack ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}");
+            Debug.Log($"ë§ˆì´í¬ ì‹œìŠ¤í…œì„ í†µí•´ í”Œë ˆì´ì–´ {(activatePlayer ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}, ê³µê²© {(enableAttack ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}");
             return;
         }
 
-        // ÀÌÇÏ´Â ¸¶ÀÌÅ© ½Ã½ºÅÛÀÌ ¾ø´Â °æ¿ì ±âÁ¸ ¹æ½Ä »ç¿ë (ÇÏÀ§ È£È¯¼º À¯Áö)
+        // ì´í•˜ëŠ” ë§ˆì´í¬ ì‹œìŠ¤í…œì´ ì—†ëŠ” ê²½ìš° ê¸°ì¡´ ë°©ì‹ ì‚¬ìš© (í•˜ìœ„ í˜¸í™˜ì„± ìœ ì§€)
 
-        // PlayerSingleton Å¬·¡½º°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
-        System.Type playerSingletonType = System.Type.GetType("PlayerSingleton");
-        bool playerSingletonExists = false;
-        object playerSingletonInstance = null;
-
-        // ÇÃ·¹ÀÌ¾î ½Ì±ÛÅÏ Á¸Àç ¿©ºÎ È®ÀÎ (¸®ÇÃ·º¼Ç »ç¿ë)
-        if (playerSingletonType != null)
+        // ì‹±ê¸€í„´ ì¡´ì¬ ì‹œ ì²˜ë¦¬
+        if (PlayerSingleton.Exists && PlayerSingleton.Instance != null)
         {
-            // Exists Á¤Àû ¼Ó¼º È®ÀÎ
-            System.Reflection.PropertyInfo existsProperty = playerSingletonType.GetProperty("Exists",
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            PlayerSingleton.Instance.SetAttackEnabled(enableAttack);
+            PlayerSingleton.Instance.SetPlayerActive(activatePlayer);
 
-            if (existsProperty != null)
-            {
-                playerSingletonExists = (bool)existsProperty.GetValue(null);
-
-                // Instance Á¤Àû ¼Ó¼º È®ÀÎ
-                if (playerSingletonExists)
-                {
-                    System.Reflection.PropertyInfo instanceProperty = playerSingletonType.GetProperty("Instance",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-
-                    if (instanceProperty != null)
-                    {
-                        playerSingletonInstance = instanceProperty.GetValue(null);
-                    }
-                }
-            }
-        }
-
-        // ½Ì±ÛÅÏ Á¸Àç ½Ã Ã³¸®
-        if (playerSingletonExists && playerSingletonInstance != null)
-        {
-            // ÇÃ·¹ÀÌ¾î È°¼ºÈ­/ºñÈ°¼ºÈ­
-            MonoBehaviour playerComponent = playerSingletonInstance as MonoBehaviour;
-            if (playerComponent != null)
-            {
-                playerComponent.gameObject.SetActive(activatePlayer);
-
-                // SetAttackEnabled ¸Ş¼­µå È£Ãâ ½Ãµµ
-                System.Reflection.MethodInfo setAttackEnabledMethod = playerSingletonType.GetMethod("SetAttackEnabled");
-                if (setAttackEnabledMethod != null)
-                {
-                    setAttackEnabledMethod.Invoke(playerSingletonInstance, new object[] { enableAttack });
-                }
-
-                System.Reflection.MethodInfo setPlayerActiveMethod = playerSingletonType.GetMethod("SetPlayerActive");
-                if (setPlayerActiveMethod != null)
-                {
-                    setPlayerActiveMethod.Invoke(playerSingletonInstance, new object[] { activatePlayer });
-                }
-            }
-
-            Debug.Log($"½Ì±ÛÅÏ ÇÃ·¹ÀÌ¾î {(activatePlayer ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}, °ø°İ {(enableAttack ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}");
+            Debug.Log($"ì‹±ê¸€í„´ í”Œë ˆì´ì–´ {(activatePlayer ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}, ê³µê²© {(enableAttack ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}");
             return;
         }
 
-        // ½Ì±ÛÅÏÀÌ ¾ø´Â °æ¿ì ±âÁ¸ ¹æ½ÄÀ¸·Î Ã³¸®
+        // ì‹±ê¸€í„´ì´ ì—†ëŠ” ê²½ìš° ê¸°ì¡´ ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬
         PlayerMovement[] players = FindObjectsOfType<PlayerMovement>();
         foreach (PlayerMovement player in players)
         {
-            // ÇÃ·¹ÀÌ¾î È°¼ºÈ­/ºñÈ°¼ºÈ­
+            // í”Œë ˆì´ì–´ í™œì„±í™”/ë¹„í™œì„±í™”
             player.gameObject.SetActive(activatePlayer);
 
-            // ÇÃ·¹ÀÌ¾î °ø°İ È°¼ºÈ­/ºñÈ°¼ºÈ­
+            // í”Œë ˆì´ì–´ ê³µê²© í™œì„±í™”/ë¹„í™œì„±í™”
             player.SetAttackEnabled(enableAttack);
         }
 
-        Debug.Log($"ÇÃ·¹ÀÌ¾î {(activatePlayer ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}, °ø°İ {(enableAttack ? "È°¼ºÈ­" : "ºñÈ°¼ºÈ­")}");
+        Debug.Log($"í”Œë ˆì´ì–´ {(activatePlayer ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}, ê³µê²© {(enableAttack ? "í™œì„±í™”" : "ë¹„í™œì„±í™”")}");
     }
     #endregion
 
-    #region Ãß°¡µÈ »ö»ó °ü·Ã ¸Ş¼­µå
+    #region ì¶”ê°€ëœ ìƒ‰ìƒ ê´€ë ¨ ë©”ì„œë“œ
 
-    // Ä«¸Ş¶ó ¹è°æ»ö Á÷Á¢ ¼³Á¤
+    // ì¹´ë©”ë¼ ë°°ê²½ìƒ‰ ì§ì ‘ ì„¤ì •
     public void SetBackgroundColor(Color color)
     {
         if (mainCameraCache == null) mainCameraCache = Camera.main;
@@ -865,7 +818,7 @@ public class TimeSystem : MonoBehaviour
         }
     }
 
-    // Å¸ÀÏ¸Ê »ö»ó Á÷Á¢ ¼³Á¤
+    // íƒ€ì¼ë§µ ìƒ‰ìƒ ì§ì ‘ ì„¤ì •
     public void SetTilemapColor(Color color)
     {
         foreach (var tilemap in tilemaps)
@@ -877,13 +830,13 @@ public class TimeSystem : MonoBehaviour
         }
     }
 
-    // ¾ÆÄ§/Àú³á ¹è°æ»ö ¼³Á¤
+    // ì•„ì¹¨/ì €ë… ë°°ê²½ìƒ‰ ì„¤ì •
     public void SetDayColors(Color dayBackground, Color nightBackground)
     {
         morningBackgroundColor = dayBackground;
         eveningBackgroundColor = nightBackground;
 
-        // ÇöÀç ½Ã°£¿¡ ¸Â°Ô »ö»ó Àû¿ë
+        // í˜„ì¬ ì‹œê°„ì— ë§ê²Œ ìƒ‰ìƒ ì ìš©
         if (currentTimeOfDay == TimeOfDay.Morning)
         {
             SetBackgroundColor(morningBackgroundColor);
@@ -894,13 +847,13 @@ public class TimeSystem : MonoBehaviour
         }
     }
 
-    // ¾ÆÄ§/Àú³á Å¸ÀÏ¸Ê »ö»ó ¼³Á¤
+    // ì•„ì¹¨/ì €ë… íƒ€ì¼ë§µ ìƒ‰ìƒ ì„¤ì •
     public void SetTilemapColors(Color dayTileColor, Color nightTileColor)
     {
         morningTilemapColor = dayTileColor;
         eveningTilemapColor = nightTileColor;
 
-        // ÇöÀç ½Ã°£¿¡ ¸Â°Ô »ö»ó Àû¿ë
+        // í˜„ì¬ ì‹œê°„ì— ë§ê²Œ ìƒ‰ìƒ ì ìš©
         if (currentTimeOfDay == TimeOfDay.Morning)
         {
             SetTilemapColor(morningTilemapColor);
@@ -911,40 +864,40 @@ public class TimeSystem : MonoBehaviour
         }
     }
 
-    // Å¸ÀÏ¸Ê Ãß°¡
+    // íƒ€ì¼ë§µ ì¶”ê°€
     public void AddTilemap(Tilemap tilemap)
     {
         if (tilemap != null && !tilemaps.Contains(tilemap))
         {
             tilemaps.Add(tilemap);
 
-            // ÇöÀç ½Ã°£¿¡ ¸Â´Â »ö»ó Àû¿ë
+            // í˜„ì¬ ì‹œê°„ì— ë§ëŠ” ìƒ‰ìƒ ì ìš©
             tilemap.color = currentTimeOfDay == TimeOfDay.Morning ? morningTilemapColor : eveningTilemapColor;
 
-            Debug.Log($"Å¸ÀÏ¸Ê '{tilemap.name}'ÀÌ(°¡) »ö»ó º¯°æ ¸ñ·Ï¿¡ Ãß°¡µÇ¾ú½À´Ï´Ù.");
+            Debug.Log($"íƒ€ì¼ë§µ '{tilemap.name}'ì´(ê°€) ìƒ‰ìƒ ë³€ê²½ ëª©ë¡ì— ì¶”ê°€ë˜ì—ˆìŠµë‹ˆë‹¤.");
         }
     }
 
-    // Å¸ÀÏ¸Ê Á¦°Å
+    // íƒ€ì¼ë§µ ì œê±°
     public void RemoveTilemap(Tilemap tilemap)
     {
         if (tilemap != null && tilemaps.Contains(tilemap))
         {
             tilemaps.Remove(tilemap);
 
-            // ¿ø·¡ »ö»óÀ¸·Î º¹¿ø
+            // ì›ë˜ ìƒ‰ìƒìœ¼ë¡œ ë³µì›
             tilemap.color = Color.white;
 
-            Debug.Log($"Å¸ÀÏ¸Ê '{tilemap.name}'ÀÌ(°¡) »ö»ó º¯°æ ¸ñ·Ï¿¡¼­ Á¦°ÅµÇ¾ú½À´Ï´Ù.");
+            Debug.Log($"íƒ€ì¼ë§µ '{tilemap.name}'ì´(ê°€) ìƒ‰ìƒ ë³€ê²½ ëª©ë¡ì—ì„œ ì œê±°ë˜ì—ˆìŠµë‹ˆë‹¤.");
         }
     }
 
-    // »ö»ó ÀüÈ¯ »ç¿ë ¿©ºÎ ¼³Á¤
+    // ìƒ‰ìƒ ì „í™˜ ì‚¬ìš© ì—¬ë¶€ ì„¤ì •
     public void SetColorTransitionEnabled(bool enabled)
     {
         useColorTransition = enabled;
 
-        // »ö»ó ÀüÈ¯ÀÌ ºñÈ°¼ºÈ­µÇ¸é ¸ğµç »ö»óÀ» ±âº»°ªÀ¸·Î ¸®¼Â
+        // ìƒ‰ìƒ ì „í™˜ì´ ë¹„í™œì„±í™”ë˜ë©´ ëª¨ë“  ìƒ‰ìƒì„ ê¸°ë³¸ê°’ìœ¼ë¡œ ë¦¬ì…‹
         if (!enabled)
         {
             if (mainCameraCache == null) mainCameraCache = Camera.main;
@@ -961,19 +914,19 @@ public class TimeSystem : MonoBehaviour
                 }
             }
 
-            Debug.Log("»ö»ó ÀüÈ¯ ±â´ÉÀÌ ºñÈ°¼ºÈ­µÇ¾ú½À´Ï´Ù. ¸ğµç »ö»óÀÌ ±âº»°ªÀ¸·Î ¸®¼ÂµÇ¾ú½À´Ï´Ù.");
+            Debug.Log("ìƒ‰ìƒ ì „í™˜ ê¸°ëŠ¥ì´ ë¹„í™œì„±í™”ë˜ì—ˆìŠµë‹ˆë‹¤. ëª¨ë“  ìƒ‰ìƒì´ ê¸°ë³¸ê°’ìœ¼ë¡œ ë¦¬ì…‹ë˜ì—ˆìŠµë‹ˆë‹¤.");
         }
         else
         {
-            // »ö»ó ÀüÈ¯ÀÌ È°¼ºÈ­µÇ¸é ÇöÀç ½Ã°£¿¡ ¸Â´Â »ö»ó Àû¿ë
+            // ìƒ‰ìƒ ì „í™˜ì´ í™œì„±í™”ë˜ë©´ í˜„ì¬ ì‹œê°„ì— ë§ëŠ” ìƒ‰ìƒ ì ìš©
             ApplyTimeBasedColors(currentTimeOfDay);
-            Debug.Log("»ö»ó ÀüÈ¯ ±â´ÉÀÌ È°¼ºÈ­µÇ¾ú½À´Ï´Ù. ÇöÀç ½Ã°£¿¡ ¸Â´Â »ö»óÀÌ Àû¿ëµÇ¾ú½À´Ï´Ù.");
+            Debug.Log("ìƒ‰ìƒ ì „í™˜ ê¸°ëŠ¥ì´ í™œì„±í™”ë˜ì—ˆìŠµë‹ˆë‹¤. í˜„ì¬ ì‹œê°„ì— ë§ëŠ” ìƒ‰ìƒì´ ì ìš©ë˜ì—ˆìŠµë‹ˆë‹¤.");
         }
     }
 
     #endregion
 
-    // µğ¹ö±×¿ë ½Ã°£ ÀüÈ¯ ¸Ş¼­µå
+    // ë””ë²„ê·¸ìš© ì‹œê°„ ì „í™˜ ë©”ì„œë“œ
     public void ToggleTimeOfDay()
     {
         if (currentTimeOfDay == TimeOfDay.Morning)
