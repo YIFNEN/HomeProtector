@@ -103,8 +103,9 @@ GameObject:
   - component: {fileID: 6203516723759015889}
   - component: {fileID: -84709492547993232}
   - component: {fileID: -8553615408204601458}
+  - component: {fileID: -5499601254261705463}
   m_Layer: 8
-  m_Name: EnemyCommonSoldier 1
+  m_Name: EnemyMonkey
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -134,7 +135,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8385226143460851807}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: a08fc71a87fe29047b93017ed22c5817, type: 2}
   m_CullingMode: 0
@@ -187,8 +188,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
-  m_Sprite: {fileID: -7008412969330441016, guid: 4a7c0da22d195094c996d9182a363b82, type: 3}
+  m_SortingOrder: 2
+  m_Sprite: {fileID: 21300000, guid: 6014ac042f215ee40bd60ebf3c53aa9f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -223,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3866747457431c04f8a86561f03ccf31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 2
+  moveSpeed: 16.6
   moveDirection: {x: 0, y: 0, z: 0}
 --- !u!114 &-2238810831190767473
 MonoBehaviour:
@@ -240,9 +241,9 @@ MonoBehaviour:
   gold: 10
   expValue: 20
   targetTagPriority:
-  - Resource
-  - PlayerBase
-  - Tower
+  - Goods
+  - Food
+  - Human
   targetSearchRadius: 10
   targetUpdateInterval: 1
   defaultTargetTag: Human
@@ -296,7 +297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14e868f8837a5e5479846d867a687b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 7
+  maxHP: 10
 --- !u!195 &6203516723759015889
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -306,7 +307,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 8385226143460851807}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.3
+  m_Radius: 0.1
   m_Speed: 3.5
   m_Acceleration: 12
   avoidancePriority: 10
@@ -315,7 +316,7 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 0
   m_AutoRepath: 1
-  m_Height: 1
+  m_Height: 0.5
   m_BaseOffset: 0
   m_WalkableMask: 1
   m_ObstacleAvoidanceType: 1
@@ -331,16 +332,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b4f5468c74ed5c4596ef0af94081a11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackType: 2
-  attackRange: 0.1
+  attackType: 1
+  attackRange: 10
   attackRate: 0.8
   attackDamage: 2
   targetLayers:
     serializedVersion: 2
     m_Bits: 8
-  projectilePrefab: {fileID: 2777279350721899029, guid: 44489083cff375d4aa63a379f35125dd, type: 3}
+  projectilePrefab: {fileID: 0}
   attackPoint: {fileID: 3820741013839462605}
-  attackEffect: {fileID: 0}
+  attackEffect: {fileID: 1297803425142155509, guid: dde7a72a4de1bdc40a7138e6bd05585f, type: 3}
   attackSound: {fileID: 0}
   useIsometricPosition: 1
 --- !u!114 &-8553615408204601458
@@ -357,3 +358,47 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   flipX: 1
   flipY: 0
+--- !u!114 &-5499601254261705463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8385226143460851807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 046e5eb2ec9e2f84a827b6ae91eb69ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  jumpHeight: 1.5
+  jumpDuration: 0.7
+  jumpCooldown: 2
+  jumpCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  randomJumping: 1
+  randomJumpChance: 0.1
+  jumpOnObstacle: 1
+  jumpEffect: {fileID: 0}
+  jumpSound: {fileID: 0}
