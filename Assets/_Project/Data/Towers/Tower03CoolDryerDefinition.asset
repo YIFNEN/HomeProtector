@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff06f21defe13c142a818363f9d9c232, type: 3}
+  m_Name: Tower03CoolDryerDefinition
+  m_EditorClassIdentifier: 
+  id: tower03cooldryer
+  displayName: Tower03CoolDryer
+  towerPrefab: {fileID: 7937509987669185425, guid: f827b8f1b1e900f4a887ac5530ae3134, type: 3}
+  previewPrefab: {fileID: 5283101220022144376, guid: 33f77d679e7670b45981337fd1c2c8ba, type: 3}
+  levels:
+  - sprite: {fileID: 21300000, guid: c6bc141ec427697498158281f07ba0a9, type: 3}
+    projectile: {fileID: 11400000, guid: f790375cb74176443ad6a90e87df9754, type: 2}
+    damage: 0
+    fireRate: 1
+    range: 5
+    cost: 7
+    sellValue: 2
+  - sprite: {fileID: 21300000, guid: c6bc141ec427697498158281f07ba0a9, type: 3}
+    projectile: {fileID: 11400000, guid: f790375cb74176443ad6a90e87df9754, type: 2}
+    damage: 0
+    fireRate: 1.3
+    range: 7
+    cost: 7
+    sellValue: 2
+  - sprite: {fileID: 21300000, guid: c6bc141ec427697498158281f07ba0a9, type: 3}
+    projectile: {fileID: 11400000, guid: f790375cb74176443ad6a90e87df9754, type: 2}
+    damage: 0
+    fireRate: 1.6
+    range: 9
+    cost: 7
+    sellValue: 2
+  - sprite: {fileID: 21300000, guid: c6bc141ec427697498158281f07ba0a9, type: 3}
+    projectile: {fileID: 11400000, guid: f790375cb74176443ad6a90e87df9754, type: 2}
+    damage: 0
+    fireRate: 1.9
+    range: 11
+    cost: 7
+    sellValue: 2
+  - sprite: {fileID: 21300000, guid: c6bc141ec427697498158281f07ba0a9, type: 3}
+    projectile: {fileID: 11400000, guid: f790375cb74176443ad6a90e87df9754, type: 2}
+    damage: 0
+    fireRate: 2.2
+    range: 11
+    cost: 7
+    sellValue: 3

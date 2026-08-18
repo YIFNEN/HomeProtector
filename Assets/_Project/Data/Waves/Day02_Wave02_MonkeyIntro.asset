@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61c5cffba0b9e1d469c3aaa9e53eda49, type: 3}
+  m_Name: Day02_Wave02_MonkeyIntro
+  m_EditorClassIdentifier: 
+  id: day02_wave02_monkeyintro
+  displayName: Day 2-2 Monkey Intro
+  duration: 30
+  rewardGold: 10
+  enemyGroups:
+  - enemy: {fileID: 11400000, guid: 498256f643448804ebcb0b63ce841ce8, type: 2}
+    count: 6
+    spawnInterval: 0.9
+    spawnPointOverride: {fileID: 0}
+  - enemy: {fileID: 11400000, guid: bb46d8b27b2a1f340b06ddfb4d8de86f, type: 2}
+    count: 2
+    spawnInterval: 1.5
+    spawnPointOverride: {fileID: 0}

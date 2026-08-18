@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff06f21defe13c142a818363f9d9c232, type: 3}
+  m_Name: Tower02BookShelfDefinition
+  m_EditorClassIdentifier: 
+  id: tower02bookshelf
+  displayName: Tower02BookShelf
+  towerPrefab: {fileID: 7937509987669185425, guid: ec790bab3e937e248ab6d1da37cc94b4, type: 3}
+  previewPrefab: {fileID: 5283101220022144376, guid: bb9c962ce23478745b1e3b618c281f7a, type: 3}
+  levels:
+  - sprite: {fileID: 21300000, guid: a3c3bf9564fb9d642bfe8b04b3945fae, type: 3}
+    projectile: {fileID: 11400000, guid: d3ce46485f0a7d941826b61a2164a17a, type: 2}
+    damage: 1
+    fireRate: 2
+    range: 4
+    cost: 5
+    sellValue: 3
+  - sprite: {fileID: 21300000, guid: a3c3bf9564fb9d642bfe8b04b3945fae, type: 3}
+    projectile: {fileID: 11400000, guid: d3ce46485f0a7d941826b61a2164a17a, type: 2}
+    damage: 2
+    fireRate: 2
+    range: 4
+    cost: 5
+    sellValue: 3
+  - sprite: {fileID: 21300000, guid: a3c3bf9564fb9d642bfe8b04b3945fae, type: 3}
+    projectile: {fileID: 11400000, guid: d3ce46485f0a7d941826b61a2164a17a, type: 2}
+    damage: 2
+    fireRate: 3
+    range: 4
+    cost: 5
+    sellValue: 3
+  - sprite: {fileID: 21300000, guid: a3c3bf9564fb9d642bfe8b04b3945fae, type: 3}
+    projectile: {fileID: 11400000, guid: d3ce46485f0a7d941826b61a2164a17a, type: 2}
+    damage: 2
+    fireRate: 3.5
+    range: 4
+    cost: 7
+    sellValue: 3
+  - sprite: {fileID: 21300000, guid: a3c3bf9564fb9d642bfe8b04b3945fae, type: 3}
+    projectile: {fileID: 11400000, guid: d3ce46485f0a7d941826b61a2164a17a, type: 2}
+    damage: 3
+    fireRate: 4
+    range: 4
+    cost: 8
+    sellValue: 4
