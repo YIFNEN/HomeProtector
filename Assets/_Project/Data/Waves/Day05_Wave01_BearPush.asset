@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61c5cffba0b9e1d469c3aaa9e53eda49, type: 3}
+  m_Name: Day05_Wave01_BearPush
+  m_EditorClassIdentifier: 
+  id: day05_wave01_bearpush
+  displayName: Day 5-1 Bear Push
+  duration: 48
+  rewardGold: 34
+  enemyGroups:
+  - enemy: {fileID: 11400000, guid: bb46d8b27b2a1f340b06ddfb4d8de86f, type: 2}
+    count: 6
+    spawnInterval: 0.9
+    spawnPointOverride: {fileID: 0}
+  - enemy: {fileID: 11400000, guid: 2c64af1cf7b2e4e449c0fba2b359f9f5, type: 2}
+    count: 8
+    spawnInterval: 1
+    spawnPointOverride: {fileID: 0}
+  - enemy: {fileID: 11400000, guid: 0ed5ca0bf155ec44d8dd61b5773bb061, type: 2}
+    count: 2
+    spawnInterval: 2.2
+    spawnPointOverride: {fileID: 0}

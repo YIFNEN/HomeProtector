@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wire Home Protector Content"
+  short_description: "Connect art, prefabs, definitions, and catalogs"
+  default_prompt: "Use $wiring-home-protector-content to integrate Home Protector content while preserving GUIDs and scene safety."

@@ -1,47 +1,48 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class FadeManager : MonoBehaviour
 {
-    public Image fadeImage; // UI Image (검은색 배경)
+    public Image fadeImage;
     public float fadeSpeed = 1.5f;
 
-   // void Start()
-  //  {
-        // 씬 시작 시 페이드 인 효과 적용 (화면이 점점 밝아짐)
-      //  StartCoroutine(FadeIn());
-  //  }
+    private bool isTransitioning;
 
-    public void StartSceneTransition(string morning)
+    public void StartSceneTransition(string sceneName)
     {
-        // 씬 전환 시작 (페이드 아웃 후 씬 이동)
-        StartCoroutine(FadeOut(morning));
+        if (isTransitioning)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            Debug.LogError("FadeManager cannot load an empty scene name.");
+            return;
+        }
+
+        isTransitioning = true;
+        StartCoroutine(FadeOut(sceneName));
     }
 
-  //  IEnumerator FadeIn()
-  //  {
-   //     float alpha = 1;
-   //     while (alpha > 0)
-   //     {
-    //        alpha -= Time.deltaTime * fadeSpeed;
-    //        fadeImage.color = new Color(0, 0, 0, alpha);
-     //       yield return null;
-     //   }
-   // }
-
-    IEnumerator FadeOut(string morning)
+    private IEnumerator FadeOut(string sceneName)
     {
-        float alpha = 0;
-        while (alpha < 1)
+        if (fadeImage == null || fadeSpeed <= 0f)
+        {
+            SceneManager.LoadScene(sceneName);
+            yield break;
+        }
+
+        float alpha = 0f;
+        while (alpha < 1f)
         {
             alpha += Time.deltaTime * fadeSpeed;
-            fadeImage.color = new Color(0, 0, 0, alpha);
+            fadeImage.color = new Color(0f, 0f, 0f, alpha);
             yield return null;
         }
 
-        // 씬 전환
-        SceneManager.LoadScene(morning);
+        SceneManager.LoadScene(sceneName);
     }
 }

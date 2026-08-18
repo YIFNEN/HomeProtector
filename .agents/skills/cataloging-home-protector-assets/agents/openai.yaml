@@ -1,0 +1,4 @@
+interface:
+  display_name: "Catalog Home Protector Assets"
+  short_description: "Select canonical Unity-ready game art"
+  default_prompt: "Use $cataloging-home-protector-assets to update the canonical asset manifest without importing duplicate revisions."

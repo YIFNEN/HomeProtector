@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Home Protector Playability"
+  short_description: "Evaluate hands-on game feel without duplicate validation"
+  default_prompt: "Use $reviewing-home-protector-playability to review a Home Protector milestone through hands-on play and concise findings."

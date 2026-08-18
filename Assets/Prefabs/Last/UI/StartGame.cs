@@ -1,14 +1,65 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class StartGame : MonoBehaviour
 {
-    public FadeManager fadeManager; // FadeManager 스크립트 참조
+    private const string DefaultTargetSceneName = "isometric scene";
 
-    void Update()
+    [SerializeField] private FadeManager fadeManager;
+    [SerializeField] private string targetSceneName = DefaultTargetSceneName;
+    [SerializeField] private bool startOnAnyMouseClick = true;
+    [SerializeField] private bool startOnSubmitKey = true;
+
+    private bool isTransitioning;
+
+    public string TargetSceneName =>
+        string.IsNullOrWhiteSpace(targetSceneName) ? DefaultTargetSceneName : targetSceneName;
+
+    private void Awake()
     {
-        if (Input.GetMouseButtonDown(0)) // 화면 클릭 시
+        if (fadeManager == null)
         {
-            fadeManager.StartSceneTransition("isometric scene"); // 씬 전환 실행
+            fadeManager = FindObjectOfType<FadeManager>();
         }
+    }
+
+    private void Update()
+    {
+        if (!ShouldStart())
+        {
+            return;
+        }
+
+        StartGameFlow();
+    }
+
+    public void StartGameFlow()
+    {
+        if (isTransitioning)
+        {
+            return;
+        }
+
+        isTransitioning = true;
+
+        if (fadeManager != null)
+        {
+            fadeManager.StartSceneTransition(TargetSceneName);
+            return;
+        }
+
+        Debug.LogWarning("StartGame has no FadeManager. Loading target scene immediately.");
+        SceneManager.LoadScene(TargetSceneName);
+    }
+
+    private bool ShouldStart()
+    {
+        bool mouseRequested = startOnAnyMouseClick && Input.GetMouseButtonDown(0);
+        bool keyboardRequested = startOnSubmitKey
+            && (Input.GetKeyDown(KeyCode.Return)
+                || Input.GetKeyDown(KeyCode.KeypadEnter)
+                || Input.GetKeyDown(KeyCode.Space));
+
+        return mouseRequested || keyboardRequested;
     }
 }
