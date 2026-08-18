@@ -25,19 +25,26 @@ if ([string]::IsNullOrWhiteSpace($UnityPath) -or -not (Test-Path -LiteralPath $U
     throw 'Unity 2022.3.60f1 was not found. Set UNITY_EDITOR_PATH or pass -UnityPath.'
 }
 
-$resultDirectory = Join-Path $root 'Temp/HomeProtectorAutomation'
+$resultDirectory = Join-Path $root 'Logs/HomeProtectorAutomation'
 New-Item -ItemType Directory -Path $resultDirectory -Force | Out-Null
 $modeSlug = $Mode.ToLowerInvariant()
 $logPath = Join-Path $resultDirectory "$modeSlug.log"
 $resultPath = Join-Path $resultDirectory "$modeSlug-results.xml"
 
+if ($Mode -in @('EditMode', 'PlayMode') -and (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
+    Remove-Item -LiteralPath $resultPath -Force
+}
+
 $arguments = @(
     '-batchmode',
     '-nographics',
-    '-quit',
     '-projectPath', $root,
     '-logFile', $logPath
 )
+
+if ($Mode -in @('Validate', 'BuildWindows64')) {
+    $arguments += '-quit'
+}
 
 switch ($Mode) {
     'EditMode' {
