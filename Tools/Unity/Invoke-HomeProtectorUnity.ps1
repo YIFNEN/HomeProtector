@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('EditMode', 'PlayMode', 'Validate', 'BuildWindows64')]
+    [ValidateSet('EditMode', 'PlayMode', 'Validate')]
     [string]$Mode = 'EditMode',
     [string]$ProjectRoot,
     [string]$UnityPath = $env:UNITY_EDITOR_PATH
@@ -42,7 +42,7 @@ $arguments = @(
     '-logFile', $logPath
 )
 
-if ($Mode -in @('Validate', 'BuildWindows64')) {
+if ($Mode -eq 'Validate') {
     $arguments += '-quit'
 }
 
@@ -55,9 +55,6 @@ switch ($Mode) {
     }
     'Validate' {
         $arguments += @('-executeMethod', 'HomeProtector.Editor.AssetPipeline.HomeProtectorAutomation.ValidateProject')
-    }
-    'BuildWindows64' {
-        $arguments += @('-executeMethod', 'HomeProtector.Editor.AssetPipeline.HomeProtectorAutomation.BuildWindows64')
     }
 }
 
@@ -85,26 +82,50 @@ if ($logText -match 'No valid Unity Editor license found|LICENSE SYSTEM.*No vali
     exit 3
 }
 
+if ($Mode -in @('EditMode', 'PlayMode')) {
+    if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+        [xml]$results = Get-Content -LiteralPath $resultPath -Raw -Encoding UTF8
+        $run = $results.'test-run'
+        if ($null -eq $run) {
+            Write-Host "FAIL unity-$modeSlug reason=invalid-results result=$resultPath log=$logPath"
+            exit 2
+        }
+
+        $total = [int]$run.total
+        $passed = [int]$run.passed
+        $failed = [int]$run.failed
+        if ($total -le 0) {
+            Write-Host "FAIL unity-$modeSlug reason=no-tests result=$resultPath log=$logPath"
+            exit 2
+        }
+
+
+        if ($failed -gt 0) {
+            Write-Host "FAIL unity-$modeSlug total=$total passed=$passed failed=$failed result=$resultPath log=$logPath"
+            exit 1
+        }
+
+        if ($exitCode -ne 0) {
+            Write-Host "FAIL unity-$modeSlug exit=$exitCode total=$total passed=$passed failed=$failed result=$resultPath log=$logPath"
+            exit $exitCode
+        }
+
+        Write-Host "PASS unity-$modeSlug total=$total passed=$passed failed=$failed result=$resultPath"
+        exit 0
+    }
+
+    if ($exitCode -ne 0) {
+        Write-Host "FAIL unity-$modeSlug exit=$exitCode log=$logPath"
+        exit $exitCode
+    }
+
+    Write-Host "FAIL unity-$modeSlug reason=missing-results log=$logPath"
+    exit 2
+}
+
 if ($exitCode -ne 0) {
     Write-Host "FAIL unity-$modeSlug exit=$exitCode log=$logPath"
     exit $exitCode
-}
-
-if ($Mode -in @('EditMode', 'PlayMode')) {
-    if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
-        Write-Host "FAIL unity-$modeSlug reason=missing-results log=$logPath"
-        exit 2
-    }
-
-    [xml]$results = Get-Content -LiteralPath $resultPath -Raw -Encoding UTF8
-    $run = $results.'test-run'
-    $failed = [int]$run.failed
-    if ($failed -gt 0) {
-        Write-Host "FAIL unity-$modeSlug total=$($run.total) failed=$failed result=$resultPath log=$logPath"
-        exit 1
-    }
-    Write-Host "PASS unity-$modeSlug total=$($run.total) result=$resultPath"
-    exit 0
 }
 
 Write-Host "PASS unity-$modeSlug log=$logPath"
