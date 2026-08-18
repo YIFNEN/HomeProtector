@@ -163,10 +163,19 @@ namespace HomeProtector.Tests.EditMode
                 TowerDefinition definition = AssetDatabase.LoadAssetAtPath<TowerDefinition>(path);
                 Assert.That(definition, Is.Not.Null, path);
                 Assert.That(definition.IsValid(out string message), Is.True, $"{path}: {message}");
-                Assert.That(
-                    definition.Levels.All(level => level != null && level.Projectile != null),
-                    Is.True,
-                    $"{path}: all tower levels must reference a projectile definition.");
+                for (int levelIndex = 0; levelIndex < definition.Levels.Count; levelIndex++)
+                {
+                    TowerLevelDefinition level = definition.Levels[levelIndex];
+                    Assert.That(level, Is.Not.Null, $"{path}: tower level {levelIndex + 1} must not be null.");
+                    Assert.That(
+                        level.Projectile,
+                        Is.Not.Null,
+                        $"{path}: tower level {levelIndex + 1} must reference a projectile definition.");
+                    Assert.That(
+                        level.Damage,
+                        Is.GreaterThan(0f),
+                        $"{path}: tower level {levelIndex + 1} must have Damage greater than 0.");
+                }
             }
         }
 

@@ -92,7 +92,7 @@ GameObject:
   - component: {fileID: 1130233737445535661}
   m_Layer: 3
   m_Name: Rice
-  m_TagString: Goods
+  m_TagString: Food
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -178,6 +178,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTag: Food
+  autoRegister: 1
 --- !u!114 &1288222789276926307
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,7 +191,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 585e1db9aa9f31141a7e3d787e65e025, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 100
+  maxHP: 50
   resourceName: Food
   destroyEffect: {fileID: 0}
   isInvincible: 0
