@@ -1,0 +1,19 @@
+{
+    "name": "HomeProtector.Tests.PlayMode",
+    "rootNamespace": "HomeProtector.Tests.PlayMode",
+    "references": [
+        "HomeProtector.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "noEngineReferences": false
+}
