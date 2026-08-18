@@ -70,9 +70,9 @@ $processArguments = @($arguments | ForEach-Object {
 })
 $unityProcess = Start-Process -FilePath $UnityPath `
     -ArgumentList $processArguments `
-    -Wait `
     -PassThru `
     -WindowStyle Hidden
+$unityProcess.WaitForExit()
 $exitCode = $unityProcess.ExitCode
 $logText = if (Test-Path -LiteralPath $logPath) {
     Get-Content -LiteralPath $logPath -Raw -Encoding UTF8
