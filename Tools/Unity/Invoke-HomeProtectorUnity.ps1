@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('EditMode', 'PlayMode', 'Validate')]
+    [ValidateSet('EditMode', 'PlayMode', 'Validate', 'BuildWebGL')]
     [string]$Mode = 'EditMode',
     [string]$ProjectRoot,
     [string]$UnityPath = $env:UNITY_EDITOR_PATH
@@ -42,7 +42,7 @@ $arguments = @(
     '-logFile', $logPath
 )
 
-if ($Mode -eq 'Validate') {
+if ($Mode -in @('Validate', 'BuildWebGL')) {
     $arguments += '-quit'
 }
 
@@ -55,6 +55,12 @@ switch ($Mode) {
     }
     'Validate' {
         $arguments += @('-executeMethod', 'HomeProtector.Editor.AssetPipeline.HomeProtectorAutomation.ValidateProject')
+    }
+    'BuildWebGL' {
+        $arguments += @(
+            '-buildTarget', 'WebGL',
+            '-executeMethod', 'HomeProtector.Editor.Build.OpenAIGame2026WebGLBuild.Build'
+        )
     }
 }
 
