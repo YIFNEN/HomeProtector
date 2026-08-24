@@ -1,6 +1,6 @@
-# Home Protector agent contract
+# Home Protector OpenAI Game Builders contract
 
-This repository is a Unity 2022.3.60f1 project completed from the existing `isometric scene` gameplay. Keep changes incremental and preserve working legacy systems while moving ownership to `Assets/_Project`.
+This worktree is the WebGL-first OpenAI Game Builders submission lane for the Unity 2022.3.60f1 project. Keep changes incremental and preserve the verified `isometric scene` gameplay while adapting it for browser play.
 
 ## Required boundaries
 
@@ -8,7 +8,19 @@ This repository is a Unity 2022.3.60f1 project completed from the existing `isom
 - Keep `WaveSystem`, `EnemySpawner`, `TowerSpawner`, `TargetManager`, and `ResourceManager` as the combat engine; adapt them through bridges instead of rewriting them.
 - Keep CommonSoldier and Monkey. Treat the old PostBox prefab as the refrigerator placeholder and preserve its draggable, target, and resource behavior while migrating it.
 - Keep microphone activation and a keyboard fallback on the same activation path.
-- Do not add WebGL, GitHub Pages, NAN submission automation, or an in-game AI director.
+- Add WebGL and browser compatibility only on `codex/openaigame2026`; keep platform-neutral fixes easy to cherry-pick.
+- Do not add NAN submission automation or an in-game AI director.
+
+## Contest delivery
+
+- The required deliverable is a public browser link that starts without installation, approval, or login.
+- Browser completion must never depend on microphone permission. Keyboard fallback uses the same player-activation path.
+- Request microphone permission only after an explicit user gesture and only on HTTPS. Denial, timeout, or missing devices must fall back cleanly.
+- Use this contest worktree as the only Unity writer while WebGL work is active. Treat the original Windows worktree as read-only for contest changes.
+- Write local builds only to ignored `Builds/OpenAIGame2026-WebGL`. Never commit generated WebGL output to the source branch.
+- If deployment needs a generated-output branch or hosting project, keep it separate from source history.
+- Record the pre-challenge baseline and every challenge-period feature in `Docs/Submission/OpenAIGame2026`.
+- Internal submission freeze is 2026-08-26 18:00 KST; prioritize a completable hosted build over additional content.
 
 ## Unity ownership
 
@@ -28,6 +40,7 @@ This repository is a Unity 2022.3.60f1 project completed from the existing `isom
 
 - Let Unity own compile, serialization, reference, EditMode, PlayMode, and build verification.
 - Use `Tools/Unity/Invoke-HomeProtectorUnity.ps1` for concise summaries. Read full Unity logs only after a failure.
+- WebGL readiness requires a Unity WebGL build plus an HTTPS browser smoke test of Loading to final result, including keyboard fallback.
 - Use `Tools/Git/Validate-UnityRepo.ps1` for repository hygiene; do not duplicate Unity semantic checks in shell scripts or skills.
 - A missing Unity license is an explicit blocked check, never a passing result.
 

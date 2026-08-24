@@ -36,6 +36,8 @@ public class MicrophoneSystem : MonoBehaviour
     [SerializeField] private bool playerActivationEnabled = true; // 플레이어 활성화 가능 여부
     [SerializeField] private bool oneTimeUseOnly = true; // 한 웨이브당 한 번만 사용 가능 여부
     [SerializeField] private float playerActiveTime = 50f; // 플레이어 활성화 유지 시간 (저녁 모드에서)
+    [SerializeField] private bool keyboardFallbackEnabled = true;
+    [SerializeField] private KeyCode keyboardActivationKey = KeyCode.F;
     private bool hasActivatedPlayer = false; // 이미 플레이어를 활성화했는지 여부
     private Vector3 defaultPlayerPosition = Vector3.zero; // 기본 플레이어 위치 (0,0,0)
 
@@ -211,9 +213,15 @@ public class MicrophoneSystem : MonoBehaviour
         }
         else if (timeSystem != null && timeSystem.CurrentTime == TimeOfDay.Evening)
         {
+            if (keyboardFallbackEnabled && Input.GetKeyDown(keyboardActivationKey))
+            {
+                RequestPlayerActivation();
+            }
+
+#if !UNITY_WEBGL || UNITY_EDITOR
             // 저녁 모드에서만 마이크 감지
             // 마이크 볼륨 확인 및 배치 모드 전환
-            if (micClip != null && micName != null && Microphone.IsRecording(micName))
+            if (!isPlacementMode && micClip != null && micName != null && Microphone.IsRecording(micName))
             {
                 float volume = GetMaxVolume();
                 scaledVolume = ScaleVolume(volume);
@@ -231,10 +239,10 @@ public class MicrophoneSystem : MonoBehaviour
                 if (scaledVolume >= currentActivationThreshold)
                 {
                     if (verbose) Debug.Log($"볼륨({scaledVolume})이 임계값({currentActivationThreshold})을 넘어 배치 모드 진입");
-                    EnterPlacementMode();
+                    RequestPlayerActivation();
                 }
             }
-            else
+            else if (!isPlacementMode)
             {
                 // 마이크가 녹음 중이 아닌 경우
                 if (verbose && Time.frameCount % 300 == 0)
@@ -243,6 +251,7 @@ public class MicrophoneSystem : MonoBehaviour
                     StartCoroutine(InitializeAndTestMicrophone());
                 }
             }
+#endif
         }
 
         // 디버그 정보 업데이트
@@ -251,12 +260,14 @@ public class MicrophoneSystem : MonoBehaviour
 
     private void OnDisable()
     {
+#if !UNITY_WEBGL || UNITY_EDITOR
         // 마이크 정지
         if (micName != null && Microphone.IsRecording(micName))
         {
             Microphone.End(micName);
             if (verbose) Debug.Log("마이크 녹음 중지됨");
         }
+#endif
 
         // 게임이 일시정지된 상태로 종료되지 않도록 함
         if (wasGamePaused)
@@ -285,6 +296,14 @@ public class MicrophoneSystem : MonoBehaviour
     #region Initialization Methods
     private IEnumerator InitializeAndTestMicrophone()
     {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        if (verbose)
+        {
+            Debug.Log("WebGL microphone input is unavailable. Use the keyboard fallback.");
+        }
+
+        yield break;
+#else
         // 안정적인 초기화를 위해 짧게 대기
         yield return new WaitForSeconds(0.2f);
 
@@ -334,6 +353,7 @@ public class MicrophoneSystem : MonoBehaviour
         {
             Debug.LogError("사용 가능한 마이크가 없습니다!");
         }
+#endif
     }
 
     private void InitializeFatigueCurve()
@@ -399,6 +419,9 @@ public class MicrophoneSystem : MonoBehaviour
     #region Microphone Volume Processing
     private void CheckMicrophoneVolumeForActivation()
     {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        return;
+#else
         if (micName != null && Microphone.IsRecording(micName))
         {
             float volume = GetMaxVolume();
@@ -410,18 +433,22 @@ public class MicrophoneSystem : MonoBehaviour
             // 볼륨이 임계값을 넘으면 배치 모드 전환
             if (scaledVolume >= currentActivationThreshold)
             {
-                EnterPlacementMode();
+                RequestPlayerActivation();
             }
         }
         else if (verbose)
         {
             Debug.LogWarning("마이크가 녹음 중이 아니어서 볼륨 확인 불가");
         }
+#endif
     }
 
     private float GetMaxVolume()
     {
         if (micClip == null) return 0;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        return 0f;
+#else
 
         float[] samples = new float[sampleWindow];
         int micPosition = Microphone.GetPosition(micName);
@@ -452,6 +479,7 @@ public class MicrophoneSystem : MonoBehaviour
         }
 
         return maxVolume;
+#endif
     }
 
     private int ScaleVolume(float volume)
@@ -481,6 +509,26 @@ public class MicrophoneSystem : MonoBehaviour
     #endregion
 
     #region Player Placement Mode
+    public void RequestPlayerActivation()
+    {
+        if (!playerActivationEnabled || isPlacementMode)
+        {
+            return;
+        }
+
+        if (timeSystem != null && timeSystem.CurrentTime != TimeOfDay.Evening)
+        {
+            return;
+        }
+
+        if (oneTimeUseOnly && hasActivatedPlayer)
+        {
+            return;
+        }
+
+        EnterPlacementMode();
+    }
+
     private void EnterPlacementMode()
     {
         isPlacementMode = true;

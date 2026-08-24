@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class MicroPhoneVolumeTest : MonoBehaviour
 {
+#if !UNITY_WEBGL || UNITY_EDITOR
     private AudioClip micClip;
     private string micName;
 
@@ -60,5 +61,6 @@ public class MicroPhoneVolumeTest : MonoBehaviour
             return maxVolume;
         }
 
+#endif
     }
 
