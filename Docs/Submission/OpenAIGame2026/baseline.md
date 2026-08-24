@@ -6,7 +6,7 @@
 - Online qualifier submission closes on 2026-08-26.
 - A publicly accessible game that runs directly in a browser is required.
 - The core loop must be playable throughout judging without approval or installation.
-- A 16:9 PNG or JPG thumbnail is required.
+- A thumbnail is required; 16:9 PNG or JPG up to 10 MB is recommended.
 - A gameplay video of up to three minutes and a Codex collaboration explanation are optional scoring opportunities.
 - Existing projects are allowed, but challenge-period additions must be identified.
 
@@ -25,7 +25,8 @@ Track additions here as they land on `codex/openaigame2026`:
 
 | Date | Commit | New work | Codex contribution | Human decision |
 |---|---|---|---|---|
-| 2026-08-18 | pending | Contest worktree, WebGL contract, and reproducible baseline | Repository audit, isolation plan, and verification harness | WebGL-first schedule and use of the existing game concept |
+| 2026-08-18 | `f6a46df9` | Contest worktree, WebGL contract, and reproducible baseline | Repository audit, isolation plan, and verification harness | WebGL-first schedule and use of the existing game concept |
+| 2026-08-25 | `29bc436d` | Reproducible WebGL build, browser-safe keyboard activation fallback, and regression tests | WebGL compatibility diagnosis, implementation, TDD, deployment, and verification | Preserve native microphone play while making browser completion independent of microphone permission |
 
 ## Release gate
 
